@@ -236,6 +236,7 @@ public class FabricClient {
 	 * @param channelName 채널명
 	 * 
 	 * @return HFClient
+	 * 
 	 * @throws Exception
 	 */
 
@@ -289,10 +290,6 @@ public class FabricClient {
 						new ChannelConfiguration(
 								new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
 						userContext));
-
-		// genensisblock test
-//		JSONObject configJson = getChannelConfig(ordererDto, channelName);
-//		logger.info(configJson.toString());
 
 		return client;
 
@@ -362,7 +359,7 @@ public class FabricClient {
 	 * 
 	 * @param memberDto 생성할 클라이언트 정보
 	 * 
-	 * @return
+	 * @return HFClient 클라이언트
 	 * 
 	 * @throws IOException
 	 * @throws CryptoException
@@ -400,6 +397,7 @@ public class FabricClient {
 	 * @param channelName 채널명
 	 * 
 	 * @return
+	 * 
 	 * @throws Exception
 	 */
 
@@ -569,6 +567,7 @@ public class FabricClient {
 	 * @throws IOException
 	 * @throws TransactionException
 	 */
+	
 	public void setUpdateTest(FabricMemberDto memberDto, String channelName, File updateFile)
 			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
 			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
@@ -603,7 +602,8 @@ public class FabricClient {
 		}
 
 	}
-//  api통신용 현재는 사용안
+	
+//  api통신용 현재는 사용안함
 //	
 //	
 //	public JSONObject getChannelConfig(FabricMemberDto memberDto, String channelName) throws CryptoException,
@@ -651,19 +651,19 @@ public class FabricClient {
 //		return configJson;
 //
 //	}
-
-	/**
-	 * 채널 설정 변경 함수(테스트중)
-	 * 
-	 * @param memberDto      채널에 접근할 정보
-	 * @param channelName    채널명
-	 * @param config         기존 설정
-	 * @param modifiedConfig 변경된 설정
-	 * 
-	 * @throws ParseException
-	 * 
-	 */
-
+//
+//	/**
+//	 * 채널 설정 변경 함수(테스트중)
+//	 * 
+//	 * @param memberDto      채널에 접근할 정보
+//	 * @param channelName    채널명
+//	 * @param config         기존 설정
+//	 * @param modifiedConfig 변경된 설정
+//	 * 
+//	 * @throws ParseException
+//	 * 
+//	 */
+//
 //	public void setChannelConfig(FabricMemberDto memberDto, String channelName, byte[] config, byte[] modifiedConfig)
 //			throws ParseException {
 //

@@ -75,7 +75,7 @@ public class DockerService {
 	
 	public String getContainerInfo() throws DockerException, InterruptedException {
 		
-		return dockerClient.getContainers().toString();
+		return dockerClient.getRunningContainers().toString();
 	}
 
 }

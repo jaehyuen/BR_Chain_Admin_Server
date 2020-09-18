@@ -1,9 +1,7 @@
 package com.brchain.core.client;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,14 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.service.ConInfoService;
 import com.brchain.core.util.ContainerSetting;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -39,32 +34,31 @@ public class DockerClient {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
-	private Environment environment;
+	private ConInfoService conInfoService;
 
 	@Autowired
-	ConInfoService conInfoService;
-
-	@Autowired
-	SshClient sshClient;
+	private SshClient sshClient;
 
 	@Value("${brchain.ip}")
-	String ip;
+	private String ip;
 
-	String networkMode = "brchain-network";
+	private String networkMode = "brchain-network";
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
-	final DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375").apiVersion("v1.40")
+	private final DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375").apiVersion("v1.40")
 			.build();
 
 	/**
+	 * 실행중인 컨테이너 조회 함수
 	 * 
-	 * @return 컨테이너 리스트(
+	 * @return 컨테이너 리스트
+	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
 	
-	public List<Container> getContainers() throws DockerException, InterruptedException {
+	public List<Container> getRunningContainers() throws DockerException, InterruptedException {
 
 		return docker.listContainers(ListContainersParam.allContainers());
 		
@@ -72,16 +66,31 @@ public class DockerClient {
 
 	
 	/**
+	 * 모든 컨테이너 리스트 조회 함수
 	 * 
 	 * @return 컨테이너 리스트 
+	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
+	
 	public List<Container> getAllContainers() throws DockerException, InterruptedException {
 
 		return docker.listContainers(ListContainersParam.allContainers());
 		
 	}
+	
+	
+	/**
+	 * 컨테이너 정지 및 삭제 함수
+	 * 
+	 * @param conId 삭제할 컨테이너 id
+	 * 
+	 * @return
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 */
 	
 	public String removeContainer(String conId) throws DockerException, InterruptedException {
 		

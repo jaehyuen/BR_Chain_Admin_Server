@@ -9,11 +9,9 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.brchain.core.service.ConInfoService;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -55,10 +53,13 @@ public class SshClient {
 	String dataDir;
 
 
-
+	/**
+	 * ssh 및 sftp 연결 함수
+	 * 
+	 * @throws JSchException
+	 */
+	
 	public void connect() throws JSchException {
-
-
 
 		JSch jsch = new JSch();
 
@@ -77,6 +78,18 @@ public class SshClient {
 
 	}
 
+	
+	/**
+	 * 폴더 삭제 함수
+	 * 
+	 * @param orgName 조직명
+	 * 
+	 * @return
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 * @throws JSchException
+	 */
 	public String removeDir(String orgName) throws DockerException, InterruptedException, JSchException {
 
 		logger.info(orgName);
@@ -92,6 +105,16 @@ public class SshClient {
 
 	}
 
+	
+	/**
+	 * 커맨드 실행 함수
+	 * @param command 커맨드
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 * @throws JSchException
+	 */
+	
 	public void execCommand(String command) throws DockerException, InterruptedException, JSchException {
 
 		if (channelExec == null || channelExec.isClosed()) {
@@ -105,26 +128,35 @@ public class SshClient {
 
 	}
 
-	public void deleteFolder(String path) {
+	
+//	public void deleteFolder(String path) {
+//
+//		logger.info("deleteFolder");
+//		path = System.getProperty("user.dir") + "/" + path;
+//		logger.info(path);
+//		File folder = new File(path);
+//
+//		if (folder.exists()) {
+//			File[] deleteFolderList = folder.listFiles();
+//
+//			for (int j = 0; j < deleteFolderList.length; j++) {
+//				deleteFolderList[j].delete();
+//			}
+//
+//			if (deleteFolderList.length == 0 && folder.isDirectory()) {
+//				folder.delete();
+//			}
+//		}
+//	}
 
-		logger.info("deleteFolder");
-		path = System.getProperty("user.dir") + "/" + path;
-		logger.info(path);
-		File folder = new File(path);
-
-		if (folder.exists()) {
-			File[] deleteFolderList = folder.listFiles();
-
-			for (int j = 0; j < deleteFolderList.length; j++) {
-				deleteFolderList[j].delete();
-			}
-
-			if (deleteFolderList.length == 0 && folder.isDirectory()) {
-				folder.delete();
-			}
-		}
-	}
-
+	
+	/**
+	 * 파일 업로드 함수
+	 * @param path 업로드경로
+	 * @param uploadFileName 파일명
+	 * 
+	 * @throws Exception
+	 */
 	public void uploadFile(String path, String uploadFileName) throws Exception {
 
 		if (channelSftp == null) {
@@ -155,6 +187,18 @@ public class SshClient {
 
 	}
 
+	
+	/**
+	 * 파일 다운로드 함수
+	 * 
+	 * @param path 파일경로
+	 * @param downloadFileName 파일명
+	 * 
+	 * @throws SftpException
+	 * @throws IOException
+	 * @throws JSchException
+	 */
+	
 	public void downloadFile(String path, String downloadFileName) throws SftpException, IOException, JSchException {
 
 		if (channelSftp == null) {

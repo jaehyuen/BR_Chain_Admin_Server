@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+ var ElCount = 0;
+
+function addTextNode() {
+    var d1 = document.getElementById('dataArea');
+    var check_count = document.getElementsByName("orgType").length;
+    var orgTypeVal;
+    for (var i = 0; i < check_count; i++) {
+        if (document.getElementsByName("orgType")[i].checked == true) {
+            orgTypeVal = document.getElementsByName("orgType")[i].value;
+        }
+    }
+    console.log(orgTypeVal);
+    // d1.insertAdjacentHTML('beforeend', '<div id="dataArea_' + ElCount + '"> conType<input type="text" name="conType_' + ElCount + '" value="' + orgTypeVal + '"> conPort<input type="text" name="conPort_' + ElCount + '">  conNum<input type="text" name="conNum_' + ElCount + '" value="' + ElCount + '" readOnly> couchdbYn<input type="checkbox" name="couchdbYn_' + ElCount + '" value="1" id="couchdb"> </div>');
+    if (orgTypeVal == "peer") {
+        d1.insertAdjacentHTML('beforeend', '<div id="dataArea_' + ElCount + '"> conType<input type="text" name="conType_' + ElCount + '" value="' + orgTypeVal + '"> conPort<input type="text" name="conPort_' + ElCount + '">  conNum<input type="text" name="conNum_' + ElCount + '" value="' + ElCount + '" readOnly> couchdbYn<input type="checkbox" name="couchdbYn_' + ElCount + '" value="1" id="couchdb" style="visibility:visible"> </div>');
+    } else {
+        d1.insertAdjacentHTML('beforeend', '<div id="dataArea_' + ElCount + '"> conType<input type="text" name="conType_' + ElCount + '" value="' + orgTypeVal + '"> conPort<input type="text" name="conPort_' + ElCount + '">  conNum<input type="text" name="conNum_' + ElCount + '" value="' + ElCount + '" readOnly> couchdbYn<input type="checkbox" name="couchdbYn_' + ElCount + '" value="1" id="couchdb" style="visibility:hidden"> </div>');
+    }
+
+    document.getElementsByName("conCnt")[0].value = ElCount + 1;
+    ElCount = ElCount + 1;
+}
+
+function radioEvent(orgTypeObj) {
+
+    document.getElementById("addPeerBtn").style.display = "block";
+
+    if (orgTypeObj.value == 'peer') {
+        document.querySelectorAll('input[name*="conType_"]').forEach(function (test) {
+            test.value = 'peer';
+        });
+        document.querySelectorAll('input[name*="couchdbYn_"]').forEach(function (test) {
+            test.value = 'orderer';
+            test.style.visibility = "visible"
+        });
+        document.getElementById("addPeerBtn").innerHTML = "add peer";
+    } else {
+        document.querySelectorAll('input[name*="conType_"]').forEach(function (test) {
+            test.value = 'orderer';
+        });
+        document.querySelectorAll('input[name*="couchdbYn_"]').forEach(function (test) {
+            test.value = 'orderer';
+            test.style.visibility = "hidden"
+        });
+        //document.getElementById("couch").style.display = "none"
+        document.getElementById("addPeerBtn").innerHTML = "add orderer"
+    }
+}
+
+function submit() {
+    var testList = new Array();
+    var dateLength = document.querySelectorAll('div[id*="dataArea"]').length
+    var firstDataArea = document.querySelector('div[id="dataArea"]');
+    var firstData = new Object();
+    firstData.orgName = document.getElementsByName("orgName")[0].value;
+    if (document.getElementsByName("orgType")[0].checked) {
+        firstData.orgType = document.getElementsByName("orgType")[0].value;
+    } else {
+        firstData.orgType = document.getElementsByName("orgType")[1].value;
+    }
+    firstData.conType = firstDataArea.querySelector('input[name="conType"]').value;
+    firstData.conPort = firstDataArea.querySelector('input[name="conPort"]').value;
+    firstData.conCnt = firstDataArea.querySelector('input[name="conCnt"]').value;
+    testList.push(firstData);
+
+    document.querySelectorAll('div[id*="dataArea_"]').forEach(function (dataList) {
+        //테스트용..
+        //testList[0].orgType=document.getElementsByName("orgType")[0].value;
+        var data = new Object();
+        data.orgName = document.getElementsByName("orgName")[0].value;
+        data.orgType = dataList.querySelector('input[name*="conType"]').value;
+        data.conType = dataList.querySelector('input[name*="conType"]').value;
+        data.conPort = dataList.querySelector('input[name*="conPort"]').value;
+        data.conNum = dataList.querySelector('input[name*="conNum"]').value;
+        if (dataList.querySelector('input[name*="couchdbYn"]').checked && dataList.querySelector('input[name*="conType"]').value == "peer") {
+            data.couchdbYn = dataList.querySelector('input[name*="couchdbYn"]').checked;
+        }
+
+        testList.push(data);
+    });
+
+    console.log(JSON.stringify(testList));
+    var url="http://192.168.0.103:8080/api/core/create/org";
+    $.ajax({
+    url: url, // url where to submit the request
+    type : "POST", // type of action POST || GET
+    dataType : 'json', // data type
+    async: false,
+    data : JSON.stringify(testList), // post data || get data
+    beforeSend: function (xhr) {
+            xhr.setRequestHeader("Content-type","application/json");
+            xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+        },
+    success : function(result) {
+        // you can see the result from the console
+        // tab of the developer tools
+        //console.log(result);
+    },
+    error: function(xhr, resp, text) {
+        console.log(xhr, resp, text);
+    }
+})
+}
+    </script>
+</head>
+<body>
+    <form>
+        <h3>조직생성 테스트</h3>
+        orgName<input type="text" name="orgName"><br>
+        orgType<input type="radio" id="1" name="orgType" value="peer" onchange="radioEvent(this);"><label for="1">피어</label>
+               <input type="radio" id="2" name="orgType" value="orderer" onchange="radioEvent(this);"><label for="2">오더러</label><br>
+        <div id="dataArea">
+            conType<input type="text" name="conType" value="ca"> conPort<input type="text" name="conPort">  conCnt<input type="text" name="conCnt" readOnly> <br>
+        </div>  
+    </form>
+    <button class="favorite styled" id="addPeerBtn" type="button" onclick="addTextNode();" style="display: none;">add peer</button>
+    <button class="favorite styled" id="" type="button" onclick="submit();">전송</button>
+</button>
+</body>
+</html>

@@ -3,7 +3,6 @@ package com.brchain.core.service;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hyperledger.fabric.sdk.HFClient;
@@ -24,9 +23,7 @@ import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import com.spotify.docker.client.DockerClient.ListContainersParam;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
 
 @Service
 public class FabricService {
@@ -53,7 +50,9 @@ public class FabricService {
 	 * 조직 생성 서비스
 	 * 
 	 * @param conInfoDtoArr 컨테이너 관련 DTO
+	 * 
 	 * @return
+	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 * @throws SftpException
@@ -192,7 +191,9 @@ public class FabricService {
 	 * 채널 생성 서비스
 	 * 
 	 * @param channelInfoDto 채널 관련 DTO
+	 * 
 	 * @return
+	 * 
 	 * @throws Exception
 	 */
 
@@ -275,7 +276,9 @@ public class FabricService {
 	 * @param peerDtoArr    가입할 피어 관련 DTO 배열
 	 * @param ordererDtoArr 오더러 관련 DTO 배열
 	 * @param channelName   채널명
+	 * 
 	 * @return
+	 * 
 	 * @throws InvalidArgumentException
 	 * @throws ProposalException
 	 * @throws CryptoException

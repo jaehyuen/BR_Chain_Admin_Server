@@ -13,13 +13,7 @@ import org.springframework.stereotype.Component;
 import lombok.Data;
 
 @Data
-//@Component
 public class ContainerSetting {
-
-//	String sourceDir=Config.sourceDir;
-//	String sourceDir=DockerUtil.sourceDir;
-//	String logDir=DockerUtil.logDir;
-//	String dataDir=DockerUtil.dataDir;
 
 	String sourceDir = "/svc/nhblock/brchain";
 	String logDir = "/svc/nhblock/logs";

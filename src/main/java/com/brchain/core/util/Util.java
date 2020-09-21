@@ -1,45 +1,19 @@
 package com.brchain.core.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-//import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
-
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.PolicyDto;
-import com.spotify.docker.client.exceptions.DockerException;
 
 public class Util {
 
+	
 	/**
 	 * connection.json 생성 함수
 	 * 
@@ -48,8 +22,6 @@ public class Util {
 	 * @param peerArrDto Json 생성시 필요한 피 리스트 관련 DTO
 	 * 
 	 * @return JSONObject fabricJson connection.yaml
-	 * 
-	 * 
 	 */
 	
 	@SuppressWarnings({ "unchecked" })
@@ -133,7 +105,6 @@ public class Util {
 	 * @param url Url
 	 * 
 	 * @return peer, orderer 관련 Json
-	 * 
 	 */
 	
 	@SuppressWarnings("unchecked")
@@ -167,7 +138,6 @@ public class Util {
 	 * @param parentsKey 부모키??
 	 * 
 	 * @return 추가된 Json
-	 * 
 	 */
 	
 	public JSONObject test(JSONObject json, JSONObject addjson, String parentsKey,String peerOrg) {
@@ -205,7 +175,6 @@ public class Util {
 	 * @param memberDto 조직정보 Json
 	 * 
 	 * @return 조직 정보 Json
-	 * 
 	 */
 	
 	@SuppressWarnings("unchecked")
@@ -293,7 +262,6 @@ public class Util {
 	 * @param policyDto 정책 정보 DTO
 	 * 
 	 * @return 정책 Json
-	 * 
 	 */
 	
 	@SuppressWarnings("unchecked")

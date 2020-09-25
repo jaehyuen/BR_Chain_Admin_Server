@@ -3,21 +3,28 @@ package com.brchain.core.controller;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
-import com.brchain.core.dto.ChannelInfoDto;
+import com.brchain.core.dto.CreateChannelDto;
+import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
+import com.brchain.core.service.ChannelInfoService;
 import com.brchain.core.service.ConInfoService;
 import com.brchain.core.service.DockerService;
 import com.brchain.core.service.FabricService;
@@ -37,6 +44,9 @@ public class CoreController {
 
 	@Autowired
 	ConInfoService conInfoService;
+	
+	@Autowired
+	ChannelInfoService channelInfoService;
 
 	@Autowired
 	FabricService fabricService;
@@ -52,49 +62,61 @@ public class CoreController {
 
 	ConInfoDto conInfoDto;
 
-	@GetMapping("/container")
-	public String getContainerInfo() throws DockerException, InterruptedException, JSchException {
+	@GetMapping("/containers")
+	public ResponseEntity<ResultDto> getContainerInfo() {
 
-		logger.info("[컨테이너 조회] 시작");
-		dockerService.getContainerInfo();
-		logger.info("[컨테이너 조회] 종료");
-
-		return "";
+		return ResponseEntity.status(HttpStatus.OK).body(dockerService.getAllContainersInfo());
 
 	}
 
 	@PostMapping("/create/org")
-	public String createContainer(@RequestBody CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr)
-			throws DockerException, InterruptedException, SftpException, IOException, JSchException {
+	public ResponseEntity<ResultDto> createContainer(@RequestBody CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
 
-		logger.info("[조직생성] 시작");
-		fabricService.createOrg(conInfoDtoArr);
-		logger.info("[조직생성] 종료");
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createOrg(conInfoDtoArr));
 
-		return "";
+	}
+
+	@GetMapping("/orgs")
+	public ResponseEntity<ResultDto> getOrgList() {
+
+		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getOrgList());
 
 	}
 
 	@GetMapping("/remove")
-	public String removeContainer()
-			throws DockerException, InterruptedException, JSchException, SftpException, IOException {
+	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId") String conId) {
 
-		logger.info("[컨테이너 삭제] 시작");
-		dockerService.removeAllContainers();
-		logger.info("[컨테이너 삭제] 종료");
+		if (conId.equals("")) {
 
-		return "";
+			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeAllContainers());
+
+		} else {
+			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeContainer(conId));
+
+		}
 
 	}
 
+	@GetMapping("/check/port")
+	public ResponseEntity<ResultDto> portCheck(@RequestParam(value = "port") String port) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.checkConPort(port));
+
+	}
+
+	
+	@GetMapping("/channels")
+	public ResponseEntity<ResultDto> getChannelList() {
+
+		return ResponseEntity.status(HttpStatus.OK).body(channelInfoService.getChannelList());
+
+	}
 	@PostMapping("/create/channel")
-	public String channelTest(@RequestBody ChannelInfoDto channelInfoDto) throws Exception {
+	public ResponseEntity<ResultDto> channelTest(@RequestBody CreateChannelDto createChannelDto){
 
-		logger.info("[채널생성] 시작");
-		fabricService.createChannel(channelInfoDto);
-		logger.info("[채널생성] 종료");
-
-		return "";
+		
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createChannel(createChannelDto));
+		
 
 	}
 

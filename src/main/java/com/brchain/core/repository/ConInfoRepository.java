@@ -16,4 +16,10 @@ public interface ConInfoRepository extends JpaRepository<ConInfoEntity,String>{
 	ArrayList<ConInfoEntity> findByConTypeAndOrgName(String conType,String orgName);
 	
 	ArrayList<ConInfoEntity> findByConTypeAndOrgTypeAndOrgName(String conType,String orgType,String orgName);
+	
+	ArrayList<ConInfoEntity> findByConType(String conType);
+	
+	ArrayList<ConInfoEntity> findByConPort(String conPort);
+	
+
 }

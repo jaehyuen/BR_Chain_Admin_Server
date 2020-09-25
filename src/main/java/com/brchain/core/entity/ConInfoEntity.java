@@ -54,7 +54,7 @@ public class ConInfoEntity {
 	@Column(name ="COUCHDB_YN" ,length = 100, nullable = true)
 	private boolean couchdbYn;
 	
-	@Column(name ="GOSSIP_BOOT_ADDR" ,length = 100, nullable = true)
+	@Column(name ="GOSSIP_BOOT_ADDR" , nullable = true)
 	private String gossipBootAddr;
 	
 	@Column(name ="ORDERER_PORTS" ,length = 100, nullable = true)

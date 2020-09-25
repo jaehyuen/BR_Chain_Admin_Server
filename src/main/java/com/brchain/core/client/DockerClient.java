@@ -96,7 +96,7 @@ public class DockerClient {
 		
 		docker.stopContainer(conId, 1);
 		docker.removeContainer(conId);
-		
+	
 		return "";
 		
 	}

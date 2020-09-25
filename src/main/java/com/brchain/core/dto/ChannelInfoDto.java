@@ -1,19 +1,31 @@
 package com.brchain.core.dto;
 
-import java.util.Map;
+import com.brchain.core.entity.ChannelInfoEntity;
+import com.brchain.core.entity.ConInfoEntity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChannelInfoDto {
-	
-	private String channelName;							                  // 조직명
-	private String[] orgToJoin;						                      // 가입할 피어조직 배열
-	private String ordererToJoin;						                  // 사용오더러 조직
-	private Map<String,String> [] anchorPeerSetting; 					  // 오더러 포트(오더러)
-	
-//	private String gossipBootAddress; 						          // 가쉽 부트스트랩 주소(피어	
-//	private int conNum; 						                      // 피어,오더러 번호
-//	private int conCnt;							                      // 피어,오더러 개수
-//	private boolean couchdbYn;                                        // 카우치디비 사용여부(피어)
+
+	private String channelName; // 채널 이름
+	private int channelBlock; // 채널 블럭수
+	private int channelTx; // 채널 트렌젝션수
+	private String orderingOrg; // 운영중인 오더러 조직
+
+	public ChannelInfoEntity toEntity() {
+
+		ChannelInfoEntity channelInfoEntity = ChannelInfoEntity.builder().channelName(channelName)
+				.channelBlock(channelBlock).channelTx(channelTx).orderingOrg(orderingOrg).build();
+		return channelInfoEntity;
+	}
+
 }

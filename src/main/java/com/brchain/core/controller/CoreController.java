@@ -77,9 +77,9 @@ public class CoreController {
 	}
 
 	@GetMapping("/orgs")
-	public ResponseEntity<ResultDto> getOrgList() {
+	public ResponseEntity<ResultDto> getOrgList(@RequestParam(value = "type") String orgType) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getOrgList());
+		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getOrgList(orgType));
 
 	}
 

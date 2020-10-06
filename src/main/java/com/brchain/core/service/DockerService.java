@@ -34,22 +34,21 @@ public class DockerService {
 	@Autowired
 	private SshClient sshClient;
 
-	/**
-	 * 모든컨테이너 삭제 서비스
-	 * 
-	 * @return
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 * @throws JSchException
-	 */
 
+	/**
+	 * 모든 컨테이너 삭제 서비스
+	 * 
+	 * @return 결과 DTO(삭제 결과)
+	 */
+	
 	public ResultDto removeAllContainers() {
 
 		ResultDto resultDto = new ResultDto();
 
 		try {
+			
 			List<Container> containers = dockerClient.getAllContainers();
+			
 			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
 				Container container = iter.next();
@@ -70,10 +69,12 @@ public class DockerService {
 			}
 
 		} catch (Exception e) {
+			
 			resultDto.setResultCode("9999");
 			resultDto.setResultFlag(false);
 			resultDto.setResultMessage(e.getMessage());
 			return resultDto;
+			
 		}
 
 		resultDto.setResultCode("0000");
@@ -84,6 +85,14 @@ public class DockerService {
 
 	}
 
+	/**
+	 * 특정 컨테이너 삭제 서비스
+	 * 
+	 * @param conId 컨테이너 ID
+	 * 
+	 * @return 결과 DTO(삭제 결과)
+	 */
+	
 	public ResultDto removeContainer(String conId) {
 
 		ResultDto resultDto = new ResultDto();
@@ -99,6 +108,7 @@ public class DockerService {
 			} catch (Exception e) {
 				
 				logger.info("디비에 없는 컨테이너");
+				
 			}
 
 			logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
@@ -121,44 +131,48 @@ public class DockerService {
 
 	}
 
+	
 	/**
 	 * 컨테이너 리스트 조회 서비스
 	 * 
-	 * @return
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
+	 * @return 결과 DTO(조회 결과)
 	 */
-
+	
 	public ResultDto getAllContainersInfo() {
 
 		JSONArray resultJsonArr = new JSONArray();
 		ResultDto resultDto = new ResultDto();
 
 		try {
+			
 			List<Container> containerList = dockerClient.getAllContainers();
 
 			for (Container container : containerList) {
+				
 				container.id();
 
 				JSONObject resultJson = new JSONObject();
 				ImmutableList<PortMapping> portList = container.ports();
+				
 				for (PortMapping port : portList) {
+					
 					if (!port.publicPort().equals(0)) {
+						
 						resultJson.put("conPort", port.publicPort());
+						
 					}
 
 				}
 
 				resultJson.put("conId", container.id());
 				resultJson.put("conName", container.names().get(0));
-
 				resultJson.put("conCreated", new Date(container.created() * 1000).toString());
 				resultJson.put("conStatus", container.status());
 
 				resultJsonArr.add(resultJson);
 
 			}
+			
 		} catch (Exception e) {
 
 			resultDto.setResultCode("9999");

@@ -50,20 +50,16 @@ public class FabricService {
 	@Autowired
 	private SshClient sshClient;
 
+
 	/**
 	 * 조직 생성 서비스
 	 * 
 	 * @param conInfoDtoArr 컨테이너 관련 DTO
 	 * 
-	 * @return
+	 * @return 결과 DTO(조직생성 결과)
 	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 * @throws SftpException
-	 * @throws IOException
-	 * @throws JSchException
 	 */
-
+	
 	public ResultDto createOrg(CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
 
 		logger.info("[조직생성] 시작");
@@ -136,6 +132,7 @@ public class FabricService {
 
 					// couchdb 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					if (dto.isCouchdbYn()) {
+						
 						ConInfoDto couchdbContainer = new ConInfoDto();
 						couchdbContainer.setOrgName(dto.getOrgName());
 						couchdbContainer.setOrgType(dto.getOrgType());
@@ -208,16 +205,15 @@ public class FabricService {
 		return resultDto;
 	}
 
+
 	/**
 	 * 채널 생성 서비스
 	 * 
-	 * @param channelInfoDto 채널 관련 DTO
+	 * @param createChannelDto 채널 관련 DTO
 	 * 
-	 * @return
-	 * 
-	 * @throws Exception
+	 * @return 결과 DTO(채널 생성 결과)
 	 */
-
+	
 	public ResultDto createChannel(CreateChannelDto createChannelDto)  {
 
 		logger.info("[채널생성] 시작");
@@ -244,6 +240,7 @@ public class FabricService {
 			conInfoDto.setConType("setup_channel");
 			conInfoDto.setConPort("");
 			conInfoDto.setConCnt(0);
+			
 			logger.info("[채널생성] conInfoDto : " + conInfoDto);
 			dockerClient.createCon(conInfoDto);
 

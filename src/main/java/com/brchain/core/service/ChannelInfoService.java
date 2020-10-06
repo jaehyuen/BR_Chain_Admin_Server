@@ -30,13 +30,29 @@ public class ChannelInfoService {
 
 	@NonNull
 	private ChannelInfoRepository channelInfoRepository;
-
+	
+	
+	/**
+	 * 채널 정보 저장 서비스
+	 * 
+	 * @param channelInfoDto 채널 정보 DTO
+	 * 
+	 * @return
+	 */
+	
 	public ChannelInfoEntity saveChannelInfo(ChannelInfoDto channelInfoDto) {
 
 		return channelInfoRepository.save(channelInfoDto.toEntity());
 
 	}
 
+	
+	/**
+	 * 채널 리스트 조회 서비스
+	 * 
+	 * @return 결과 DTO(채널 리스트)
+	 */
+	
 	public ResultDto getChannelList() {
 
 		JSONArray resultJsonArr = new JSONArray();

@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.brchain.core.dto.ConInfoDto;
@@ -15,8 +14,6 @@ import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.ConInfoEntity;
 import com.brchain.core.repository.ConInfoRepository;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +27,7 @@ public class ConInfoService {
 	@Value("${brchain.ip}")
 	String ip;
 
+	
 	/**
 	 * 컨테이너 정보 저장 서비스
 	 * 
@@ -44,6 +42,7 @@ public class ConInfoService {
 
 	}
 
+	
 	/**
 	 * 컨테이너 정보 삭제 서비스
 	 * 
@@ -60,8 +59,10 @@ public class ConInfoService {
 		conInfoRepository.deleteById(conInfoEntity.getConId());
 
 		return conInfoEntity.getOrgName();
+		
 	}
 
+	
 	/**
 	 * 컨테이너 이름으로 조회 서비스
 	 * 
@@ -80,9 +81,10 @@ public class ConInfoService {
 				.orgType(conInfoEntity.getOrgType()).couchdbYn(conInfoEntity.isCouchdbYn())
 				.gossipBootAddress(conInfoEntity.getGossipBootAddr()).ordererPorts(conInfoEntity.getOrdererPorts())
 				.build();
-
+		
 	}
 
+	
 	/**
 	 * 컨테이너 타입으로 조회 서비스
 	 * 
@@ -90,12 +92,14 @@ public class ConInfoService {
 	 * @param orgType 조직 타입
 	 * 
 	 * @return
+	 * 
 	 */
 
 	public String selectByConType(String conType, String orgType) {
 
 		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
 		String result = "";
+		
 		for (ConInfoEntity entity : conInfoEntity) {
 
 			ConInfoDto conInfoDto = ConInfoDto.builder().conId(entity.getConId()).conName(entity.getConName())
@@ -111,18 +115,36 @@ public class ConInfoService {
 
 	}
 
+	
+	/**
+	 * 조직 리스트 조회 서비스
+	 * 
+	 * @param orgType 조직 타입
+	 * 
+	 * @return 결과 DTO(조직 리스트)
+	 */
+	
+	public ResultDto getOrgList(String orgType) {
 
-	public ResultDto getOrgList() {
-
-		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConType("ca");
+		ArrayList<ConInfoEntity> conInfoEntity ;
+		
+		if(orgType.equals("")) {
+			
+			conInfoEntity = conInfoRepository.findByConType("ca");
+			
+		}else {
+			
+			conInfoEntity = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
+			
+		}
+		
 		JSONArray resultJsonArr = new JSONArray();
 		ResultDto resultDto = new ResultDto();
 		
 		String result = "";
+		
 		for (ConInfoEntity entity : conInfoEntity) {
 
-
-			
 			JSONObject resultJson = new JSONObject();
 			
 			resultJson.put("orgName",entity.getOrgName());
@@ -140,50 +162,9 @@ public class ConInfoService {
 
 		return resultDto;
 		
-		
-
 	}
-	
-//	
-//	/**
-//	 * PeerDto 생성 서비스
-//	 * 
-//	 * @param orgName 조직 이름
-//	 * 
-//	 * @return
-//	 */
-//	
-//	public FabricMemberDto createPeerDto(String orgName) {
-//
-//
-//		FabricMemberDto result = new FabricMemberDto();
-//		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConTypeAndOrgName("ca", orgName);
-//
-//		result.setCaUrl("http://"+ip+":" + conInfoEntity.get(0).getConPort());
-//
-//		conInfoEntity = conInfoRepository.findByConTypeAndOrgName("peer", orgName);
-//
-//		ConInfoDto peerDto = new ConInfoDto();
-//		peerDto = ConInfoDto.builder().conId(conInfoEntity.get(0).getConId()).conName(conInfoEntity.get(0).getConName())
-//				.conType(conInfoEntity.get(0).getConType()).conNum(conInfoEntity.get(0).getConNum())
-//				.conCnt(conInfoEntity.get(0).getConCnt()).conPort(conInfoEntity.get(0).getConPort())
-//				.orgName(conInfoEntity.get(0).getOrgName()).orgType(conInfoEntity.get(0).getOrgType())
-//				.couchdbYn(conInfoEntity.get(0).isCouchdbYn())
-//				.gossipBootAddress(conInfoEntity.get(0).getGossipBootAddr())
-//				.ordererPorts(conInfoEntity.get(0).getOrdererPorts()).build();
-//
-//		result.setConName(peerDto.getConName());
-//		result.setConNum(peerDto.getConNum());
-//		result.setConPort(peerDto.getConPort());
-//		result.setConUrl("grpcs://"+ip+":" + peerDto.getConPort());
-//		result.setOrgMspId(peerDto.getOrgName() + "MSP");
-//		result.setOrgName(peerDto.getOrgName());
-//		result.setOrgType(peerDto.getOrgType());
-//
-//		return result;
-//
-//	}
 
+	
 	/**
 	 * FabricMemberDTO 생성 서비스
 	 * 
@@ -216,44 +197,13 @@ public class ConInfoService {
 			memberDto.setCaUrl(caUrl);
 
 			resultArr.add(memberDto);
-
 		}
-
+		
 		return resultArr;
-
+		
 	}
 
-//	public FabricMemberDto createOrdererVo(String orgName) {
-//
-//		
-//		FabricMemberDto result = new FabricMemberDto();
-//		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConTypeAndOrgName("ca", orgName);
-//
-//		result.setCaUrl("http://"+ip+":" + conInfoEntity.get(0).getConPort());
-//
-//		conInfoEntity = conInfoRepository.findByConTypeAndOrgName("orderer", orgName);
-//
-//		ConInfoDto peerDto = new ConInfoDto();
-//		peerDto = ConInfoDto.builder().conId(conInfoEntity.get(0).getConId()).conName(conInfoEntity.get(0).getConName())
-//				.conType(conInfoEntity.get(0).getConType()).conNum(conInfoEntity.get(0).getConNum())
-//				.conCnt(conInfoEntity.get(0).getConCnt()).conPort(conInfoEntity.get(0).getConPort())
-//				.orgName(conInfoEntity.get(0).getOrgName()).orgType(conInfoEntity.get(0).getOrgType())
-//				.couchdbYn(conInfoEntity.get(0).isCouchdbYn())
-//				.gossipBootAddress(conInfoEntity.get(0).getGossipBootAddr())
-//				.ordererPorts(conInfoEntity.get(0).getOrdererPorts()).build();
-//
-//		result.setConName(peerDto.getConName());
-//		result.setConNum(peerDto.getConNum());
-//		result.setConPort(peerDto.getConPort());
-//		result.setConUrl("grpcs://"+ip+":" + peerDto.getConPort());
-//		result.setOrgMspId(peerDto.getOrgName() + "MSP");
-//		result.setOrgName(peerDto.getOrgName());
-//		result.setOrgType(peerDto.getOrgType());
-//
-//		return result;
-//
-//	}
-
+	
 	/**
 	 * 컨소시엄 확인 서비스
 	 * 
@@ -273,15 +223,14 @@ public class ConInfoService {
 		for (int i = 0; i < consoList.length; i++) {
 
 			if (consoList[i].equals(peerOrgName)) {
-
+				
 				return true;
-
-			}
-			;
+				
+			};
 		}
-
+		
 		return false;
-
+		
 	}
 
 	
@@ -293,20 +242,29 @@ public class ConInfoService {
 	 */
 	
 	public void updateConsoOrgs(String ordererOrgName, String peerOrgName) {
+		
 		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
 
 		for (ConInfoEntity conInfo : conInfoArr) {
+			
 			conInfo.setConsoOrgs(conInfo.getConsoOrgs() + peerOrgName + " ");
-
 			conInfoRepository.save(conInfo);
 		}
-
 	}
 	
+	
+	/**
+	 * 컨테이너 포트 확인 서비스
+	 * 
+	 * @param port 포트
+	 * 
+	 * @return 결과 DTO(포트 사용가능 여부)
+	 */
+	
 	public ResultDto checkConPort(String port) {
+		
 		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConPort(port);
 
-		
 		ResultDto resultDto = new ResultDto();
 		resultDto.setResultCode(conInfoArr.isEmpty()?"0000":"9999");
 		resultDto.setResultFlag(conInfoArr.isEmpty());
@@ -314,8 +272,5 @@ public class ConInfoService {
 		
 		return resultDto;
 
-	
-
 	}
-
 }

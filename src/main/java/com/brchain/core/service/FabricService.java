@@ -229,7 +229,7 @@ public class FabricService {
 			String orgs = "";
 			String path = "";
 
-			for (String org : createChannelDto.getOrgToJoin()) {
+			for (String org : createChannelDto.getPeerOrgs()) {
 				orgs = orgs + org + " ";
 			}
 
@@ -240,20 +240,19 @@ public class FabricService {
 			conInfoDto.setConType("setup_channel");
 			conInfoDto.setConPort("");
 			conInfoDto.setConCnt(0);
-			
 			logger.info("[채널생성] conInfoDto : " + conInfoDto);
 			dockerClient.createCon(conInfoDto);
 
 			// 채널 생성시 필요한 fabricMemvber(peer, orderer) Dto 생성
 			ArrayList<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
 
-			for (int i = 0; i < createChannelDto.getOrgToJoin().length; i++) {
+			for (int i = 0; i < createChannelDto.getPeerOrgs().length; i++) {
 
-				peerDtoArr.addAll(conInfoService.createMemberDtoArr("peer", createChannelDto.getOrgToJoin()[i]));
+				peerDtoArr.addAll(conInfoService.createMemberDtoArr("peer", createChannelDto.getPeerOrgs()[i]));
 
 			}
 			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
-					createChannelDto.getOrdererToJoin());
+					createChannelDto.getOrderingOrg());
 
 			logger.info("[채널생성] peerDtoArr : " + peerDtoArr);
 			logger.info("[채널생성] ordererDtoArr : " + ordererDtoArr);
@@ -283,7 +282,7 @@ public class FabricService {
 			
 			ChannelInfoDto channelInfoDto=new ChannelInfoDto();
 			channelInfoDto.setChannelName(createChannelDto.getChannelName());
-			channelInfoDto.setOrderingOrg(createChannelDto.getOrdererToJoin());
+			channelInfoDto.setOrderingOrg(createChannelDto.getOrderingOrg());
 			channelInfoDto.setChannelTx(0);
 			channelInfoDto.setChannelBlock(0);
 			channelInfoService.saveChannelInfo(channelInfoDto);

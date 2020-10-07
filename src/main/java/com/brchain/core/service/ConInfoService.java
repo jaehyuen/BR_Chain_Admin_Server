@@ -51,14 +51,14 @@ public class ConInfoService {
 	 * @return 삭제한 조직명
 	 */
 
-	public String removeConInfo(String conId) {
+	public ConInfoEntity removeConInfo(String conId) {
 
 		Optional<ConInfoEntity> conInfoEntityWrapper = conInfoRepository.findById(conId);
 		ConInfoEntity conInfoEntity = conInfoEntityWrapper.get();
 
 		conInfoRepository.deleteById(conInfoEntity.getConId());
 
-		return conInfoEntity.getOrgName();
+		return conInfoEntity;
 		
 	}
 
@@ -164,6 +164,51 @@ public class ConInfoService {
 		
 	}
 
+	
+	/**
+	 * 조직 이름으로 컨테이너 리스트 조회 서비스
+	 * 
+	 * @param orgName 조직 이름
+	 * 
+	 * @return 결과 DTO(조직 리스트)
+	 */
+	
+	public ResultDto getMemberList(String orgName) {
+
+		ArrayList<ConInfoEntity> conInfoEntity  = conInfoRepository.findByOrgName(orgName);
+		
+	
+		
+		JSONArray resultJsonArr = new JSONArray();
+		ResultDto resultDto = new ResultDto();
+		
+		String result = "";
+		
+		for (ConInfoEntity entity : conInfoEntity) {
+			
+			if(entity.getConType().contains("ca")||entity.getConType().contains("setup")) {
+				continue;
+			}
+			JSONObject resultJson = new JSONObject();
+			
+			resultJson.put("orgName",entity.getOrgName());
+			resultJson.put("orgType",entity.getOrgType());
+			resultJson.put("conNum",entity.getConNum());
+			resultJson.put("conName",entity.getConName());
+			resultJson.put("conPort",entity.getConPort());
+			
+			resultJsonArr.add(resultJson);
+
+		}
+
+		resultDto.setResultCode("0000");
+		resultDto.setResultFlag(true);
+		resultDto.setResultMessage("Success get "+orgName+" member info");
+		resultDto.setResultData(resultJsonArr);
+
+		return resultDto;
+		
+	}
 	
 	/**
 	 * FabricMemberDTO 생성 서비스

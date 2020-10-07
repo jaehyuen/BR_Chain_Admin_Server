@@ -18,6 +18,8 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.bind.DatatypeConverter;
@@ -26,11 +28,14 @@ import org.hyperledger.fabric.gateway.Gateway;
 import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallet.Identity;
+import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.ChannelConfiguration;
 import org.hyperledger.fabric.sdk.HFClient;
+import org.hyperledger.fabric.sdk.InstallProposalRequest;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
+import org.hyperledger.fabric.sdk.ProposalResponse;
 import org.hyperledger.fabric.sdk.UpdateChannelConfiguration;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
@@ -601,6 +606,48 @@ public class FabricClient {
 
 		}
 
+	}
+	
+	
+	
+	////////////////////////////////////
+	//////////////// TEST  /////////////
+	////////////////////////////////////
+	
+	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName,String ccVerion) throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, ProposalException {
+		
+		HFClient client = createClient(peerDto);
+		
+		InstallProposalRequest request = client.newInstallProposalRequest();
+		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVerion)
+				.setPath(ccName+"/go/");
+		
+		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
+//		Logger.getLogger(FabricClient.class.getName()).log(Level.INFO,
+//				"Deploying chaincode " + chainCodeName + " using Fabric client " + instance.getUserContext().getMspId()
+//						+ " " + instance.getUserContext().getName());
+		request.setChaincodeID(chaincodeID);
+		request.setUserContext(client.getUserContext());
+		request.setChaincodeSourceLocation(new File(System.getProperty("user.dir") + "/chaincode"));
+		request.setChaincodeVersion(ccVerion);
+		
+		List<Peer> peers = new ArrayList<Peer>();
+		
+		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
+		
+		peers.add(peer);
+		
+		Collection<ProposalResponse> responses = client.sendInstallProposal(request, peers);
+		
+	}
+	
+	public Properties createFabricProperties(FabricMemberDto memberDto) {
+		
+		Properties props = new Properties();
+		props.put("pemFile", "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem");
+		props.put("hostnameOverride", memberDto.getConName());
+		
+		return props;
 	}
 	
 //  api통신용 현재는 사용안함

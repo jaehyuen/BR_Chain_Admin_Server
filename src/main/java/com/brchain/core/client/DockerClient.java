@@ -282,10 +282,6 @@ public class DockerClient {
 		return "";
 	}
 
-	public String creatChannelTest() {
-
-		return "";
-
-	}
+	
 
 }

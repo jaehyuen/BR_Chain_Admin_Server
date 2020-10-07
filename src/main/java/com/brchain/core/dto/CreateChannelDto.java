@@ -8,8 +8,8 @@ import lombok.Data;
 public class CreateChannelDto {
 	
 	private String channelName;							                  // 조직명
-	private String[] orgToJoin;						                      // 가입할 피어조직 배열
-	private String ordererToJoin;						                  // 사용오더러 조직
+	private String[] peerOrgs;						                      // 가입할 피어조직 배열
+	private String orderingOrg;						                  // 사용오더러 조직
 	private Map<String,String> [] anchorPeerSetting; 					  // 앵커피어 설정(테스트중)
 	
 //	private String gossipBootAddress; 						          // 가쉽 부트스트랩 주소(피어	

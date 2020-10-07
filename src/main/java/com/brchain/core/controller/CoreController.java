@@ -1,6 +1,10 @@
 package com.brchain.core.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.json.simple.JSONArray;
@@ -18,12 +22,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.CreateChannelDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
+import com.brchain.core.service.CcInfoService;
 import com.brchain.core.service.ChannelInfoService;
 import com.brchain.core.service.ConInfoService;
 import com.brchain.core.service.DockerService;
@@ -44,9 +50,12 @@ public class CoreController {
 
 	@Autowired
 	ConInfoService conInfoService;
-	
+
 	@Autowired
 	ChannelInfoService channelInfoService;
+	
+	@Autowired
+	CcInfoService ccInfoService;
 
 	@Autowired
 	FabricService fabricService;
@@ -82,17 +91,28 @@ public class CoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getOrgList(orgType));
 
 	}
+	
+	@GetMapping("/members")
+	public ResponseEntity<ResultDto> getMemberList(@RequestParam(value = "orgName") String orgName) {
+		
+		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getMemberList(orgName));
+
+	}
 
 	@GetMapping("/remove")
-	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId") String conId) {
+	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId", required = false) String conId,
+			@RequestParam(value = "orgName", required = false) String orgName) {
 
-		if (conId.equals("")) {
+		if (conId != null && conId.equals("")) {
 
 			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeAllContainers());
 
-		} else {
+		} else if (conId != null) {
 			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeContainer(conId));
 
+		} else {
+
+			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeOrgContainers(orgName));
 		}
 
 	}
@@ -104,20 +124,32 @@ public class CoreController {
 
 	}
 
-	
 	@GetMapping("/channels")
 	public ResponseEntity<ResultDto> getChannelList() {
 
 		return ResponseEntity.status(HttpStatus.OK).body(channelInfoService.getChannelList());
 
 	}
-	@PostMapping("/create/channel")
-	public ResponseEntity<ResultDto> channelTest(@RequestBody CreateChannelDto createChannelDto){
 
-		
+	@PostMapping("/create/channel")
+	public ResponseEntity<ResultDto> createChannel(@RequestBody CreateChannelDto createChannelDto) {
+
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createChannel(createChannelDto));
-		
+
+	}
+	
+	@GetMapping("/chaincodes")
+	public ResponseEntity<ResultDto> getChaincodeList() {
+
+		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcList());
 
 	}
 
+	@PostMapping(value ="/upload/chaincode")
+	public ResponseEntity<ResultDto> uploadTest(@RequestParam("ccFile") MultipartFile ccFile,@RequestParam("ccName") String ccName,@RequestParam("ccDesc") String ccDesc,@RequestParam("ccLang") String ccLang) throws IOException {
+		
+
+		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.ccFileUpload(ccFile,ccName,ccDesc,ccLang));
+
+	}
 }

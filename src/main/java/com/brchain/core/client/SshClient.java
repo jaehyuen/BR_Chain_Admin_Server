@@ -90,15 +90,18 @@ public class SshClient {
 	 * @throws InterruptedException
 	 * @throws JSchException
 	 */
-	public String removeDir(String orgName) throws DockerException, InterruptedException, JSchException {
+	public String removeDir(String orgName,String conName) throws DockerException, InterruptedException, JSchException {
 
-		logger.info(orgName);
+//		logger.info("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
+//				+ "/crypto-config/*/*"+orgName+ "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  "
+//				+ sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir + "/channel-artifacts/");
 		if (channelExec == null || channelExec.isClosed()) {
 			connect();
 		}
-		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/production/*" + orgName + "* " + sourceDir
-				+ "/crypto-config " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  "
-				+ sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir + "/channel-artifacts/");
+		
+		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
+		+ "/crypto-config/*/*"+orgName+ "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  "
+		+ sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir + "/channel-artifacts/");
 		channelExec.connect();
 
 		return "";

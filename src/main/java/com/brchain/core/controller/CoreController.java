@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.CreateChannelDto;
+import com.brchain.core.dto.InstallCcDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.service.CcInfoService;
@@ -144,9 +145,17 @@ public class CoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcList());
 
 	}
+	
+	@PostMapping(value ="/install/chaincode")
+	public ResponseEntity<ResultDto> installChaincode(@RequestBody InstallCcDto installCcDto) throws IOException {
+		
+
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.installChaincode(installCcDto));
+
+	}
 
 	@PostMapping(value ="/upload/chaincode")
-	public ResponseEntity<ResultDto> uploadTest(@RequestParam("ccFile") MultipartFile ccFile,@RequestParam("ccName") String ccName,@RequestParam("ccDesc") String ccDesc,@RequestParam("ccLang") String ccLang) throws IOException {
+	public ResponseEntity<ResultDto> uploadChaincode(@RequestParam("ccFile") MultipartFile ccFile,@RequestParam("ccName") String ccName,@RequestParam("ccDesc") String ccDesc,@RequestParam("ccLang") String ccLang) throws IOException {
 		
 
 		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.ccFileUpload(ccFile,ccName,ccDesc,ccLang));

@@ -22,6 +22,7 @@ import com.brchain.core.dto.ChannelInfoDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.CreateChannelDto;
 import com.brchain.core.dto.FabricMemberDto;
+import com.brchain.core.dto.InstallCcDto;
 import com.brchain.core.dto.ResultDto;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
@@ -37,7 +38,7 @@ public class FabricService {
 
 	@Autowired
 	private ConInfoService conInfoService;
-	
+
 	@Autowired
 	private ChannelInfoService channelInfoService;
 
@@ -50,7 +51,6 @@ public class FabricService {
 	@Autowired
 	private SshClient sshClient;
 
-
 	/**
 	 * 조직 생성 서비스
 	 * 
@@ -59,7 +59,7 @@ public class FabricService {
 	 * @return 결과 DTO(조직생성 결과)
 	 * 
 	 */
-	
+
 	public ResultDto createOrg(CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
 
 		logger.info("[조직생성] 시작");
@@ -132,7 +132,7 @@ public class FabricService {
 
 					// couchdb 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					if (dto.isCouchdbYn()) {
-						
+
 						ConInfoDto couchdbContainer = new ConInfoDto();
 						couchdbContainer.setOrgName(dto.getOrgName());
 						couchdbContainer.setOrgType(dto.getOrgType());
@@ -205,7 +205,6 @@ public class FabricService {
 		return resultDto;
 	}
 
-
 	/**
 	 * 채널 생성 서비스
 	 * 
@@ -213,14 +212,14 @@ public class FabricService {
 	 * 
 	 * @return 결과 DTO(채널 생성 결과)
 	 */
-	
-	public ResultDto createChannel(CreateChannelDto createChannelDto)  {
+
+	public ResultDto createChannel(CreateChannelDto createChannelDto) {
 
 		logger.info("[채널생성] 시작");
 		logger.info("[채널생성] " + createChannelDto.getChannelName());
 		logger.info("[채널생성] CreateChannelVo : " + createChannelDto);
-		
-		ResultDto resultDto=new ResultDto();
+
+		ResultDto resultDto = new ResultDto();
 
 		try {
 
@@ -279,14 +278,14 @@ public class FabricService {
 			logger.info("[채널생성] 시작");
 			fabricClient.createChannel(peerDtoArr, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 					createChannelDto.getChannelName());
-			
-			ChannelInfoDto channelInfoDto=new ChannelInfoDto();
+
+			ChannelInfoDto channelInfoDto = new ChannelInfoDto();
 			channelInfoDto.setChannelName(createChannelDto.getChannelName());
 			channelInfoDto.setOrderingOrg(createChannelDto.getOrderingOrg());
 			channelInfoDto.setChannelTx(0);
 			channelInfoDto.setChannelBlock(0);
 			channelInfoService.saveChannelInfo(channelInfoDto);
-			
+
 			logger.info("[채널생성] 종료");
 
 			logger.info("[채널가입] 시작");
@@ -296,17 +295,16 @@ public class FabricService {
 			logger.info("[채널가입] 종료");
 
 			logger.info("[채널생성] 종료");
-			
-			
+
 		} catch (Exception e) {
-			
+
 			resultDto.setResultCode("9999");
 			resultDto.setResultFlag(false);
 			resultDto.setResultMessage(e.getMessage());
 			return resultDto;
-			
+
 		}
-		
+
 		resultDto.setResultCode("0000");
 		resultDto.setResultFlag(true);
 		resultDto.setResultMessage("Success create channel");
@@ -349,6 +347,52 @@ public class FabricService {
 		}
 
 		return "";
+	}
+
+	
+	/**
+	 * 체인코드 설치 서비스 
+	 * 
+	 * @param installCcDto 체인코드 설치 관련 DTO 
+	 * 
+	 * @return 결과 DTO(체인코스 설치 결과)
+	 */
+	
+	public ResultDto installChaincode(InstallCcDto installCcDto) {
+		logger.info("[체인코드 설치] 시작");
+		logger.info("[체인코드 설치] InstallCcDto : "+installCcDto);
+		
+		ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", installCcDto.getOrgName());
+
+		FabricMemberDto peerDto = null;
+
+		for (FabricMemberDto peer : peerDtoArr) {
+			if (peer.getConNum() == installCcDto.getConNum()) {
+				peerDto = peer;
+				
+			}
+		}
+
+		ResultDto resultDto = new ResultDto();
+		
+		try {
+			
+			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
+
+		} catch (Exception e) {
+
+			resultDto.setResultCode("9999");
+			resultDto.setResultFlag(false);
+			resultDto.setResultMessage(e.getMessage());
+			return resultDto;
+
+		}
+
+		resultDto.setResultCode("0000");
+		resultDto.setResultFlag(true);
+		resultDto.setResultMessage("Success install chaincode");
+
+		return resultDto;
 	}
 
 }

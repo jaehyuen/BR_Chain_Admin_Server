@@ -60,9 +60,9 @@ import com.brchain.core.util.Util;
 
 @Component
 public class FabricClient {
-	
+
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
 	@Autowired
 	Environment environment;
 
@@ -81,7 +81,6 @@ public class FabricClient {
 	@Value("${brchain.datadir}")
 	String dataDir;
 
-	
 	/**
 	 * 패브릭 네트워크 연결 함수 (테스트중)
 	 * 
@@ -150,7 +149,6 @@ public class FabricClient {
 		return network;
 	}
 
-	
 	/**
 	 * Wallet 생성 함수
 	 * 
@@ -232,7 +230,6 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * 채널 생성 함수
 	 * 
@@ -300,7 +297,6 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * 채널 가입 함수
 	 * 
@@ -336,7 +332,6 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * UserContext 생성 함수
 	 * 
@@ -358,7 +353,6 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * HFClient 클라이언트 생성 함수
 	 * 
@@ -385,16 +379,13 @@ public class FabricClient {
 		// 클라이언트 생성
 		HFClient client = HFClient.createNewInstance();
 		client.setCryptoSuite(cryptoSuite);
-
 		BrchainUser userContext = createContext(memberDto);
-
 		client.setUserContext(userContext);
 
 		return client;
 
 	}
 
-	
 	/**
 	 * 채널 설정 가져오기 함수(테스트중)
 	 * 
@@ -480,20 +471,19 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * 업데이트 파일 생성 함수
 	 * 
-	 * @param memberDto 오더러에 접근할 맴버정보 DTO
-	 * @param channelName 채널명
-	 * @param config 기존 설정
+	 * @param memberDto      오더러에 접근할 맴버정보 DTO
+	 * @param channelName    채널명
+	 * @param config         기존 설정
 	 * @param modifiedConfig 변경한 설정
 	 * 
 	 * @return 업데이트 파일
 	 * 
 	 * @throws Exception
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	public File createUpdateFile(FabricMemberDto memberDto, String channelName, JSONObject config,
 			JSONObject modifiedConfig) throws Exception {
@@ -554,13 +544,12 @@ public class FabricClient {
 
 	}
 
-	
 	/**
 	 * 업데이트 반영 함수
 	 * 
-	 * @param memberDto 업데이트를 진행할 맴버정보 DTO
+	 * @param memberDto   업데이트를 진행할 맴버정보 DTO
 	 * @param channelName 채널명
-	 * @param updateFile 업데이트파일(pb)
+	 * @param updateFile  업데이트파일(pb)
 	 * 
 	 * @throws InvalidArgumentException
 	 * @throws CryptoException
@@ -572,7 +561,7 @@ public class FabricClient {
 	 * @throws IOException
 	 * @throws TransactionException
 	 */
-	
+
 	public void setUpdateTest(FabricMemberDto memberDto, String channelName, File updateFile)
 			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
 			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
@@ -607,49 +596,64 @@ public class FabricClient {
 		}
 
 	}
-	
-	
-	
-	////////////////////////////////////
-	//////////////// TEST  /////////////
-	////////////////////////////////////
-	
-	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName,String ccVerion) throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, ProposalException {
-		
+
+	/**
+	 * 체인코드 설치 함수
+	 * 
+	 * @param peerDto 설치할 피어 정보 DTO
+	 * @param ccName 체인코드 이름
+	 * @param ccVersion 체인코드 버전
+	 * 
+	 * @throws Exception
+	 */
+
+	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
+
 		HFClient client = createClient(peerDto);
-		
+
 		InstallProposalRequest request = client.newInstallProposalRequest();
-		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVerion)
-				.setPath(ccName+"/go/");
-		
+		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
+				.setPath(ccName + "/");
+
 		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
-//		Logger.getLogger(FabricClient.class.getName()).log(Level.INFO,
-//				"Deploying chaincode " + chainCodeName + " using Fabric client " + instance.getUserContext().getMspId()
-//						+ " " + instance.getUserContext().getName());
+		
 		request.setChaincodeID(chaincodeID);
 		request.setUserContext(client.getUserContext());
 		request.setChaincodeSourceLocation(new File(System.getProperty("user.dir") + "/chaincode"));
-		request.setChaincodeVersion(ccVerion);
-		
+		request.setChaincodeVersion(ccVersion);
+
 		List<Peer> peers = new ArrayList<Peer>();
-		
+
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
-		
+
 		peers.add(peer);
-		
+
 		Collection<ProposalResponse> responses = client.sendInstallProposal(request, peers);
-		
+
+		for (ProposalResponse response : responses) {
+
+			if (response.getStatus().name().equals("FAILURE")) {
+				throw new Exception("fail to install chaincode");
+			}
+		}
+
+		;
 	}
-	
+
+	/**
+	 * 프로퍼티 생성 함수
+	 * @param memberDto 프로퍼티를 생성할 맴버 DTO
+	 * @return
+	 */
 	public Properties createFabricProperties(FabricMemberDto memberDto) {
-		
+
 		Properties props = new Properties();
 		props.put("pemFile", "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem");
 		props.put("hostnameOverride", memberDto.getConName());
-		
+
 		return props;
 	}
-	
+
 //  api통신용 현재는 사용안함
 //	
 //	

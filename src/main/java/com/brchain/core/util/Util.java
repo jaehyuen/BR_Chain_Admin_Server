@@ -8,9 +8,13 @@ import java.util.Iterator;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.stereotype.Component;
+
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.PolicyDto;
+import com.brchain.core.dto.ResultDto;
 
+@Component
 public class Util {
 
 	
@@ -381,6 +385,20 @@ public class Util {
 
 		return base64data;
 
+	}
+	
+	public ResultDto setResult(String code, boolean flag, String message,Object data) {
+		
+		ResultDto resultDto = new ResultDto();
+		
+	
+		resultDto.setResultCode(code);
+		resultDto.setResultFlag(flag);
+		resultDto.setResultMessage(message);
+		resultDto.setResultData(data);
+		
+		return resultDto;
+		
 	}
 	
 /* ########################################################################

@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-
+import com.brchain.common.entity.BaseEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChannelInfoEntity {
+public class ChannelInfoEntity extends BaseEntity {
 
 
     @Id
@@ -36,6 +36,8 @@ public class ChannelInfoEntity {
     @Column(name ="ORDERING_ORG" ,length = 100, nullable = false)
 	private String orderingOrg;;
 	
+    @Column(name ="ACTIVE_CC" ,length = 100, nullable = true)
+    private String activeCc;
 
     
  

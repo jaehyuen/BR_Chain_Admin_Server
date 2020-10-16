@@ -20,11 +20,12 @@ public class ChannelInfoDto {
 	private int channelBlock; // 채널 블럭수
 	private int channelTx; // 채널 트렌젝션수
 	private String orderingOrg; // 운영중인 오더러 조직
+	private String activeCc; // 활성화된 체인코드
 
 	public ChannelInfoEntity toEntity() {
 
 		ChannelInfoEntity channelInfoEntity = ChannelInfoEntity.builder().channelName(channelName)
-				.channelBlock(channelBlock).channelTx(channelTx).orderingOrg(orderingOrg).build();
+				.channelBlock(channelBlock).channelTx(channelTx).orderingOrg(orderingOrg).activeCc(activeCc).build();
 		return channelInfoEntity;
 	}
 

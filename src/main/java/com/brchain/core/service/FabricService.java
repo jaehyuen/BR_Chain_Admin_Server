@@ -18,12 +18,15 @@ import org.springframework.stereotype.Service;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
+import com.brchain.core.dto.CcInfoPeerDto;
 import com.brchain.core.dto.ChannelInfoDto;
+import com.brchain.core.dto.ChannelInfoPeerDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.CreateChannelDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.InstallCcDto;
 import com.brchain.core.dto.ResultDto;
+import com.brchain.core.util.Util;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -40,6 +43,9 @@ public class FabricService {
 	private ConInfoService conInfoService;
 
 	@Autowired
+	private CcInfoService ccInfoService;
+
+	@Autowired
 	private ChannelInfoService channelInfoService;
 
 	@Autowired
@@ -50,6 +56,9 @@ public class FabricService {
 
 	@Autowired
 	private SshClient sshClient;
+
+	@Autowired
+	private Util util;
 
 	/**
 	 * 조직 생성 서비스
@@ -63,8 +72,6 @@ public class FabricService {
 	public ResultDto createOrg(CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
 
 		logger.info("[조직생성] 시작");
-
-		ResultDto resultDto = new ResultDto();
 
 		try {
 			String ordererPorts = "";
@@ -188,21 +195,18 @@ public class FabricService {
 				sshClient.downloadFile(path, "ca.org" + conInfoDtoArr.get(0).getOrgName() + ".com-cert.pem");
 			}
 
+			ArrayList<FabricMemberDto> fabricMemberDto = conInfoService
+					.createMemberDtoArr(conInfoDtoArr.get(0).getOrgType(), conInfoDtoArr.get(0).getOrgName());
+			fabricClient.createWallet(fabricMemberDto.get((int) (Math.random() * fabricMemberDto.size())));
+
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
+			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
 		logger.info("[조직생성] 종료");
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success create org");
-
-		return resultDto;
+		return util.setResult("0000", true, "Success create org", null);
 	}
 
 	/**
@@ -218,8 +222,6 @@ public class FabricService {
 		logger.info("[채널생성] 시작");
 		logger.info("[채널생성] " + createChannelDto.getChannelName());
 		logger.info("[채널생성] CreateChannelVo : " + createChannelDto);
-
-		ResultDto resultDto = new ResultDto();
 
 		try {
 
@@ -265,7 +267,7 @@ public class FabricService {
 			}
 
 			fabricClient.createWallet(ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())));
-			Thread.sleep(100);
+			Thread.sleep(1000);
 			// 로컬 개발시 채널생성 setup 컨테이너 기동하면서 생성된 채널트렌젝션 다운로드
 			if (environment.getActiveProfiles()[0].equals("local")) {
 
@@ -298,18 +300,12 @@ public class FabricService {
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
-
+			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success create channel");
+		logger.info("[조직생성] 종료");
 
-		return resultDto;
+		return util.setResult("0000", true, "Success create channel", null);
 
 	}
 
@@ -344,55 +340,68 @@ public class FabricService {
 			fabricClient.joinChannel(client, peerDto, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 					channelName);
 
+			ChannelInfoPeerDto channelInfoPeerDto = new ChannelInfoPeerDto();
+
+			channelInfoPeerDto.setAnchorYn(false);
+			channelInfoPeerDto.setChannelName(channelName);
+			channelInfoPeerDto.setConName(peerDto.getConName());
+			channelInfoPeerDto.setConNum(peerDto.getConNum());
+			channelInfoPeerDto.setOrgName(peerDto.getOrgName());
+
+			channelInfoService.saveChannelInfoPeer(channelInfoPeerDto);
+
 		}
 
 		return "";
 	}
 
-	
 	/**
-	 * 체인코드 설치 서비스 
+	 * 체인코드 설치 서비스
 	 * 
-	 * @param installCcDto 체인코드 설치 관련 DTO 
+	 * @param installCcDto 체인코드 설치 관련 DTO
 	 * 
 	 * @return 결과 DTO(체인코스 설치 결과)
 	 */
-	
+
 	public ResultDto installChaincode(InstallCcDto installCcDto) {
 		logger.info("[체인코드 설치] 시작");
-		logger.info("[체인코드 설치] InstallCcDto : "+installCcDto);
-		
+		logger.info("[체인코드 설치] InstallCcDto : " + installCcDto);
+
 		ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", installCcDto.getOrgName());
 
 		FabricMemberDto peerDto = null;
+		String ccLang = ccInfoService.getCcLang(installCcDto.getCcName());
 
 		for (FabricMemberDto peer : peerDtoArr) {
 			if (peer.getConNum() == installCcDto.getConNum()) {
 				peerDto = peer;
-				
+
 			}
 		}
 
-		ResultDto resultDto = new ResultDto();
-		
 		try {
-			
+
 			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
+
+			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
+
+			ccInfoPeerDto.setCcLang(ccLang);
+			ccInfoPeerDto.setCcName(installCcDto.getCcName());
+			ccInfoPeerDto.setCcVersion(installCcDto.getCcVersion());
+			ccInfoPeerDto.setConName(peerDto.getConName());
+			ccInfoPeerDto.setConNum(peerDto.getConNum());
+			ccInfoPeerDto.setOrgName(peerDto.getOrgName());
+
+			ccInfoService.saveCcnInfoPeer(ccInfoPeerDto);
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
-
+			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success install chaincode");
+		logger.info("[조직생성] 종료");
 
-		return resultDto;
+		return util.setResult("0000", true, "Success install chaincode", null);
 	}
 
 }

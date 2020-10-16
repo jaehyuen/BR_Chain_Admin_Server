@@ -15,6 +15,7 @@ import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.jcraft.jsch.JSchException;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -35,6 +36,9 @@ public class DockerService {
 	@Autowired
 	private SshClient sshClient;
 
+	@Autowired
+	private Util util;
+
 	/**
 	 * 모든 컨테이너 삭제 서비스
 	 * 
@@ -42,8 +46,6 @@ public class DockerService {
 	 */
 
 	public ResultDto removeAllContainers() {
-
-		ResultDto resultDto = new ResultDto();
 
 		try {
 
@@ -70,18 +72,11 @@ public class DockerService {
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
+			return util.setResult("9999", false, e.getMessage(), null);
 
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success remove container");
-
-		return resultDto;
+		return util.setResult("0000", true, "Success remove container", null);
 
 	}
 
@@ -95,12 +90,9 @@ public class DockerService {
 
 	public ResultDto removeContainer(String conId) {
 
-		ResultDto resultDto = new ResultDto();
-
 		try {
 
 			ConInfoEntity conInfoEntity = null;
-			String path = "";
 
 			try {
 
@@ -118,17 +110,11 @@ public class DockerService {
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
+			return util.setResult("9999", false, e.getMessage(), null);
+
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success remove container");
-
-		return resultDto;
+		return util.setResult("0000", true, "Success remove container", null);
 
 	}
 
@@ -139,8 +125,6 @@ public class DockerService {
 	 */
 
 	public ResultDto removeOrgContainers(String orgName) {
-
-		ResultDto resultDto = new ResultDto();
 
 		try {
 
@@ -168,18 +152,11 @@ public class DockerService {
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
+			return util.setResult("9999", false, e.getMessage(), null);
 
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success remove org");
-
-		return resultDto;
+		return util.setResult("0000", true, "Success remove org", null);
 
 	}
 
@@ -192,7 +169,6 @@ public class DockerService {
 	public ResultDto getAllContainersInfo() {
 
 		JSONArray resultJsonArr = new JSONArray();
-		ResultDto resultDto = new ResultDto();
 
 		try {
 
@@ -226,19 +202,11 @@ public class DockerService {
 
 		} catch (Exception e) {
 
-			resultDto.setResultCode("9999");
-			resultDto.setResultFlag(false);
-			resultDto.setResultMessage(e.getMessage());
-			return resultDto;
+			return util.setResult("9999", false, "e.getMessage()", null);
 
 		}
 
-		resultDto.setResultCode("0000");
-		resultDto.setResultFlag(true);
-		resultDto.setResultMessage("Success get container info");
-		resultDto.setResultData(resultJsonArr);
-
-		return resultDto;
+		return util.setResult("0000", true, "Success get container info", resultJsonArr);
 	}
 
 }

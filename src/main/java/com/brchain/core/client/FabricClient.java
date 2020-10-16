@@ -375,12 +375,12 @@ public class FabricClient {
 			IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
 		CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
-
 		// 클라이언트 생성
 		HFClient client = HFClient.createNewInstance();
 		client.setCryptoSuite(cryptoSuite);
 		BrchainUser userContext = createContext(memberDto);
 		client.setUserContext(userContext);
+		
 
 		return client;
 
@@ -534,7 +534,7 @@ public class FabricClient {
 				+ ".pb --type common.ConfigUpdate > " + sourceDir + "/" + path + fileName + ".json";
 		sshClient.execCommand(command);
 
-		Thread.sleep(100);
+		Thread.sleep(1000);
 
 		// 변경된 파일 다운로드
 		sshClient.downloadFile(path, fileName + ".json");
@@ -603,31 +603,30 @@ public class FabricClient {
 	 * @param peerDto 설치할 피어 정보 DTO
 	 * @param ccName 체인코드 이름
 	 * @param ccVersion 체인코드 버전
-	 * 
 	 * @throws Exception
 	 */
 
-	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
+	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception   {
 
 		HFClient client = createClient(peerDto);
-
+		
 		InstallProposalRequest request = client.newInstallProposalRequest();
 		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
 				.setPath(ccName + "/");
-
+		
 		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
 		
 		request.setChaincodeID(chaincodeID);
 		request.setUserContext(client.getUserContext());
 		request.setChaincodeSourceLocation(new File(System.getProperty("user.dir") + "/chaincode"));
 		request.setChaincodeVersion(ccVersion);
-
+		
 		List<Peer> peers = new ArrayList<Peer>();
 
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
 
 		peers.add(peer);
-
+		logger.info("[체인코드 설치] 트렌젝션 생성 및 전송");
 		Collection<ProposalResponse> responses = client.sendInstallProposal(request, peers);
 
 		for (ProposalResponse response : responses) {
@@ -637,14 +636,17 @@ public class FabricClient {
 			}
 		}
 
-		;
+		
 	}
 
 	/**
 	 * 프로퍼티 생성 함수
+	 * 
 	 * @param memberDto 프로퍼티를 생성할 맴버 DTO
+	 * 
 	 * @return
 	 */
+	
 	public Properties createFabricProperties(FabricMemberDto memberDto) {
 
 		Properties props = new Properties();

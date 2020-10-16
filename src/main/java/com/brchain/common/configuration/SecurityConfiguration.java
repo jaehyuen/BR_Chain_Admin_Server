@@ -36,6 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/core/**").permitAll()
+                .antMatchers("/api/core/chaincode/**").permitAll()
                 .antMatchers("/**").permitAll()
                 .antMatchers("/v2/api-docs",
                         "/configuration/ui",

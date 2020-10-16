@@ -125,40 +125,5 @@ public class CoreController {
 
 	}
 
-	@GetMapping("/channels")
-	public ResponseEntity<ResultDto> getChannelList() {
 
-		return ResponseEntity.status(HttpStatus.OK).body(channelInfoService.getChannelList());
-
-	}
-
-	@PostMapping("/create/channel")
-	public ResponseEntity<ResultDto> createChannel(@RequestBody CreateChannelDto createChannelDto) {
-
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createChannel(createChannelDto));
-
-	}
-	
-	@GetMapping("/chaincodes")
-	public ResponseEntity<ResultDto> getChaincodeList() {
-
-		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcList());
-
-	}
-	
-	@PostMapping(value ="/install/chaincode")
-	public ResponseEntity<ResultDto> installChaincode(@RequestBody InstallCcDto installCcDto) throws IOException {
-		
-
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.installChaincode(installCcDto));
-
-	}
-
-	@PostMapping(value ="/upload/chaincode")
-	public ResponseEntity<ResultDto> uploadChaincode(@RequestParam("ccFile") MultipartFile ccFile,@RequestParam("ccName") String ccName,@RequestParam("ccDesc") String ccDesc,@RequestParam("ccLang") String ccLang) throws IOException {
-		
-
-		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.ccFileUpload(ccFile,ccName,ccDesc,ccLang));
-
-	}
 }

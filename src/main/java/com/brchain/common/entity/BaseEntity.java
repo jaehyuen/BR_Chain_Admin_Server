@@ -7,20 +7,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @CreatedDate
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name ="CREATE_AT", nullable = false)
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
-    private Instant modifiedAt;
+    @Column(name ="MODIFIED_AT", nullable = false)
+    private LocalDateTime modifiedAt;
 }

@@ -1,7 +1,5 @@
 package com.brchain.core.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.brchain.core.dto.CreateChannelDto;
+import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.service.ChannelInfoService;
 import com.brchain.core.service.FabricService;
@@ -21,8 +20,6 @@ import com.brchain.core.service.FabricService;
 @RestController
 @RequestMapping("/api/core/channel")
 public class ChannelController {
-
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	ChannelInfoService channelInfoService;
@@ -49,6 +46,19 @@ public class ChannelController {
 	public ResponseEntity<ResultDto> createChannel(@RequestBody CreateChannelDto createChannelDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createChannel(createChannelDto));
+
+	}
+	
+	@GetMapping("/register")
+	public ResponseEntity<ResultDto> test(@RequestParam(value = "channelName") String channelName) {
+		
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.registerEventListener(channelName));
+
+	}
+	@PostMapping("/test2")
+	public ResponseEntity<ResultDto> test2(@RequestBody InstantiateCcDto instantiateCcDto,@RequestParam(value = "a") String a) {
+		
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.registerEventListener2(instantiateCcDto,a));
 
 	}
 

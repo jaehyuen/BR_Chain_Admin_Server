@@ -13,7 +13,6 @@ import lombok.Data;
 
 import lombok.NoArgsConstructor;
 
-
 @Data
 @Entity
 @Table(name = "CHANNELINFO")
@@ -22,23 +21,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChannelInfoEntity extends BaseEntity {
 
-
-    @Id
-    @Column(name ="CHANNEL_NAME" ,length = 100, nullable = false)
+	@Id
+	@Column(name = "CHANNEL_NAME", nullable = false)
 	private String channelName;
-    
-    @Column(name ="CHANNEL_BLOCK" ,length = 100, nullable = false)
-	private int channelBlock;
-    
-    @Column(name ="CHANNEL_TX" ,length = 100, nullable = false)
-	private int channelTx;;
-	
-    @Column(name ="ORDERING_ORG" ,length = 100, nullable = false)
-	private String orderingOrg;;
-	
-    @Column(name ="ACTIVE_CC" ,length = 100, nullable = true)
-    private String activeCc;
 
-    
- 
+	@Column(name = "CHANNEL_BLOCK", nullable = false)
+	private int channelBlock;
+
+	@Column(name = "CHANNEL_TX", nullable = false)
+	private int channelTx;;
+
+	@Column(name = "ORDERING_ORG", nullable = false)
+	private String orderingOrg;;
+
 }

@@ -36,8 +36,6 @@ public class DockerClient {
 	@Autowired
 	private ConInfoService conInfoService;
 
-	@Autowired
-	private SshClient sshClient;
 
 	@Value("${brchain.ip}")
 	private String ip;

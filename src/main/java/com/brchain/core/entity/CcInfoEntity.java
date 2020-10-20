@@ -13,30 +13,25 @@ import lombok.Data;
 
 import lombok.NoArgsConstructor;
 
-
 @Data
 @Entity
 @Table(name = "CCINFO")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CcInfoEntity extends BaseEntity{
+public class CcInfoEntity extends BaseEntity {
 
-
-    @Id
-    @Column(name ="CC_NAME" , nullable = false)
+	@Id
+	@Column(name = "CC_NAME", nullable = false)
 	private String ccName;
-    
-    @Column(name ="CC_PATH" , nullable = false)
-	private String ccPath;
-    
-    @Column(name ="CC_LANG" , nullable = false)
-	private String ccLang;;
-	
-    @Column(name ="CC_DESC" , nullable = false)
-	private String ccDesc;;
-	
 
-    
- 
+	@Column(name = "CC_PATH", nullable = false)
+	private String ccPath;
+
+	@Column(name = "CC_LANG", nullable = false)
+	private String ccLang;;
+
+	@Column(name = "CC_DESC", nullable = false)
+	private String ccDesc;;
+
 }

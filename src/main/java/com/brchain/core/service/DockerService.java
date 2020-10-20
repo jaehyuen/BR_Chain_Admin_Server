@@ -17,8 +17,6 @@ import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.ConInfoEntity;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
-import com.jcraft.jsch.JSchException;
-import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
 

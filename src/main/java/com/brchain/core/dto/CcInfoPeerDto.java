@@ -1,10 +1,8 @@
 package com.brchain.core.dto;
 
-import javax.persistence.Column;
-
 import com.brchain.core.entity.CcInfoEntity;
 import com.brchain.core.entity.CcInfoPeerEntity;
-import com.brchain.core.entity.ChannelInfoEntity;
+import com.brchain.core.entity.ConInfoEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,17 +17,14 @@ import lombok.ToString;
 @Builder
 public class CcInfoPeerDto {
 
-	private String ccName; // 체인코드 이름
 	private String ccVersion; // 체인코드 버전
-	private String ccLang; // 체인코드 언어
-	private String conName; // 컨테이너 이름
-	private int conNum; // 컨테이너 번호
-	private String orgName; // 조직 이름
+	private ConInfoEntity conInfoEntity; // 컨테이너 정보
+	private CcInfoEntity ccInfoEntity;// 체인코드 정보
 
 	public CcInfoPeerEntity toEntity() {
 
-		CcInfoPeerEntity ccInfoPeerEntity = CcInfoPeerEntity.builder().ccName(ccName).ccVersion(ccVersion)
-				.ccLang(ccLang).conName(conName).conNum(conNum).orgName(orgName).build();
+		CcInfoPeerEntity ccInfoPeerEntity = CcInfoPeerEntity.builder().ccVersion(ccVersion).conInfoEntity(conInfoEntity)
+				.ccInfoEntity(ccInfoEntity).build();
 		return ccInfoPeerEntity;
 	}
 

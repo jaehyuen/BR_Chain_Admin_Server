@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import lombok.Data;
 
 @Data
@@ -111,7 +108,7 @@ public class ContainerSetting {
 		if (type.equals("peer")) {
 
 			containerEnv.add("CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock");
-			containerEnv.add("CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=nhcloud-network");
+			containerEnv.add("CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=brchain-network");
 			containerEnv
 					.add("CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/tls/server.crt");
 			containerEnv

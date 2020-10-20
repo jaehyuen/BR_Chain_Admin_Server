@@ -18,23 +18,56 @@ import org.springframework.stereotype.Service;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
+import com.brchain.core.dto.CcInfoChannelDto;
 import com.brchain.core.dto.CcInfoPeerDto;
+import com.brchain.core.dto.ChannelHandlerDto;
 import com.brchain.core.dto.ChannelInfoDto;
 import com.brchain.core.dto.ChannelInfoPeerDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.CreateChannelDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.InstallCcDto;
+import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
+import com.brchain.core.entity.ChannelInfoEntity;
+import com.brchain.core.entity.ChannelInfoPeerEntity;
+import com.brchain.core.repository.CcInfoChannelRepository;
+import com.brchain.core.repository.CcInfoPeerRepository;
+import com.brchain.core.repository.CcInfoRepository;
+import com.brchain.core.repository.ChannelHandlerRepository;
+import com.brchain.core.repository.ChannelInfoPeerRepository;
+import com.brchain.core.repository.ChannelInfoRepository;
+import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
-import com.spotify.docker.client.exceptions.DockerException;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Service
 public class FabricService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@NonNull
+	private CcInfoRepository ccInfoRepository;
+
+	@NonNull
+	private CcInfoPeerRepository ccInfoPeerRepository;
+
+	@NonNull
+	private CcInfoChannelRepository ccInfoChannelRepository;
+
+	@NonNull
+	private ChannelInfoRepository channelInfoRepository;
+
+	@NonNull
+	private ChannelInfoPeerRepository channelInfoPeerRepository;
+
+	@NonNull
+	private ConInfoRepository conInfoRepository;
+
+	@NonNull
+	private ChannelHandlerRepository channelHandlerRepository;
 
 	@Autowired
 	private DockerClient dockerClient;
@@ -343,10 +376,8 @@ public class FabricService {
 			ChannelInfoPeerDto channelInfoPeerDto = new ChannelInfoPeerDto();
 
 			channelInfoPeerDto.setAnchorYn(false);
-			channelInfoPeerDto.setChannelName(channelName);
-			channelInfoPeerDto.setConName(peerDto.getConName());
-			channelInfoPeerDto.setConNum(peerDto.getConNum());
-			channelInfoPeerDto.setOrgName(peerDto.getOrgName());
+			channelInfoPeerDto.setChannelInfoEntity(channelInfoService.findByChannelName(channelName));
+			channelInfoPeerDto.setConInfoEntity(conInfoService.selectByConName(peerDto.getConName()).toEntity());
 
 			channelInfoService.saveChannelInfoPeer(channelInfoPeerDto);
 
@@ -385,12 +416,9 @@ public class FabricService {
 
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
 
-			ccInfoPeerDto.setCcLang(ccLang);
-			ccInfoPeerDto.setCcName(installCcDto.getCcName());
 			ccInfoPeerDto.setCcVersion(installCcDto.getCcVersion());
-			ccInfoPeerDto.setConName(peerDto.getConName());
-			ccInfoPeerDto.setConNum(peerDto.getConNum());
-			ccInfoPeerDto.setOrgName(peerDto.getOrgName());
+			ccInfoPeerDto.setCcInfoEntity(ccInfoService.findCcInfo(installCcDto.getCcName()).get());
+			ccInfoPeerDto.setConInfoEntity(conInfoService.selectByConName(peerDto.getConName()).toEntity());
 
 			ccInfoService.saveCcnInfoPeer(ccInfoPeerDto);
 
@@ -402,6 +430,131 @@ public class FabricService {
 		logger.info("[조직생성] 종료");
 
 		return util.setResult("0000", true, "Success install chaincode", null);
+	}
+
+	/**
+	 * 체인코드 인스턴스화 서비스
+	 * 
+	 * @param instantiateCcDto 체인코드 인스턴스화 관련 DTO
+	 * 
+	 * @return 결과 DTO(체인코드 인스턴스화 결과)
+	 */
+
+	public ResultDto instantiateChaincode(InstantiateCcDto instantiateCcDto) {
+
+		logger.info("[체인코드 인스턴스화] 시작");
+		logger.info("[체인코드 인스턴스화] InstantiateCcDto : " + instantiateCcDto);
+
+		logger.info("[체인코드 인스턴스화] instantiateCcDto.getChannelName() : " + instantiateCcDto.getChannelName());
+
+		try {
+
+			ChannelInfoEntity channelInfo = channelInfoRepository.findById(instantiateCcDto.getChannelName()).get();
+
+			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfo);
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+					.findByChannelInfoEntity(channelInfo);
+
+			logger.info("[체인코드 인스턴스화] channelInfoPeerArr : " + channelInfoPeerArr);
+			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+					channelInfo.getOrderingOrg());
+
+			fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(),
+					instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(), instantiateCcDto.getCcLang());
+
+			CcInfoChannelDto ccInfoChannelDto = new CcInfoChannelDto();
+
+			ccInfoChannelDto.setCcInfoEntity(ccInfoRepository.findById(instantiateCcDto.getCcName()).get());
+			ccInfoChannelDto
+					.setChannelInfoEntity(channelInfoRepository.findById(instantiateCcDto.getChannelName()).get());
+			ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
+
+			ccInfoChannelRepository.save(ccInfoChannelDto.toEntity());
+
+			logger.info("[체인코드 인스턴스화] 종료");
+
+		} catch (Exception e) {
+
+			return util.setResult("9999", false, e.getMessage(), null);
+		}
+
+		return util.setResult("0000", true, "Success install chaincode", null);
+
+	}
+
+	/**
+	 * 채널 블록 이벤트 등록 서비스
+	 * 
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 결과 DTO(채널 블록 이벤트 등록 결과)
+	 */
+	
+	public ResultDto registerEventListener(String channelName) {
+
+		logger.info("[채널 블럭 이벤트 등록] 시작");
+		logger.info("[채널 블럭 이벤트 등록] channelName : " + channelName);
+
+		try {
+
+			ChannelInfoEntity channelInfo = channelInfoRepository.findById(channelName).get();
+
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+					.findByChannelInfoEntity(channelInfo);
+
+			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+					channelInfo.getOrderingOrg());
+
+			String handler = fabricClient.registerEventListener(
+					peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName);
+
+			ChannelHandlerDto channelHandlerDto = new ChannelHandlerDto();
+			channelHandlerDto.setChannelInfoEntity(channelInfo);
+			channelHandlerDto.setHandler(handler);
+
+			channelHandlerRepository.save(channelHandlerDto.toEntity());
+
+			logger.info("[채널 블럭 이벤트 등록] 종료");
+
+		} catch (Exception e) {
+
+			return util.setResult("9999", false, e.getMessage(), null);
+		}
+
+		return util.setResult("0000", true, "Success Instantiate chaincode", null);
+	}
+
+	public ResultDto registerEventListener2(InstantiateCcDto instantiateCcDto, String a) {
+
+		try {
+
+			ChannelInfoEntity channelInfo = channelInfoRepository.findById(instantiateCcDto.getChannelName()).get();
+
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+					.findByChannelInfoEntity(channelInfo);
+
+			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+					channelInfo.getOrderingOrg());
+			System.out.println("registerEventListener 1");
+			fabricClient.eventTest2(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(),
+					instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(), instantiateCcDto.getCcLang(), a);
+			System.out.println("registerEventListener 2");
+
+		} catch (Exception e) {
+
+			return util.setResult("9999", false, e.getMessage(), null);
+		}
+
+		return util.setResult("0000", true, "Success Register Block EventListener", null);
 	}
 
 }

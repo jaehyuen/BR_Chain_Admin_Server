@@ -1,11 +1,8 @@
 package com.brchain.core.dto;
 
-import javax.persistence.Column;
-
-import com.brchain.core.entity.CcInfoEntity;
-import com.brchain.core.entity.CcInfoPeerEntity;
 import com.brchain.core.entity.ChannelInfoEntity;
 import com.brchain.core.entity.ChannelInfoPeerEntity;
+import com.brchain.core.entity.ConInfoEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,16 +17,14 @@ import lombok.ToString;
 @Builder
 public class ChannelInfoPeerDto {
 
-	private String channelName; // 채널 이름
 	private boolean anchorYn; // 앵커피어 여부
-	private String conName; // 컨테이너 이름
-	private int conNum;// 컨테이너 번호
-	private String orgName;// 조직 이름
+	private ConInfoEntity conInfoEntity; // 컨테이너 정보
+	private ChannelInfoEntity channelInfoEntity;// 채널 정보
 
 	public ChannelInfoPeerEntity toEntity() {
 
-		ChannelInfoPeerEntity channelInfoPeerEntity = ChannelInfoPeerEntity.builder().channelName(channelName)
-				.anchorYn(anchorYn).conName(conName).conNum(conNum).orgName(orgName).build();
+		ChannelInfoPeerEntity channelInfoPeerEntity = ChannelInfoPeerEntity.builder().anchorYn(anchorYn)
+				.conInfoEntity(conInfoEntity).channelInfoEntity(channelInfoEntity).build();
 		return channelInfoPeerEntity;
 	}
 

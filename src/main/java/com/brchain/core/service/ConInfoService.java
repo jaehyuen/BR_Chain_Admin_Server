@@ -1,7 +1,6 @@
 package com.brchain.core.service;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -46,6 +45,7 @@ public class ConInfoService {
 
 	}
 
+
 	/**
 	 * 컨테이너 정보 삭제 서비스
 	 * 
@@ -56,10 +56,9 @@ public class ConInfoService {
 
 	public ConInfoEntity removeConInfo(String conId) {
 
-		Optional<ConInfoEntity> conInfoEntityWrapper = conInfoRepository.findById(conId);
-		ConInfoEntity conInfoEntity = conInfoEntityWrapper.get();
+		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId);
 
-		conInfoRepository.deleteById(conInfoEntity.getConId());
+		conInfoRepository.deleteById(conInfoEntity.getConName());
 
 		return conInfoEntity;
 
@@ -75,7 +74,7 @@ public class ConInfoService {
 
 	public ConInfoDto selectByConName(String conName) {
 
-		ConInfoEntity conInfoEntity = conInfoRepository.findByConName(conName);
+		ConInfoEntity conInfoEntity = conInfoRepository.findById(conName).get();
 
 		return ConInfoDto.builder().conId(conInfoEntity.getConId()).conName(conInfoEntity.getConName())
 				.conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum()).conCnt(conInfoEntity.getConCnt())

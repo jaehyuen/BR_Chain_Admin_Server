@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,16 +19,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.core.dto.CcInfoDto;
 import com.brchain.core.dto.CcInfoPeerDto;
-import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.CcInfoChannelEntity;
 import com.brchain.core.entity.CcInfoEntity;
 import com.brchain.core.entity.CcInfoPeerEntity;
-import com.brchain.core.entity.ChannelInfoEntity;
-import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.entity.ChannelInfoPeerEntity;
 import com.brchain.core.repository.CcInfoChannelRepository;
 import com.brchain.core.repository.CcInfoPeerRepository;
 import com.brchain.core.repository.CcInfoRepository;
+import com.brchain.core.repository.ChannelInfoPeerRepository;
+import com.brchain.core.repository.ChannelInfoRepository;
 import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;
 
@@ -41,8 +44,18 @@ public class CcInfoService {
 
 	@NonNull
 	private CcInfoPeerRepository ccInfoPeerRepository;
+
 	@NonNull
 	private CcInfoChannelRepository ccInfoChannelRepository;
+
+	@NonNull
+	private ChannelInfoRepository channelInfoRepository;
+
+	@NonNull
+	private ChannelInfoPeerRepository channelInfoPeerRepository;
+
+	@NonNull
+	private ConInfoRepository conInfoRepository;
 
 	@Autowired
 	private Util util;
@@ -58,6 +71,12 @@ public class CcInfoService {
 	public CcInfoEntity saveCcnInfo(CcInfoDto ccInfoDto) {
 
 		return ccInfoRepository.save(ccInfoDto.toEntity());
+
+	}
+
+	public Optional<CcInfoEntity> findCcInfo(String ccName) {
+
+		return ccInfoRepository.findById(ccName);
 
 	}
 
@@ -104,6 +123,7 @@ public class CcInfoService {
 
 		try {
 
+			// 파일로 변경 작업
 			InputStream inputStream = ccFile.getInputStream();
 			File file = new File(System.getProperty("user.dir") + "/chaincode/src/" + ccName + "/");
 
@@ -132,6 +152,7 @@ public class CcInfoService {
 			outputStream.close();
 			inputStream.close();
 
+			// 디비에 저장(CCINFO)
 			CcInfoDto ccInfoDto = new CcInfoDto();
 
 			ccInfoDto.setCcName(ccName);
@@ -185,20 +206,21 @@ public class CcInfoService {
 	 * @return 체인코드 정보 (피어) 조회 결과 DTO
 	 * 
 	 */
-
+	@Transactional
 	public ResultDto getCcListPeer(String conName) {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository.findByConName(conName);
+		ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
+				.findByConInfoEntity(conInfoRepository.findById(conName).get());
 
 		for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("ccName", ccInfoPeer.getCcName());
+			resultJson.put("ccName", ccInfoPeer.getCcInfoEntity().getCcName());
 			resultJson.put("ccVersion", ccInfoPeer.getCcVersion());
-			resultJson.put("ccLang", ccInfoPeer.getCcLang());
+			resultJson.put("ccLang", ccInfoPeer.getCcInfoEntity().getCcLang());
 
 			resultJsonArr.add(resultJson);
 		}
@@ -207,27 +229,61 @@ public class CcInfoService {
 	}
 
 	/**
-	 * 채널 이름으로 체인코드 정보 (채널) 조회 서비스
+	 * 채널에 엑티브 가능한 상태인 체인코드 리스트 조회 서비스
 	 * 
 	 * @param channelName 채널 이름
 	 * 
-	 * @return 체인코드 정보 (채널) 조회 결과 DTO
-	 * 
+	 * @return 체인코드 리스트 조회 결과 DTO
 	 */
 
-	public ResultDto getCcListChannel(String channelName) {
-
+	public ResultDto getCcListToActiveInChannel(String channelName) {
 		JSONArray jsonArr = new JSONArray();
 
-		ArrayList<CcInfoChannelEntity> ccInfoChannelArr = ccInfoChannelRepository.findByChannelName(channelName);
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+				.findByChannelInfoEntity(channelInfoRepository.findById(channelName).get());
+
+		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
+			ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
+					.findByConInfoEntity(channelInfoPeer.getConInfoEntity());
+			for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
+
+				JSONObject ccInfoChannelJson = new JSONObject();
+
+				ccInfoChannelJson.put("ccName", ccInfoPeer.getCcInfoEntity().getCcName());
+				ccInfoChannelJson.put("ccVersion", ccInfoPeer.getCcVersion());
+				ccInfoChannelJson.put("ccLang", ccInfoPeer.getCcInfoEntity().getCcLang());
+
+				jsonArr.add(ccInfoChannelJson);
+
+			}
+
+		}
+
+		return util.setResult("0000", true, "Success get chaincode list channel", jsonArr);
+
+	}
+
+	/**
+	 * 채널에 엑티브된 체인코드 리스트 조회 서비스
+	 * 
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 체인코드 리스트 조회 결과 DTO
+	 */
+
+	public ResultDto getCcListActive(String channelName) {
+		JSONArray jsonArr = new JSONArray();
+
+		ArrayList<CcInfoChannelEntity> ccInfoChannelArr = ccInfoChannelRepository
+				.findByChannelInfoEntity(channelInfoRepository.findById(channelName).get());
 
 		for (CcInfoChannelEntity ccInfoChannel : ccInfoChannelArr) {
 
 			JSONObject ccInfoChannelJson = new JSONObject();
 
-			ccInfoChannelJson.put("ccName", ccInfoChannel.getCcName());
+			ccInfoChannelJson.put("ccName", ccInfoChannel.getCcInfoEntity().getCcName());
 			ccInfoChannelJson.put("ccVersion", ccInfoChannel.getCcVersion());
-			ccInfoChannelJson.put("ccLang", ccInfoChannel.getCcLang());
+			ccInfoChannelJson.put("ccLang", ccInfoChannel.getCcInfoEntity().getCcLang());
 
 			jsonArr.add(ccInfoChannelJson);
 

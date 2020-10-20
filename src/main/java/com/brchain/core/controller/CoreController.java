@@ -1,16 +1,7 @@
 package com.brchain.core.controller;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -22,12 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
-import com.brchain.core.dto.CreateChannelDto;
-import com.brchain.core.dto.InstallCcDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.service.CcInfoService;
@@ -35,16 +22,11 @@ import com.brchain.core.service.ChannelInfoService;
 import com.brchain.core.service.ConInfoService;
 import com.brchain.core.service.DockerService;
 import com.brchain.core.service.FabricService;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
-import com.spotify.docker.client.exceptions.DockerException;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/core/")
 public class CoreController {
-
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	DockerService dockerService;
@@ -99,6 +81,7 @@ public class CoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getMemberList(orgName));
 
 	}
+	
 
 	@GetMapping("/remove")
 	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId", required = false) String conId,

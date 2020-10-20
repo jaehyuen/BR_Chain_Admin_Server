@@ -1,5 +1,7 @@
 package com.brchain.core.client;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -19,23 +21,29 @@ import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-
 import javax.xml.bind.DatatypeConverter;
 
 import org.hyperledger.fabric.gateway.Gateway;
 import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallet.Identity;
+import org.hyperledger.fabric.protos.common.Common.Block;
+import org.hyperledger.fabric.sdk.BlockEvent;
+import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.ChannelConfiguration;
 import org.hyperledger.fabric.sdk.HFClient;
 import org.hyperledger.fabric.sdk.InstallProposalRequest;
+import org.hyperledger.fabric.sdk.InstantiateProposalRequest;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.ProposalResponse;
+import org.hyperledger.fabric.sdk.TransactionRequest;
 import org.hyperledger.fabric.sdk.UpdateChannelConfiguration;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
@@ -311,23 +319,18 @@ public class FabricClient {
 	public void joinChannel(HFClient client, FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
 			throws InvalidArgumentException, ProposalException {
 
-		Properties props = new Properties();
-		props.put("pemFile", "crypto-config/ca-certs/ca.org" + ordererDto.getOrgName() + ".com-cert.pem");
-		props.put("hostnameOverride", ordererDto.getConName());
+		// 오더러 정보 생성
+		Properties ordererProps = createFabricProperties(ordererDto);
+		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
 
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
-
-		Properties peerProps = new Properties();
-		peerProps.put("pemFile", "crypto-config/ca-certs/ca.org" + peerDto.getOrgName() + ".com-cert.pem");
-		peerProps.put("hostnameOverride", peerDto.getConName());
-
+		// 피어 정보 생성
+		Properties peerProps = createFabricProperties(peerDto);
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
 
 		Channel channel = client.newChannel(channelName);
 		channel.addOrderer(orderer);
-//		Channel testChannel = client.getChannel(channelName);
-
 		channel.joinPeer(peer);
+		
 		logger.info("[채널가입] : " + peerDto.getConName() + " 컨테이너 " + channelName + " 채널 가입완료");
 
 	}
@@ -375,12 +378,14 @@ public class FabricClient {
 			IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
 		CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
+		
 		// 클라이언트 생성
 		HFClient client = HFClient.createNewInstance();
 		client.setCryptoSuite(cryptoSuite);
+		
+		//UserConText 생성
 		BrchainUser userContext = createContext(memberDto);
 		client.setUserContext(userContext);
-		
 
 		return client;
 
@@ -402,11 +407,11 @@ public class FabricClient {
 		JSONParser jsonParser = new JSONParser();
 
 		HFClient client = createClient(memberDto);
+		
 
-		// 채널 생성요청할 오더러 정보 생성
-		Properties props = new Properties();
-		props.put("pemFile", "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem");
-		props.put("hostnameOverride", memberDto.getConName());
+		// 채널 생성요청할 맴버 정보 생성
+		Properties props = createFabricProperties(memberDto);
+
 
 		Orderer orderer = client.newOrderer(memberDto.getConName(), memberDto.getConUrl(), props);
 		Peer peer = client.newPeer(memberDto.getConName(), memberDto.getConUrl(), props);
@@ -415,6 +420,7 @@ public class FabricClient {
 
 		byte[] configBlock;
 
+		//설정 파일 가져오기(Byte Array)
 		if (memberDto.getOrgType().equals("peer")) {
 			channel.addPeer(peer);
 			configBlock = channel.getChannelConfigurationBytes(createContext(memberDto), peer);
@@ -425,6 +431,8 @@ public class FabricClient {
 
 		}
 
+		
+		//설정 파일 가져오기(Byte Array) to File
 		String path = "channel-artifacts/" + memberDto.getOrgName() + "/";
 		String fileName = channelName + "_config";
 
@@ -450,6 +458,8 @@ public class FabricClient {
 
 		}
 
+		
+		//로컬 환경에서는 파일이 서버랑 왔다 갓다해야됨
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.uploadFile(path, fileName + ".pb");
 		}
@@ -516,6 +526,8 @@ public class FabricClient {
 
 		}
 
+		
+		//로컬 환경에서는 파일이 서버랑 왔다 갓다해야됨
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.uploadFile(path, fileName + ".json");
 		}
@@ -569,10 +581,9 @@ public class FabricClient {
 
 		HFClient client = createClient(memberDto);
 
-		// 채널 생성요청할 오더러 정보 생성
-		Properties props = new Properties();
-		props.put("pemFile", "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem");
-		props.put("hostnameOverride", memberDto.getConName());
+		// 채널 설정 변경 요청할 정보 생성
+		Properties props = createFabricProperties(memberDto);
+
 
 		Orderer orderer = client.newOrderer(memberDto.getConName(), memberDto.getConUrl(), props);
 		Peer peer = client.newPeer(memberDto.getConName(), memberDto.getConUrl(), props);
@@ -600,34 +611,38 @@ public class FabricClient {
 	/**
 	 * 체인코드 설치 함수
 	 * 
-	 * @param peerDto 설치할 피어 정보 DTO
-	 * @param ccName 체인코드 이름
+	 * @param peerDto   설치할 피어 정보 DTO
+	 * @param ccName    체인코드 이름
 	 * @param ccVersion 체인코드 버전
 	 * @throws Exception
 	 */
 
-	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception   {
+	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
 
+		//클라이언트 생성
 		HFClient client = createClient(peerDto);
-		
-		InstallProposalRequest request = client.newInstallProposalRequest();
+
+		//체인코드 ID 생성
 		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
 				.setPath(ccName + "/");
-		
+
 		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
 		
-		request.setChaincodeID(chaincodeID);
-		request.setUserContext(client.getUserContext());
-		request.setChaincodeSourceLocation(new File(System.getProperty("user.dir") + "/chaincode"));
-		request.setChaincodeVersion(ccVersion);
-		
+		//체인코드 설치 request 생성
+		InstallProposalRequest installProposalRequest = client.newInstallProposalRequest();
+
+		installProposalRequest.setChaincodeID(chaincodeID);
+		installProposalRequest.setUserContext(client.getUserContext());
+		installProposalRequest.setChaincodeSourceLocation(new File(System.getProperty("user.dir") + "/chaincode"));
+		installProposalRequest.setChaincodeVersion(ccVersion);
+
+		//설치할 피어 정보 생성
 		List<Peer> peers = new ArrayList<Peer>();
-
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
-
 		peers.add(peer);
+		
 		logger.info("[체인코드 설치] 트렌젝션 생성 및 전송");
-		Collection<ProposalResponse> responses = client.sendInstallProposal(request, peers);
+		Collection<ProposalResponse> responses = client.sendInstallProposal(installProposalRequest, peers);
 
 		for (ProposalResponse response : responses) {
 
@@ -636,7 +651,6 @@ public class FabricClient {
 			}
 		}
 
-		
 	}
 
 	/**
@@ -646,7 +660,7 @@ public class FabricClient {
 	 * 
 	 * @return
 	 */
-	
+
 	public Properties createFabricProperties(FabricMemberDto memberDto) {
 
 		Properties props = new Properties();
@@ -654,6 +668,169 @@ public class FabricClient {
 		props.put("hostnameOverride", memberDto.getConName());
 
 		return props;
+	}
+
+	
+	/**
+	 * 체인코드 인스턴스화 함수
+	 * 
+	 * @param peerDto 인스턴스화를 진행할 피어 정보 DTO
+	 * @param ordererDto 인스턴스화를 진행할 오더러 정보 DTO
+	 * @param channelName 채널 이름
+	 * @param ccName 체인코드 이름
+	 * @param ccVersion 체인코드 버전 
+	 * @param ccLang 체인코드 언어
+	 * 
+	 * @throws Exception
+	 */
+	
+	public void instantiateChaincode(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
+			String ccName, String ccVersion, String ccLang) throws Exception {
+
+		// 클라이언트 생성
+		HFClient client = createClient(peerDto);
+
+		// 오더러 정보 생성
+		Properties ordererProps = createFabricProperties(ordererDto);
+		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+
+		// 피어 정보 생성
+		Properties peerProps = createFabricProperties(peerDto);
+		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
+
+		// 채널 정보 생성
+		Channel channel = client.newChannel(channelName);
+		channel.addPeer(peer);
+		channel.addOrderer(orderer);
+		channel.initialize();
+		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
+				.setPath(ccName + "/");
+
+		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
+
+		Map<String, byte[]> tm = new HashMap<>();
+		tm.put("HyperLedgerFabric", "InstantiateProposalRequest:JavaSDK".getBytes(UTF_8));
+		tm.put("method", "InstantiateProposalRequest".getBytes(UTF_8));
+		
+		// 체인코드 인스턴스화 리퀘스트 생성
+		InstantiateProposalRequest instantiateProposalRequest = client.newInstantiationProposalRequest();
+		instantiateProposalRequest.setChaincodeID(chaincodeID);
+		instantiateProposalRequest.setChaincodeLanguage(TransactionRequest.Type.GO_LANG);
+		instantiateProposalRequest.setFcn("");
+		instantiateProposalRequest.setArgs("");
+		instantiateProposalRequest.setProposalWaitTime(300000);		
+		instantiateProposalRequest.setTransientMap(tm);
+
+		// 리퀘스트 결과 오더러로 전송
+		Collection<ProposalResponse> responses = channel.sendInstantiationProposal(instantiateProposalRequest);
+		for (ProposalResponse response : responses) {
+			System.out.println(response.getMessage());
+			if (response.isVerified() && response.getStatus() == ProposalResponse.Status.SUCCESS) {
+				channel.sendTransaction(responses, channel.getOrderers()).thenApply(transactionEvent -> {
+					System.out.println(transactionEvent.isValid());
+					System.out.println(transactionEvent.getTransactionID());
+
+					return null;
+				});
+			} else {
+				throw new Exception(response.getMessage());
+			}
+
+		}
+
+	}
+
+	
+	/**
+	 * 채널 블록 이벤트 등록 함수
+	 * @param peerDto 이벤트 등록을 진행할 피어 정보 DTO
+	 * @param ordererDto 이벤트 등록을 진행할 오더러 정보 DTO
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 이벤트 핸들러
+	 * 
+	 * @throws Exception
+	 */
+	
+	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
+			throws Exception {
+
+		System.out.println("eventTest 1");
+		// 클라이언트 생성
+		HFClient client = createClient(peerDto);
+
+		// 오더러 정보 생성
+		Properties ordererProps = createFabricProperties(ordererDto);
+		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+
+		// 피어 정보 생성
+		Properties peerProps = createFabricProperties(peerDto);
+		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
+
+		// 채널 정보 생성
+		Channel channel = client.newChannel(channelName);
+		channel.addPeer(peer);
+		channel.addOrderer(orderer);
+		channel.initialize();
+		System.out.println("eventTest 2");
+		BlockListener blockListener = new BlockListener() {
+
+			@Override
+			public void received(BlockEvent blockEvent) {
+				Block block = blockEvent.getBlock();
+
+				System.out.println("BLock All FIelds :" + block.getAllFields());
+				System.out.println("BLock Number :" + blockEvent.getBlockNumber());
+
+			}
+
+		};
+
+		return channel.registerBlockListener(blockListener);
+
+	}
+
+	public void eventTest2(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, String ccName,
+			String ccVersion, String ccLang, String a) throws Exception {
+
+		System.out.println("eventTest 1");
+		// 클라이언트 생성
+		HFClient client = createClient(peerDto);
+
+		// 오더러 정보 생성
+		Properties ordererProps = createFabricProperties(ordererDto);
+		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+
+		// 피어 정보 생성
+		Properties peerProps = createFabricProperties(peerDto);
+		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
+
+		// 채널 정보 생성
+		Channel channel = client.newChannel(channelName);
+		channel.addPeer(peer);
+		channel.addOrderer(orderer);
+		channel.initialize();
+		System.out.println("eventTest 2");
+		BlockListener bl = new BlockListener() {
+
+			@Override
+			public void received(BlockEvent blockEvent) {
+				Block block = blockEvent.getBlock();
+
+				System.out.println("BLock All FIelds :" + block.getAllFields());
+				System.out.println("BLock Number :" + blockEvent.getBlockNumber());
+
+				System.out.println("THis is buyer Listener..");
+
+			}
+
+		};
+		System.out.println("eventTest 3");
+		channel.unregisterBlockListener(a);
+//String test	=	channel.registerBlockListener(bl);
+//System.out.println("eventTest 4"+test);
+//		channel
+
 	}
 
 //  api통신용 현재는 사용안함

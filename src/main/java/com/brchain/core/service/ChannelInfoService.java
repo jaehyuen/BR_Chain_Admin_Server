@@ -39,8 +39,12 @@ public class ChannelInfoService {
 	@NonNull
 	private ChannelInfoPeerRepository channelInfoPeerRepository;
 
-	@NonNull
-	private CcInfoService ccInfoService;
+	
+	@Autowired
+	private ConInfoService conInfoService;
+	
+	@Autowired
+	private ChannelInfoService channelInfoService;
 
 	@Autowired
 	private Util util;
@@ -59,6 +63,11 @@ public class ChannelInfoService {
 
 	}
 
+	public ChannelInfoEntity findByChannelName(String channelName) {
+		
+		return channelInfoRepository.findById(channelName).get();
+	}
+	
 	/**
 	 * 채널 리스트 조회 서비스
 	 * 
@@ -112,13 +121,13 @@ public class ChannelInfoService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByConName(conName);
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByConInfoEntity(conInfoService.selectByConName(conName).toEntity());
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("channelName", channelInfoPeer.getChannelName());
+			resultJson.put("channelName", channelInfoPeer.getChannelInfoEntity().getChannelName());
 			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
 
 			resultJsonArr.add(resultJson);
@@ -140,13 +149,13 @@ public class ChannelInfoService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByChannelName(channelName);
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByChannelInfoEntity(channelInfoService.findByChannelName(channelName));
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("conName", channelInfoPeer.getConName());
+			resultJson.put("conName", channelInfoPeer.getConInfoEntity().getConName());
 			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
 
 			resultJsonArr.add(resultJson);

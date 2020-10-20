@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
@@ -20,26 +21,22 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "CHANNELINFO_PEER")
+@Table(name = "CHANNEL_HANDLER")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChannelInfoPeerEntity extends BaseEntity {
+public class ChannelHandlerEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
 	private Long id;
 
-	@Column(name = "ANCHOR_YN", nullable = false)
-	private boolean anchorYn;
+	@Column(name = "HANDLER", nullable = false)
+	private String handler;
 
-	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER)
+	@OneToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
 	private ChannelInfoEntity channelInfoEntity;
-
-	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER)
-	@JoinColumn(name = "CONINFO_CON_NAME")
-	private ConInfoEntity conInfoEntity;
 
 }

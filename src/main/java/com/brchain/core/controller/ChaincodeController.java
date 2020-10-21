@@ -16,7 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.brchain.core.dto.InstallCcDto;
 import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
-import com.brchain.core.service.CcInfoService;
+
+import com.brchain.core.service.ChaincodeService;
 import com.brchain.core.service.FabricService;
 
 @CrossOrigin(origins = "*")
@@ -25,19 +26,19 @@ import com.brchain.core.service.FabricService;
 public class ChaincodeController {
 
 	@Autowired
-	CcInfoService ccInfoService;
+	private ChaincodeService chaincodeService;
 
 	@Autowired
-	FabricService fabricService;
+	private FabricService fabricService;
 
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChaincodeList(
 			@RequestParam(value = "conName", required = false) String conName) {
 
 		if (conName != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcListPeer(conName));
+			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListPeer(conName));
 		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcList());
+			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcList());
 		}
 
 	}
@@ -46,7 +47,7 @@ public class ChaincodeController {
 	@GetMapping("/channel/list")
 	public ResponseEntity<ResultDto> getChaincodeListChannel(@RequestParam(value = "channelName", required = true) String channelName) {
 
-			return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcListActive(channelName));
+			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListActive(channelName));
 		
 
 	}
@@ -54,7 +55,7 @@ public class ChaincodeController {
 	@GetMapping("/active")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(@RequestParam(value = "channelName", required = true) String channelName) {
 
-			return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.getCcListToActiveInChannel(channelName));
+			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListToActiveInChannel(channelName));
 		
 
 	}
@@ -71,7 +72,7 @@ public class ChaincodeController {
 			@RequestParam("ccName") String ccName, @RequestParam("ccDesc") String ccDesc,
 			@RequestParam("ccLang") String ccLang) throws IOException {
 
-		return ResponseEntity.status(HttpStatus.OK).body(ccInfoService.ccFileUpload(ccFile, ccName, ccDesc, ccLang));
+		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.ccFileUpload(ccFile, ccName, ccDesc, ccLang));
 
 	}
 	

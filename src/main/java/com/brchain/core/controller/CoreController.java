@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +21,8 @@ import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.service.CcInfoService;
-import com.brchain.core.service.ChannelInfoService;
-import com.brchain.core.service.ConInfoService;
+import com.brchain.core.service.ChaincodeService;
+import com.brchain.core.service.ContainerService;
 import com.brchain.core.service.DockerService;
 import com.brchain.core.service.FabricService;
 
@@ -29,28 +32,16 @@ import com.brchain.core.service.FabricService;
 public class CoreController {
 
 	@Autowired
-	DockerService dockerService;
+	private DockerService dockerService;
 
 	@Autowired
-	ConInfoService conInfoService;
+	private ContainerService containerService;
+
 
 	@Autowired
-	ChannelInfoService channelInfoService;
+	private FabricService fabricService;
+
 	
-	@Autowired
-	CcInfoService ccInfoService;
-
-	@Autowired
-	FabricService fabricService;
-
-	@Autowired
-	Environment environment;
-
-	@Autowired
-	FabricClient fabricClient;
-
-	@Autowired
-	SshClient sshClient;
 
 	ConInfoDto conInfoDto;
 
@@ -71,14 +62,14 @@ public class CoreController {
 	@GetMapping("/orgs")
 	public ResponseEntity<ResultDto> getOrgList(@RequestParam(value = "type") String orgType) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getOrgList(orgType));
+		return ResponseEntity.status(HttpStatus.OK).body(containerService.getOrgList(orgType));
 
 	}
 	
 	@GetMapping("/members")
 	public ResponseEntity<ResultDto> getMemberList(@RequestParam(value = "orgName") String orgName) {
 		
-		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.getMemberList(orgName));
+		return ResponseEntity.status(HttpStatus.OK).body(containerService.getMemberList(orgName));
 
 	}
 	
@@ -104,9 +95,10 @@ public class CoreController {
 	@GetMapping("/check/port")
 	public ResponseEntity<ResultDto> portCheck(@RequestParam(value = "port") String port) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(conInfoService.checkConPort(port));
+		return ResponseEntity.status(HttpStatus.OK).body(containerService.checkConPort(port));
 
 	}
+	
 
 
 }

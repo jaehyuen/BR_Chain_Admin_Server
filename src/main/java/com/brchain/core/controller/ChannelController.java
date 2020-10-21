@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.brchain.core.dto.CreateChannelDto;
 import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
-import com.brchain.core.service.ChannelInfoService;
+import com.brchain.core.service.ChannelService;
 import com.brchain.core.service.FabricService;
 
 @CrossOrigin(origins = "*")
@@ -22,22 +22,22 @@ import com.brchain.core.service.FabricService;
 public class ChannelController {
 
 	@Autowired
-	ChannelInfoService channelInfoService;
+	private ChannelService channelService;
 
 	@Autowired
-	FabricService fabricService;
+	private FabricService fabricService;
 
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChannelList(@RequestParam(value = "conName", required = false) String conName,
 			@RequestParam(value = "channelName", required = false) String channelName) {
 
 		if (conName != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(channelInfoService.getChannelListPeerByConName(conName));
+			return ResponseEntity.status(HttpStatus.OK).body(channelService.getChannelListPeerByConName(conName));
 		} else if (channelName != null) {
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(channelInfoService.getChannelListPeerByChannelName(channelName));
+					.body(channelService.getChannelListPeerByChannelName(channelName));
 		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(channelInfoService.getChannelList());
+			return ResponseEntity.status(HttpStatus.OK).body(channelService.getChannelList());
 		}
 
 	}
@@ -55,10 +55,10 @@ public class ChannelController {
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.registerEventListener(channelName));
 
 	}
-	@PostMapping("/test2")
-	public ResponseEntity<ResultDto> test2(@RequestBody InstantiateCcDto instantiateCcDto,@RequestParam(value = "a") String a) {
+	@PostMapping("/unregister")
+	public ResponseEntity<ResultDto> test2(@RequestParam(value = "channelName") String channelName) {
 		
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.registerEventListener2(instantiateCcDto,a));
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.unregisterEventListener(channelName));
 
 	}
 

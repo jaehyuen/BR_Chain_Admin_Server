@@ -29,7 +29,7 @@ public class DockerService {
 	private DockerClient dockerClient;
 
 	@Autowired
-	private ConInfoService conInfoService;
+	private ContainerService containerService;
 
 	@Autowired
 	private SshClient sshClient;
@@ -47,7 +47,7 @@ public class DockerService {
 
 		try {
 
-			List<Container> containers = dockerClient.getAllContainers();
+			List<Container> containers = dockerClient.loadAllContainers();
 
 			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
@@ -57,7 +57,7 @@ public class DockerService {
 				String path = "";
 
 				try {
-					conInfoEntity = conInfoService.removeConInfo(container.id());
+					conInfoEntity = containerService.removeConInfo(container.id());
 				} catch (Exception e) {
 					logger.info("디비에 없는 컨테이너");
 				}
@@ -94,7 +94,7 @@ public class DockerService {
 
 			try {
 
-				conInfoEntity = conInfoService.removeConInfo(conId);
+				conInfoEntity = containerService.removeConInfo(conId);
 
 			} catch (Exception e) {
 
@@ -126,7 +126,7 @@ public class DockerService {
 
 		try {
 
-			List<Container> containers = dockerClient.getAllContainers();
+			List<Container> containers = dockerClient.loadAllContainers();
 
 			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
@@ -136,7 +136,7 @@ public class DockerService {
 				String path = "";
 				if (container.names().get(0).contains(orgName)) {
 					try {
-						conInfoEntity = conInfoService.removeConInfo(container.id());
+						conInfoEntity = containerService.removeConInfo(container.id());
 					} catch (Exception e) {
 						logger.info("디비에 없는 컨테이너");
 					}
@@ -170,7 +170,7 @@ public class DockerService {
 
 		try {
 
-			List<Container> containerList = dockerClient.getAllContainers();
+			List<Container> containerList = dockerClient.loadAllContainers();
 
 			for (Container container : containerList) {
 

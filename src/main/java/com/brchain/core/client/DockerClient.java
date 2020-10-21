@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.service.ConInfoService;
+import com.brchain.core.service.ContainerService;
 import com.brchain.core.util.ContainerSetting;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;
@@ -32,10 +32,9 @@ import com.spotify.docker.client.messages.PortBinding;
 public class DockerClient {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	@Autowired
-	private ConInfoService conInfoService;
 
+	@Autowired
+	private ContainerService containerService;
 
 	@Value("${brchain.ip}")
 	private String ip;
@@ -44,8 +43,8 @@ public class DockerClient {
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
-	private final DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375").apiVersion("v1.40")
-			.build();
+	private final DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
+			.apiVersion("v1.40").build();
 
 	/**
 	 * 실행중인 컨테이너 조회 함수
@@ -55,30 +54,27 @@ public class DockerClient {
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
-	
-	public List<Container> getRunningContainers() throws DockerException, InterruptedException {
+	public List<Container> loadRunningContainers() throws DockerException, InterruptedException {
 
 		return docker.listContainers(ListContainersParam.allContainers());
-		
+
 	}
 
-	
 	/**
 	 * 모든 컨테이너 리스트 조회 함수
 	 * 
-	 * @return 컨테이너 리스트 
+	 * @return 컨테이너 리스트
 	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
-	
-	public List<Container> getAllContainers() throws DockerException, InterruptedException {
+
+	public List<Container> loadAllContainers() throws DockerException, InterruptedException {
 
 		return docker.listContainers(ListContainersParam.allContainers());
-		
+
 	}
-	
-	
+
 	/**
 	 * 컨테이너 정지 및 삭제 함수
 	 * 
@@ -89,16 +85,15 @@ public class DockerClient {
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
-	
+
 	public String removeContainer(String conId) throws DockerException, InterruptedException {
-		
+
 		docker.stopContainer(conId, 1);
 		docker.removeContainer(conId);
-	
-		return "";
-		
-	}
 
+		return "";
+
+	}
 
 	/**
 	 * 컨테이너 생성 함수
@@ -112,7 +107,7 @@ public class DockerClient {
 	 * 
 	 */
 
-	public String createCon(ConInfoDto createConDto) throws DockerException, InterruptedException {
+	public String createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
 
 		// 도커 네트워크 체크로직
 		// 네트워크 조회 에러시 네트워크 생성
@@ -274,12 +269,10 @@ public class DockerClient {
 
 		}
 
-		conInfoService.saveConInfo(conInfoDto);
+		containerService.saveConInfo(conInfoDto);
 		logger.info("[도커 컨테이너 생성 dto] " + conInfoDto);
 
 		return "";
 	}
-
-	
 
 }

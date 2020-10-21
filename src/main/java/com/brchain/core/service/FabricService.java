@@ -20,7 +20,7 @@ import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.CcInfoChannelDto;
 import com.brchain.core.dto.CcInfoPeerDto;
-import com.brchain.core.dto.ChannelHandlerDto;
+import com.brchain.core.dto.ChannelHandleDto;
 import com.brchain.core.dto.ChannelInfoDto;
 import com.brchain.core.dto.ChannelInfoPeerDto;
 import com.brchain.core.dto.ConInfoDto;
@@ -31,15 +31,7 @@ import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.ChannelInfoEntity;
 import com.brchain.core.entity.ChannelInfoPeerEntity;
-import com.brchain.core.repository.CcInfoChannelRepository;
-import com.brchain.core.repository.CcInfoPeerRepository;
-import com.brchain.core.repository.CcInfoRepository;
-import com.brchain.core.repository.ChannelHandlerRepository;
-import com.brchain.core.repository.ChannelInfoPeerRepository;
-import com.brchain.core.repository.ChannelInfoRepository;
-import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -48,38 +40,17 @@ public class FabricService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@NonNull
-	private CcInfoRepository ccInfoRepository;
-
-	@NonNull
-	private CcInfoPeerRepository ccInfoPeerRepository;
-
-	@NonNull
-	private CcInfoChannelRepository ccInfoChannelRepository;
-
-	@NonNull
-	private ChannelInfoRepository channelInfoRepository;
-
-	@NonNull
-	private ChannelInfoPeerRepository channelInfoPeerRepository;
-
-	@NonNull
-	private ConInfoRepository conInfoRepository;
-
-	@NonNull
-	private ChannelHandlerRepository channelHandlerRepository;
-
 	@Autowired
 	private DockerClient dockerClient;
 
 	@Autowired
-	private ConInfoService conInfoService;
+	private ContainerService containerService;
 
 	@Autowired
-	private CcInfoService ccInfoService;
+	private ChaincodeService chaincodeService;
 
 	@Autowired
-	private ChannelInfoService channelInfoService;
+	private ChannelService channelService;
 
 	@Autowired
 	private Environment environment;
@@ -134,7 +105,7 @@ public class FabricService {
 
 					// 컨테이너 생성 함수 호출
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
-					dockerClient.createCon(dto);
+					dockerClient.createContainer(dto);
 
 					// setup 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					ConInfoDto setupContainer = new ConInfoDto();
@@ -147,7 +118,7 @@ public class FabricService {
 					if (dto.getOrgType().equals("orderer")) {
 
 						setupContainer.setOrdererPorts(ordererPorts);
-						setupContainer.setPeerOrgs(conInfoService.selectByConType("ca", "peer"));
+						setupContainer.setPeerOrgs(containerService.selectByConType("ca", "peer"));
 
 					}
 
@@ -156,7 +127,7 @@ public class FabricService {
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + setupContainer.getOrgName() + " 조직의 "
 							+ setupContainer.getConType() + " 컨테이너 생성");
 					logger.info(setupContainer.toString());
-					dockerClient.createCon(setupContainer);
+					dockerClient.createContainer(setupContainer);
 					Thread.sleep(5000);
 
 					conInfoDtoArr.add(i + 1, setupContainer);
@@ -168,7 +139,7 @@ public class FabricService {
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType()
 							+ dto.getConNum() + " 컨테이너 생성");
 					logger.info(dto.toString());
-					dockerClient.createCon(dto);
+					dockerClient.createContainer(dto);
 
 					// couchdb 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					if (dto.isCouchdbYn()) {
@@ -181,7 +152,7 @@ public class FabricService {
 
 						logger.info("[조직생성] 도커 컨테이너 생성 -> " + couchdbContainer.getOrgName() + " 조직의 "
 								+ couchdbContainer.getConType() + couchdbContainer.getConNum() + " 컨테이너 생성");
-						dockerClient.createCon(couchdbContainer);
+						dockerClient.createContainer(couchdbContainer);
 
 					}
 
@@ -189,9 +160,9 @@ public class FabricService {
 
 					// 컨테이너 생성 함수 호출
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
-					dto.setPeerOrgs(conInfoService.selectByConType("ca", "peer"));
+					dto.setPeerOrgs(containerService.selectByConType("ca", "peer"));
 					logger.info(dto.toString());
-					dockerClient.createCon(dto);
+					dockerClient.createContainer(dto);
 
 				}
 
@@ -228,7 +199,7 @@ public class FabricService {
 				sshClient.downloadFile(path, "ca.org" + conInfoDtoArr.get(0).getOrgName() + ".com-cert.pem");
 			}
 
-			ArrayList<FabricMemberDto> fabricMemberDto = conInfoService
+			ArrayList<FabricMemberDto> fabricMemberDto = containerService
 					.createMemberDtoArr(conInfoDtoArr.get(0).getOrgType(), conInfoDtoArr.get(0).getOrgName());
 			fabricClient.createWallet(fabricMemberDto.get((int) (Math.random() * fabricMemberDto.size())));
 
@@ -275,17 +246,17 @@ public class FabricService {
 			conInfoDto.setConPort("");
 			conInfoDto.setConCnt(0);
 			logger.info("[채널생성] conInfoDto : " + conInfoDto);
-			dockerClient.createCon(conInfoDto);
+			dockerClient.createContainer(conInfoDto);
 
 			// 채널 생성시 필요한 fabricMemvber(peer, orderer) Dto 생성
 			ArrayList<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
 
 			for (int i = 0; i < createChannelDto.getPeerOrgs().length; i++) {
 
-				peerDtoArr.addAll(conInfoService.createMemberDtoArr("peer", createChannelDto.getPeerOrgs()[i]));
+				peerDtoArr.addAll(containerService.createMemberDtoArr("peer", createChannelDto.getPeerOrgs()[i]));
 
 			}
-			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					createChannelDto.getOrderingOrg());
 
 			logger.info("[채널생성] peerDtoArr : " + peerDtoArr);
@@ -319,7 +290,7 @@ public class FabricService {
 			channelInfoDto.setOrderingOrg(createChannelDto.getOrderingOrg());
 			channelInfoDto.setChannelTx(0);
 			channelInfoDto.setChannelBlock(0);
-			channelInfoService.saveChannelInfo(channelInfoDto);
+			channelService.saveChannelInfo(channelInfoDto);
 
 			logger.info("[채널생성] 종료");
 
@@ -376,10 +347,10 @@ public class FabricService {
 			ChannelInfoPeerDto channelInfoPeerDto = new ChannelInfoPeerDto();
 
 			channelInfoPeerDto.setAnchorYn(false);
-			channelInfoPeerDto.setChannelInfoEntity(channelInfoService.findByChannelName(channelName));
-			channelInfoPeerDto.setConInfoEntity(conInfoService.selectByConName(peerDto.getConName()).toEntity());
+			channelInfoPeerDto.setChannelInfoEntity(channelService.findChannelInfoByChannelName(channelName));
+			channelInfoPeerDto.setConInfoEntity(containerService.selectByConName(peerDto.getConName()).toEntity());
 
-			channelInfoService.saveChannelInfoPeer(channelInfoPeerDto);
+			channelService.saveChannelInfoPeer(channelInfoPeerDto);
 
 		}
 
@@ -398,10 +369,10 @@ public class FabricService {
 		logger.info("[체인코드 설치] 시작");
 		logger.info("[체인코드 설치] InstallCcDto : " + installCcDto);
 
-		ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", installCcDto.getOrgName());
+		ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", installCcDto.getOrgName());
 
 		FabricMemberDto peerDto = null;
-		String ccLang = ccInfoService.getCcLang(installCcDto.getCcName());
+		String ccLang = chaincodeService.getCcLang(installCcDto.getCcName());
 
 		for (FabricMemberDto peer : peerDtoArr) {
 			if (peer.getConNum() == installCcDto.getConNum()) {
@@ -417,10 +388,10 @@ public class FabricService {
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
 
 			ccInfoPeerDto.setCcVersion(installCcDto.getCcVersion());
-			ccInfoPeerDto.setCcInfoEntity(ccInfoService.findCcInfo(installCcDto.getCcName()).get());
-			ccInfoPeerDto.setConInfoEntity(conInfoService.selectByConName(peerDto.getConName()).toEntity());
+			ccInfoPeerDto.setCcInfoEntity(chaincodeService.findCcInfoByCcName(installCcDto.getCcName()));
+			ccInfoPeerDto.setConInfoEntity(containerService.selectByConName(peerDto.getConName()).toEntity());
 
-			ccInfoService.saveCcnInfoPeer(ccInfoPeerDto);
+			chaincodeService.saveCcnInfoPeer(ccInfoPeerDto);
 
 		} catch (Exception e) {
 
@@ -449,16 +420,17 @@ public class FabricService {
 
 		try {
 
-			ChannelInfoEntity channelInfo = channelInfoRepository.findById(instantiateCcDto.getChannelName()).get();
+			ChannelInfoEntity channelInfo = channelService
+					.findChannelInfoByChannelName(instantiateCcDto.getChannelName());
 
 			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfo);
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-					.findByChannelInfoEntity(channelInfo);
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
+					.findChannelInfoPeerByChannelName(channelInfo);
 
 			logger.info("[체인코드 인스턴스화] channelInfoPeerArr : " + channelInfoPeerArr);
-			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
 					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
-			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					channelInfo.getOrderingOrg());
 
 			fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
@@ -467,12 +439,11 @@ public class FabricService {
 
 			CcInfoChannelDto ccInfoChannelDto = new CcInfoChannelDto();
 
-			ccInfoChannelDto.setCcInfoEntity(ccInfoRepository.findById(instantiateCcDto.getCcName()).get());
-			ccInfoChannelDto
-					.setChannelInfoEntity(channelInfoRepository.findById(instantiateCcDto.getChannelName()).get());
+			ccInfoChannelDto.setCcInfoEntity(chaincodeService.findCcInfoByCcName(instantiateCcDto.getCcName()));
+			ccInfoChannelDto.setChannelInfoEntity(channelInfo);
 			ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
 
-			ccInfoChannelRepository.save(ccInfoChannelDto.toEntity());
+			chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 
 			logger.info("[체인코드 인스턴스화] 종료");
 
@@ -492,7 +463,7 @@ public class FabricService {
 	 * 
 	 * @return 결과 DTO(채널 블록 이벤트 등록 결과)
 	 */
-	
+
 	public ResultDto registerEventListener(String channelName) {
 
 		logger.info("[채널 블럭 이벤트 등록] 시작");
@@ -500,25 +471,25 @@ public class FabricService {
 
 		try {
 
-			ChannelInfoEntity channelInfo = channelInfoRepository.findById(channelName).get();
+			ChannelInfoEntity channelInfo = channelService.findChannelInfoByChannelName(channelName);
 
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-					.findByChannelInfoEntity(channelInfo);
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
+					.findChannelInfoPeerByChannelName(channelInfo);
 
-			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
 					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
-			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					channelInfo.getOrderingOrg());
 
-			String handler = fabricClient.registerEventListener(
+			String handle = fabricClient.registerEventListener(
 					peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
 					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName);
 
-			ChannelHandlerDto channelHandlerDto = new ChannelHandlerDto();
-			channelHandlerDto.setChannelInfoEntity(channelInfo);
-			channelHandlerDto.setHandler(handler);
+			ChannelHandleDto channelHandleDto = new ChannelHandleDto();
+			channelHandleDto.setChannelName(channelName);
+			channelHandleDto.setHandle(handle);
 
-			channelHandlerRepository.save(channelHandlerDto.toEntity());
+			channelService.saveChannelHandle(channelHandleDto);
 
 			logger.info("[채널 블럭 이벤트 등록] 종료");
 
@@ -530,24 +501,25 @@ public class FabricService {
 		return util.setResult("0000", true, "Success Instantiate chaincode", null);
 	}
 
-	public ResultDto registerEventListener2(InstantiateCcDto instantiateCcDto, String a) {
+	public ResultDto unregisterEventListener(String channelName) {
 
 		try {
 
-			ChannelInfoEntity channelInfo = channelInfoRepository.findById(instantiateCcDto.getChannelName()).get();
+			ChannelInfoEntity channelInfo = channelService.findChannelInfoByChannelName(channelName);
 
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-					.findByChannelInfoEntity(channelInfo);
+			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
+					.findChannelInfoPeerByChannelName(channelInfo);
 
-			ArrayList<FabricMemberDto> peerDtoArr = conInfoService.createMemberDtoArr("peer", channelInfoPeerArr
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
 					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
-			ArrayList<FabricMemberDto> ordererDtoArr = conInfoService.createMemberDtoArr("orderer",
+			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					channelInfo.getOrderingOrg());
-			System.out.println("registerEventListener 1");
-			fabricClient.eventTest2(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
-					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(),
-					instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(), instantiateCcDto.getCcLang(), a);
-			System.out.println("registerEventListener 2");
+
+			fabricClient.unregisterEventListener(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
+					channelService.findChannelHandleByChannelInfo(channelName).getHandle());
+
+			channelService.deleteChannelHandle(channelName);
 
 		} catch (Exception e) {
 

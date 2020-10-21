@@ -2,36 +2,29 @@ package com.brchain.core.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.brchain.core.dto.ChannelHandleDto;
 import com.brchain.core.dto.ChannelInfoDto;
 import com.brchain.core.dto.ChannelInfoPeerDto;
-import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.ResultDto;
+import com.brchain.core.entity.ChannelHandleEntity;
 import com.brchain.core.entity.ChannelInfoEntity;
 import com.brchain.core.entity.ChannelInfoPeerEntity;
-import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.repository.ChannelHandleRepository;
 import com.brchain.core.repository.ChannelInfoPeerRepository;
 import com.brchain.core.repository.ChannelInfoRepository;
-import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class ChannelInfoService {
+public class ChannelService {
 
 	@NonNull
 	private ChannelInfoRepository channelInfoRepository;
@@ -39,12 +32,11 @@ public class ChannelInfoService {
 	@NonNull
 	private ChannelInfoPeerRepository channelInfoPeerRepository;
 
-	
+	@NonNull
+	private ChannelHandleRepository channelHandleRepository;
+
 	@Autowired
-	private ConInfoService conInfoService;
-	
-	@Autowired
-	private ChannelInfoService channelInfoService;
+	private ContainerService containerService;
 
 	@Autowired
 	private Util util;
@@ -63,11 +55,11 @@ public class ChannelInfoService {
 
 	}
 
-	public ChannelInfoEntity findByChannelName(String channelName) {
-		
+	public ChannelInfoEntity findChannelInfoByChannelName(String channelName) {
+
 		return channelInfoRepository.findById(channelName).get();
 	}
-	
+
 	/**
 	 * 채널 리스트 조회 서비스
 	 * 
@@ -121,7 +113,8 @@ public class ChannelInfoService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByConInfoEntity(conInfoService.selectByConName(conName).toEntity());
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+				.findByConInfoEntity(containerService.selectByConName(conName).toEntity());
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
@@ -149,7 +142,8 @@ public class ChannelInfoService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByChannelInfoEntity(channelInfoService.findByChannelName(channelName));
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
+				.findByChannelInfoEntity(findChannelInfoByChannelName(channelName));
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
@@ -162,6 +156,26 @@ public class ChannelInfoService {
 		}
 
 		return util.setResult("0000", true, "Success get channel info", resultJsonArr);
+	}
+
+	public ArrayList<ChannelInfoPeerEntity> findChannelInfoPeerByChannelName(ChannelInfoEntity channelInfo) {
+
+		return channelInfoPeerRepository.findByChannelInfoEntity(channelInfo);
+	}
+
+	public ChannelHandleEntity saveChannelHandle(ChannelHandleDto channelHandleDto) {
+
+		return channelHandleRepository.save(channelHandleDto.toEntity());
+
+	}
+	public void deleteChannelHandle(String channelName) {
+
+		channelHandleRepository.deleteById(channelName);
+
+	}
+	public ChannelHandleEntity findChannelHandleByChannelInfo(String channelName) {
+
+		return channelHandleRepository.findById(channelName).get();
 	}
 
 }

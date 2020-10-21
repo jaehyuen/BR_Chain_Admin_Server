@@ -21,22 +21,19 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Table(name = "CHANNEL_HANDLER")
+@Table(name = "CHANNEL_HANDLE")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChannelHandlerEntity extends BaseEntity {
+public class ChannelHandleEntity extends BaseEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "ID")
-	private Long id;
+	@Column(name = "CHANNEL_NAME", nullable = false)
+	private String channelName;
 
-	@Column(name = "HANDLER", nullable = false)
-	private String handler;
 
-	@OneToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER)
-	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
-	private ChannelInfoEntity channelInfoEntity;
+	@Column(name = "HANDLE", nullable = false)
+	private String handle;
 
+	
 }

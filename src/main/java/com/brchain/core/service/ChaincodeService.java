@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.brchain.core.dto.CcInfoChannelDto;
 import com.brchain.core.dto.CcInfoDto;
 import com.brchain.core.dto.CcInfoPeerDto;
 import com.brchain.core.dto.ResultDto;
@@ -37,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class CcInfoService {
+public class ChaincodeService {
 
 	@NonNull
 	private CcInfoRepository ccInfoRepository;
@@ -48,15 +49,12 @@ public class CcInfoService {
 	@NonNull
 	private CcInfoChannelRepository ccInfoChannelRepository;
 
-	@NonNull
-	private ChannelInfoRepository channelInfoRepository;
-
-	@NonNull
-	private ChannelInfoPeerRepository channelInfoPeerRepository;
-
-	@NonNull
-	private ConInfoRepository conInfoRepository;
-
+	@Autowired
+	private ContainerService containerService;
+	
+	@Autowired
+	private ChannelService channelService;
+	
 	@Autowired
 	private Util util;
 
@@ -74,9 +72,9 @@ public class CcInfoService {
 
 	}
 
-	public Optional<CcInfoEntity> findCcInfo(String ccName) {
+	public CcInfoEntity findCcInfoByCcName(String ccName) {
 
-		return ccInfoRepository.findById(ccName);
+		return ccInfoRepository.findById(ccName).get();
 
 	}
 
@@ -212,7 +210,7 @@ public class CcInfoService {
 		JSONArray resultJsonArr = new JSONArray();
 
 		ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
-				.findByConInfoEntity(conInfoRepository.findById(conName).get());
+				.findByConInfoEntity(containerService.findConInfoByConName(conName));
 
 		for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
 
@@ -239,8 +237,8 @@ public class CcInfoService {
 	public ResultDto getCcListToActiveInChannel(String channelName) {
 		JSONArray jsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-				.findByChannelInfoEntity(channelInfoRepository.findById(channelName).get());
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
+				.findChannelInfoPeerByChannelName(channelService.findChannelInfoByChannelName(channelName));
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 			ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
@@ -275,7 +273,7 @@ public class CcInfoService {
 		JSONArray jsonArr = new JSONArray();
 
 		ArrayList<CcInfoChannelEntity> ccInfoChannelArr = ccInfoChannelRepository
-				.findByChannelInfoEntity(channelInfoRepository.findById(channelName).get());
+				.findByChannelInfoEntity(channelService.findChannelInfoByChannelName(channelName));
 
 		for (CcInfoChannelEntity ccInfoChannel : ccInfoChannelArr) {
 
@@ -290,6 +288,12 @@ public class CcInfoService {
 		}
 
 		return util.setResult("0000", true, "Success get chaincode list channel", jsonArr);
+
+	}
+	
+	public CcInfoChannelEntity saveCcInfoChannel(CcInfoChannelDto ccInfoChannelDto) {
+
+		return ccInfoChannelRepository.save(ccInfoChannelDto.toEntity());
 
 	}
 }

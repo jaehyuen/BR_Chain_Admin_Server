@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class ConInfoService {
+public class ContainerService {
 
 	@NonNull
 	private ConInfoRepository conInfoRepository;
@@ -294,5 +294,10 @@ public class ConInfoService {
 
 		return resultDto;
 
+	}
+	
+	public ConInfoEntity findConInfoByConName(String conName) {
+		
+		return conInfoRepository.findById(conName).get();
 	}
 }

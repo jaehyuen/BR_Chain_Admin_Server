@@ -92,9 +92,6 @@ public class SshClient {
 	 */
 	public String removeDir(String orgName,String conName) throws DockerException, InterruptedException, JSchException {
 
-//		logger.info("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
-//				+ "/crypto-config/*/*"+orgName+ "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  "
-//				+ sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir + "/channel-artifacts/");
 		if (channelExec == null || channelExec.isClosed()) {
 			connect();
 		}

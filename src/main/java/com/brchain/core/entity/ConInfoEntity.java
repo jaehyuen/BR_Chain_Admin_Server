@@ -1,24 +1,26 @@
 package com.brchain.core.entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
+import com.brchain.core.entity.channel.ChannelInfoEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CONINFO")
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class ConInfoEntity extends BaseEntity {
 
 	@Id
@@ -52,10 +54,31 @@ public class ConInfoEntity extends BaseEntity {
 	@Column(name = "COUCHDB_YN", nullable = true)
 	private boolean couchdbYn;
 
-	@Column(name = "GOSSIP_BOOT_ADDR", nullable = true)
+	@Column(name = "GOSSIP_BOOT_ADDR", nullable = true, columnDefinition = "LONGTEXT")
 	private String gossipBootAddr;
 
 	@Column(name = "ORDERER_PORTS", nullable = true)
 	private String ordererPorts;
+
+	@Builder
+	public ConInfoEntity(String conName, String conId, String conType, int conNum, int conCnt, String conPort,
+			String orgName, String orgType, String consoOrgs, boolean couchdbYn, String gossipBootAddr,
+			String ordererPorts, LocalDateTime createdAt) {
+		
+		this.conName = conName;
+		this.conId = conId;
+		this.conType = conType;
+		this.conNum = conNum;
+		this.conCnt = conCnt;
+		this.conPort = conPort;
+		this.orgName = orgName;
+		this.orgType = orgType;
+		this.consoOrgs = consoOrgs;
+		this.couchdbYn = couchdbYn;
+		this.gossipBootAddr = gossipBootAddr;
+		this.ordererPorts = ordererPorts;
+		super.setCreatedAt(createdAt);
+
+	}
 
 }

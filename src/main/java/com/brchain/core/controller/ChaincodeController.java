@@ -1,7 +1,6 @@
 package com.brchain.core.controller;
 
 import java.io.IOException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,23 +12,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.brchain.core.dto.InstallCcDto;
-import com.brchain.core.dto.InstantiateCcDto;
 import com.brchain.core.dto.ResultDto;
-
+import com.brchain.core.dto.chaincode.InstallCcDto;
+import com.brchain.core.dto.chaincode.InstantiateCcDto;
 import com.brchain.core.service.ChaincodeService;
 import com.brchain.core.service.FabricService;
+
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/core/chaincode/")
+@RequiredArgsConstructor
 public class ChaincodeController {
-
-	@Autowired
-	private ChaincodeService chaincodeService;
-
-	@Autowired
-	private FabricService fabricService;
+	
+	private final ChaincodeService chaincodeService;
+	private final FabricService fabricService;
 
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChaincodeList(

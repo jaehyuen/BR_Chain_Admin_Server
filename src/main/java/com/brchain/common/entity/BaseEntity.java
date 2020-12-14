@@ -10,9 +10,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
+
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public class BaseEntity {
+public abstract class BaseEntity {
 
     @CreatedDate
     @Column(name ="CREATE_AT", nullable = false)

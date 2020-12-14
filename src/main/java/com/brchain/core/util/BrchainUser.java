@@ -1,139 +1,68 @@
 package com.brchain.core.util;
 
-
-
 import java.util.Set;
 
-import io.netty.util.internal.StringUtil;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.User;
 import org.hyperledger.fabric.sdk.identity.X509Enrollment;
 
 public class BrchainUser implements User {
- 
 
-    private String name;
-    private Set<String> roles;
-    private String account;
-    private String affiliation;
-    private String organization;
-    private String enrollmentSecret;
-    Enrollment enrollment = null; //need access in test env.
-    String mspId;
+	private String name;
+	private Set<String> roles;
+	private String account;
+	private String affiliation;
+	private String organization;
 
+	private Enrollment enrollment = null; // need access in test env.
+	private String mspId;
 
-    public BrchainUser(String name, String org,String mspId, X509Enrollment enrollment ) {
-        this.name = name;
-        this.mspId = mspId;
+	public BrchainUser(String name, String org, String mspId, X509Enrollment enrollment) {
+		this.name = name;
+		this.mspId = mspId;
+		this.organization = org;
+		this.enrollment = enrollment;
+	}
 
-        this.organization = org;
-        this.enrollment = enrollment;
-    }
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return this.name;
+	}
 
+	@Override
+	public Set<String> getRoles() {
+		// TODO Auto-generated method stub
+		return this.roles;
+	}
 
-    @Override
-    public String getName() {
-        return this.name;
-    }
+	@Override
+	public String getAccount() {
+		// TODO Auto-generated method stub
+		return this.account;
+	}
 
-    @Override
-    public Set<String> getRoles() {
-        return this.roles;
-    }
-    
-    public void setRoles(Set<String> roles) {
+	@Override
+	public String getAffiliation() {
+		// TODO Auto-generated method stub
+		return this.affiliation;
+	}
 
-        this.roles = roles;
-    
-    }
-    @Override
-    public String getAccount() {
-        return this.account;
-    }
+	@Override
+	public Enrollment getEnrollment() {
+		// TODO Auto-generated method stub
+		return this.enrollment;
+	}
 
-    /**
-     * Set the account.
-     *
-     * @param account The account.
-     */
-    public void setAccount(String account) {
+	@Override
+	public String getMspId() {
+		// TODO Auto-generated method stub
+		return this.mspId;
+	}
 
-        this.account = account;
-        
-    }
-
-    @Override
-    public String getAffiliation() {
-        return this.affiliation;
-    }
-
-    /**
-     * Set the affiliation.
-     *
-     * @param affiliation the affiliation.
-     */
-    public void setAffiliation(String affiliation) {
-        this.affiliation = affiliation;
-        
-    }
-
-    @Override
-    public Enrollment getEnrollment() {
-        return this.enrollment;
-    }
-
-    /**
-     * Determine if this name has been registered.
-     *
-     * @return {@code true} if registered; otherwise {@code false}.
-     */
-    public boolean isRegistered() {
-        return !StringUtil.isNullOrEmpty(enrollmentSecret);
-    }
-
-    /**
-     * Determine if this name has been enrolled.
-     *
-     * @return {@code true} if enrolled; otherwise {@code false}.
-     */
-    public boolean isEnrolled() {
-        return this.enrollment != null;
-    }
-
- 
-   
-
-    public String getEnrollmentSecret() {
-        return enrollmentSecret;
-    }
-
-    public void setEnrollmentSecret(String enrollmentSecret) {
-        this.enrollmentSecret = enrollmentSecret;
-        
-    }
-
-    public void setEnrollment(Enrollment enrollment) {
-
-        this.enrollment = enrollment;
-        
-
-    }
-
-    public static String toKeyValStoreName(String name, String org) {
-        return "user." + name + org;
-    }
-
-    @Override
-    public String getMspId() {
-        return mspId;
-    }
-
-
-
-    public void setMspId(String mspID) {
-        this.mspId = mspID;
-        
-
-    }
+	public String getOrganization() {
+		// TODO Auto-generated method stub
+		return this.organization;
+	}
 
 }

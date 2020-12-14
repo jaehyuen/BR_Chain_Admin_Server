@@ -1,10 +1,8 @@
 package com.brchain.core.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Data;
@@ -12,15 +10,15 @@ import lombok.Data;
 @Data
 public class ContainerSetting {
 
-	String sourceDir = "/svc/nhblock/brchain";
-	String logDir = "/svc/nhblock/logs";
-	String dataDir = "/svc/nhblock/data";
+	private String sourceDir = "/svc/nhblock/brchain";
+	private String logDir = "/svc/nhblock/logs";
+	private String dataDir = "/svc/nhblock/data";
 
-	String orgName;
-	String type;
-	String containerName;
-	String port;
-	int num;
+	private String orgName;
+	private String type;
+	private String containerName;
+	private String port;
+	private int num;
 
 	public ContainerSetting(String orgName, String type, String port, int num) {
 		this.orgName = orgName;
@@ -254,52 +252,52 @@ public class ContainerSetting {
 		return cmd;
 	}
 
-	public Map<String, Map> setVolumes() {
-		Map<String, String> map = new HashMap<String, String>();
-		Map<String, Map> volumes = new HashMap<String, Map>();
-		volumes.put("/etc/hyperledger/fabric-ca", map);
-		volumes.put("/log", map);
-		volumes.put("/crypto-config", map);
-		volumes.put("/scripts", map);
-		volumes.put("/root/data", map);
-		switch (type) {
-		case "peer":
-			volumes.put("/host/var/run", map);
-			volumes.put("/log", map);
-			volumes.put("/opt/gopath/src/github.com/hyperledger/fabric/peer", map);
-			volumes.put("/scripts", map);
-			volumes.put("/var/hyperledger/production", map);
-			break;
-		case "setup_peer":
-		case "setup_orderer":
-		case "setup_channel":
-		case "ca":
-			volumes.put("/etc/hyperledger/fabric-ca", map);
-			volumes.put("/log", map);
-			volumes.put("/crypto-config", map);
-			volumes.put("/scripts", map);
-			volumes.put("/root/data", map);
-			break;
-		case "couchdb":
-			volumes.put("/opt/couchdb/data", map);
-//			volumes.put("/opt/couchdb/etc/local.d", map);
-//			volumes.put("/opt/couchdb/etc/local.ini", map);
-			volumes.put("/opt/couchdb/log", map);
-			break;
-		case "orderer":
-			volumes.put("/etc/hyperledger/orderer", map);
-			volumes.put("/etc/hyperledger/orderer/admin/msp", map);
-			volumes.put("/etc/hyperledger/orderer/orderer.genesis.block", map);
-			volumes.put("/log", map);
-			volumes.put("/scripts", map);
-			volumes.put("/var/hyperledger/production", map);
-
-			break;
-		}
-
-		return volumes;
-
-	}
+//	public Map<String, Map> setVolumes() {
+//		Map<String, String> map = new HashMap<String, String>();
+//		Map<String, Map> volumes = new HashMap<String, Map>();
+//		volumes.put("/etc/hyperledger/fabric-ca", map);
+//		volumes.put("/log", map);
+//		volumes.put("/crypto-config", map);
+//		volumes.put("/scripts", map);
+//		volumes.put("/root/data", map);
+//		switch (type) {
+//		case "peer":
+//			volumes.put("/host/var/run", map);
+//			volumes.put("/log", map);
+//			volumes.put("/opt/gopath/src/github.com/hyperledger/fabric/peer", map);
+//			volumes.put("/scripts", map);
+//			volumes.put("/var/hyperledger/production", map);
+//			break;
+//		case "setup_peer":
+//		case "setup_orderer":
+//		case "setup_channel":
+//		case "ca":
+//			volumes.put("/etc/hyperledger/fabric-ca", map);
+//			volumes.put("/log", map);
+//			volumes.put("/crypto-config", map);
+//			volumes.put("/scripts", map);
+//			volumes.put("/root/data", map);
+//			break;
+//		case "couchdb":
+//			volumes.put("/opt/couchdb/data", map);
+////			volumes.put("/opt/couchdb/etc/local.d", map);
+////			volumes.put("/opt/couchdb/etc/local.ini", map);
+//			volumes.put("/opt/couchdb/log", map);
+//			break;
+//		case "orderer":
+//			volumes.put("/etc/hyperledger/orderer", map);
+//			volumes.put("/etc/hyperledger/orderer/admin/msp", map);
+//			volumes.put("/etc/hyperledger/orderer/orderer.genesis.block", map);
+//			volumes.put("/log", map);
+//			volumes.put("/scripts", map);
+//			volumes.put("/var/hyperledger/production", map);
+//
+//			break;
+//		}
+//
+//		return volumes;
+//
+//	}
 
 	public Set<String> setExposedPort(String[] ports) {
 		Set<String> exposedPorts = new HashSet<>();

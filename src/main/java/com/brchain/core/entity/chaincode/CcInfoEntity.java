@@ -1,4 +1,6 @@
-package com.brchain.core.entity;
+package com.brchain.core.entity.chaincode;
+
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -6,14 +8,17 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
+import com.brchain.core.entity.BlockEntity;
+import com.brchain.core.entity.channel.ChannelInfoEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CCINFO")
 @Builder
@@ -29,9 +34,18 @@ public class CcInfoEntity extends BaseEntity {
 	private String ccPath;
 
 	@Column(name = "CC_LANG", nullable = false)
-	private String ccLang;;
+	private String ccLang;
 
 	@Column(name = "CC_DESC", nullable = false)
-	private String ccDesc;;
+	private String ccDesc;
 
+	@Builder
+	public CcInfoEntity(String ccName, String ccPath, String ccLang, String ccDesc, LocalDateTime createdAt) {
+		this.ccName = ccName;
+		this.ccPath = ccPath;
+		this.ccLang = ccLang;
+		this.ccDesc = ccDesc;
+		super.setCreatedAt(createdAt);
+
+	}
 }

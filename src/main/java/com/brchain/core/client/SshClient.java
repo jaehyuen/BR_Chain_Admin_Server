@@ -23,42 +23,40 @@ import com.spotify.docker.client.exceptions.DockerException;
 
 @Component
 public class SshClient {
-	
+
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	private Session session = null;
 	private Channel channel = null;
 	private ChannelSftp channelSftp = null;
 	private ChannelExec channelExec = null;
 
-
 	@Value("${brchain.ssh.user}")
-	String username;
+	private String username;
 
 	@Value("${brchain.ip}")
-	String ip;
+	private String ip;
 
 	@Value("${brchain.ssh.pass}")
-	String password;
+	private String password;
 
 	@Value("${brchain.ssh.port}")
-	int port;
+	private int port;
 
 	@Value("${brchain.sourcedir}")
-	String sourceDir;
+	private String sourceDir;
 
 	@Value("${brchain.logdir}")
-	String logDir;
+	private String logDir;
 
 	@Value("${brchain.datadir}")
-	String dataDir;
-
+	private String dataDir;
 
 	/**
 	 * ssh 및 sftp 연결 함수
 	 * 
 	 * @throws JSchException
 	 */
-	
+
 	public void connect() throws JSchException {
 
 		JSch jsch = new JSch();
@@ -78,7 +76,6 @@ public class SshClient {
 
 	}
 
-	
 	/**
 	 * 폴더 삭제 함수
 	 * 
@@ -90,31 +87,33 @@ public class SshClient {
 	 * @throws InterruptedException
 	 * @throws JSchException
 	 */
-	public String removeDir(String orgName,String conName) throws DockerException, InterruptedException, JSchException {
+	public String removeDir(String orgName, String conName)
+			throws DockerException, InterruptedException, JSchException {
 
 		if (channelExec == null || channelExec.isClosed()) {
 			connect();
 		}
-		
+
 		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
-		+ "/crypto-config/*/*"+orgName+ "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  "
-		+ sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir + "/channel-artifacts/");
+				+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName
+				+ " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir
+				+ "/channel-artifacts/");
 		channelExec.connect();
 
 		return "";
 
 	}
 
-	
 	/**
 	 * 커맨드 실행 함수
+	 * 
 	 * @param command 커맨드
 	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 * @throws JSchException
 	 */
-	
+
 	public void execCommand(String command) throws DockerException, InterruptedException, JSchException {
 
 		if (channelExec == null || channelExec.isClosed()) {
@@ -128,7 +127,6 @@ public class SshClient {
 
 	}
 
-	
 //	public void deleteFolder(String path) {
 //
 //		logger.info("deleteFolder");
@@ -149,10 +147,10 @@ public class SshClient {
 //		}
 //	}
 
-	
 	/**
 	 * 파일 업로드 함수
-	 * @param path 업로드경로
+	 * 
+	 * @param path           업로드경로
 	 * @param uploadFileName 파일명
 	 * 
 	 * @throws Exception
@@ -162,11 +160,13 @@ public class SshClient {
 		if (channelSftp == null) {
 			connect();
 		}
+		String dir = sourceDir + "/" + path;
+		execCommand("mkdir -p " + dir);
 
 		FileInputStream inputStream = null;
 		// 앞서 만든 접속 메서드를 사용해 접속한다.
 
-		String dir = sourceDir + "/" + path;
+		
 		logger.info("[파일 업로드 실행]" + dir + uploadFileName);
 		try {
 			// Change to output directory
@@ -187,18 +187,17 @@ public class SshClient {
 
 	}
 
-	
 	/**
 	 * 파일 다운로드 함수
 	 * 
-	 * @param path 파일경로
+	 * @param path             파일경로
 	 * @param downloadFileName 파일명
 	 * 
 	 * @throws SftpException
 	 * @throws IOException
 	 * @throws JSchException
 	 */
-	
+
 	public void downloadFile(String path, String downloadFileName) throws SftpException, IOException, JSchException {
 
 		if (channelSftp == null) {

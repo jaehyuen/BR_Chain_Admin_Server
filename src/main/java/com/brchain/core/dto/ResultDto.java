@@ -1,8 +1,10 @@
 package com.brchain.core.dto;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class ResultDto {
 
 	private String resultCode; // 결과 코드

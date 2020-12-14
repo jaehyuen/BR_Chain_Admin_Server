@@ -1,4 +1,4 @@
-package com.brchain.core.dto;
+package com.brchain.core.dto.chaincode;
 
 import lombok.Data;
 

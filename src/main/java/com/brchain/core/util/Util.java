@@ -10,24 +10,50 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 
+import com.brchain.core.dto.BlockDto;
+import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.PolicyDto;
 import com.brchain.core.dto.ResultDto;
+import com.brchain.core.dto.TransactionDto;
+import com.brchain.core.dto.chaincode.CcInfoChannelDto;
+import com.brchain.core.dto.chaincode.CcInfoDto;
+import com.brchain.core.dto.chaincode.CcInfoPeerDto;
+import com.brchain.core.dto.channel.ChannelHandleDto;
+import com.brchain.core.dto.channel.ChannelInfoDto;
+import com.brchain.core.dto.channel.ChannelInfoPeerDto;
+import com.brchain.core.entity.BlockEntity;
+import com.brchain.core.entity.TransactionEntity;
+import com.brchain.core.entity.BlockEntity.BlockEntityBuilder;
+import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.entity.ConInfoEntity.ConInfoEntityBuilder;
+import com.brchain.core.entity.TransactionEntity.TransactionEntityBuilder;
+import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
+import com.brchain.core.entity.chaincode.CcInfoEntity;
+import com.brchain.core.entity.chaincode.CcInfoPeerEntity;
+import com.brchain.core.entity.chaincode.CcInfoChannelEntity.CcInfoChannelEntityBuilder;
+import com.brchain.core.entity.chaincode.CcInfoEntity.CcInfoEntityBuilder;
+import com.brchain.core.entity.chaincode.CcInfoPeerEntity.CcInfoPeerEntityBuilder;
+import com.brchain.core.entity.channel.ChannelHandleEntity;
+import com.brchain.core.entity.channel.ChannelInfoEntity;
+import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
+import com.brchain.core.entity.channel.ChannelHandleEntity.ChannelHandleEntityBuilder;
+import com.brchain.core.entity.channel.ChannelInfoEntity.ChannelInfoEntityBuilder;
+import com.brchain.core.entity.channel.ChannelInfoPeerEntity.ChannelInfoPeerEntityBuilder;
 
 @Component
 public class Util {
 
-	
 	/**
 	 * connection.json 생성 함수
 	 * 
-	 * @param channelName 채널명
+	 * @param channelName   채널명
 	 * @param ordererArrDto Json 생성시 필요한 오더러 리스트 관련 DTO
-	 * @param peerArrDto Json 생성시 필요한 피 리스트 관련 DTO
+	 * @param peerArrDto    Json 생성시 필요한 피 리스트 관련 DTO
 	 * 
 	 * @return JSONObject fabricJson connection.yaml
 	 */
-	
+
 	@SuppressWarnings({ "unchecked" })
 	public JSONObject createFabrcSetting(String channelName, ArrayList<FabricMemberDto> ordererArrDto,
 			ArrayList<FabricMemberDto> peerArrDto) {
@@ -100,17 +126,16 @@ public class Util {
 		return fabricJson;
 	}
 
-	
 	/**
 	 * peer, orderer 관련 Json 생성 함수
 	 * 
-	 * @param orgName 조직명
+	 * @param orgName  조직명
 	 * @param hostName 호스트명
-	 * @param url Url
+	 * @param url      Url
 	 * 
 	 * @return peer, orderer 관련 Json
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	public JSONObject createMemberJson(String orgName, String hostName, String url) {
 
@@ -137,14 +162,14 @@ public class Util {
 	/**
 	 * 설정파일(컨소시움) 수정 함수 (테스트중)
 	 * 
-	 * @param json 수정할 Json
-	 * @param addjson 추가할 Json
+	 * @param json       수정할 Json
+	 * @param addjson    추가할 Json
 	 * @param parentsKey 부모키??
 	 * 
 	 * @return 추가된 Json
 	 */
-	
-	public JSONObject test(JSONObject json, JSONObject addjson, String parentsKey,String peerOrg) {
+
+	public JSONObject modifyConsoConfig(JSONObject json, JSONObject addjson, String parentsKey, String peerOrg) {
 
 		String key = "";
 		JSONObject resultJson = new JSONObject();
@@ -165,7 +190,7 @@ public class Util {
 
 			} else if (json.get(key) instanceof JSONObject) {
 
-				resultJson = test((JSONObject) json.get(key), addjson, key,peerOrg);
+				resultJson = modifyConsoConfig((JSONObject) json.get(key), addjson, key, peerOrg);
 			}
 
 		}
@@ -180,7 +205,7 @@ public class Util {
 	 * 
 	 * @return 조직 정보 Json
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	public JSONObject createOrgJson(FabricMemberDto memberDto) {
 
@@ -267,7 +292,7 @@ public class Util {
 	 * 
 	 * @return 정책 Json
 	 */
-	
+
 	@SuppressWarnings("unchecked")
 	public JSONObject createPolicyJson(PolicyDto policyDto) {
 
@@ -342,35 +367,32 @@ public class Util {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject addUpdateHeader(String channelName, JSONObject dataJson ) {
+	public JSONObject addUpdateHeader(String channelName, JSONObject dataJson) {
 
 		JSONObject configUpdateJson = new JSONObject();
-		
+
 		JSONObject updateJson = new JSONObject();
-		
+
 		JSONObject payloadJson = new JSONObject();
-		
+
 		JSONObject channelHeaderJson = new JSONObject();
 		JSONObject headerJson = new JSONObject();
-		
-	
-		
-		channelHeaderJson.put("type",2);
-		channelHeaderJson.put("channel_id",channelName);
-		
-		headerJson.put("channel_header",channelHeaderJson);
-		
-		payloadJson.put("data",configUpdateJson);
-		payloadJson.put("header",headerJson);
-		
+
+		channelHeaderJson.put("type", 2);
+		channelHeaderJson.put("channel_id", channelName);
+
+		headerJson.put("channel_header", channelHeaderJson);
+
+		payloadJson.put("data", configUpdateJson);
+		payloadJson.put("header", headerJson);
+
 		configUpdateJson.put("config_update", dataJson);
-		
-		updateJson.put("payload",payloadJson);
-		
+
+		updateJson.put("payload", payloadJson);
 
 		return updateJson;
 	}
-	
+
 	public String fileEncodeBases64(String filePath) {
 
 		File file = new File(filePath);
@@ -386,27 +408,374 @@ public class Util {
 		return base64data;
 
 	}
-	
-	public ResultDto setResult(String code, boolean flag, String message,Object data) {
-		
+
+	public ResultDto setResult(String code, boolean flag, String message, Object data) {
+
 		ResultDto resultDto = new ResultDto();
-		
-	
+
 		resultDto.setResultCode(code);
 		resultDto.setResultFlag(flag);
 		resultDto.setResultMessage(message);
 		resultDto.setResultData(data);
-		
+
 		return resultDto;
-		
+
 	}
-	
-/* ########################################################################
- * 
- *                                   TEST
- * 
- * ########################################################################
- */ 
+
+	public JSONObject modifyAnchorConfig(JSONObject json, JSONObject addjson, String parentsKey,
+			FabricMemberDto peerDto) {
+
+		String key = "";
+		JSONObject resultJson = new JSONObject();
+
+		Iterator iter = json.keySet().iterator();
+		while (iter.hasNext()) {
+			key = (String) iter.next();
+
+			if (key.equals("values") && parentsKey.equals(peerDto.getOrgName())) {
+				System.out.println("현재키 :" + key + " 부모 키 :" + parentsKey);
+
+				System.out.println("찾았다!!!!11");
+				System.out.println("찾았다!!!!22");
+				System.out.println("찾았다!!!!33");
+				resultJson = (JSONObject) json.get(key);
+
+				if (resultJson.containsKey("AnchorPeers")) {
+					JSONObject json1 = new JSONObject();
+					JSONObject json2 = new JSONObject();
+					JSONArray jsonArr = new JSONArray();
+
+					json1 = (JSONObject) resultJson.get("AnchorPeers");
+					json2 = (JSONObject) json1.get("value");
+					jsonArr = (JSONArray) json2.get("anchor_peers");
+
+					JSONObject anchorPeerJson = new JSONObject();
+					anchorPeerJson.put("host", peerDto.getConName());
+					anchorPeerJson.put("port", peerDto.getConPort());
+					jsonArr.add(anchorPeerJson);
+
+				} else {
+					resultJson.put("AnchorPeers", addjson);
+				}
+
+				return resultJson;
+
+			} else if (json.get(key) instanceof JSONObject) {
+
+				resultJson = modifyAnchorConfig((JSONObject) json.get(key), addjson, key, peerDto);
+			}
+
+		}
+
+		return json;
+	}
+
+	public JSONObject createAnchorJson(FabricMemberDto peerDto) {
+
+		JSONObject anchorPeerJson = new JSONObject();
+		JSONArray anchorPeerArr = new JSONArray();
+
+		JSONObject resultJson = new JSONObject();
+		JSONObject valueJson = new JSONObject();
+
+		anchorPeerJson.put("host", peerDto.getConName());
+		anchorPeerJson.put("port", peerDto.getConPort());
+
+		anchorPeerArr.add(anchorPeerJson);
+
+		valueJson.put("anchor_peers", anchorPeerArr);
+
+		resultJson.put("version", "0");
+		resultJson.put("value", valueJson);
+		resultJson.put("mod_policy", "Admins");
+
+		return resultJson;
+
+	}
+
+	/*
+	 * ########################################################################
+	 * 
+	 * TEST to Entity
+	 * 
+	 * ########################################################################
+	 */
+
+	public ConInfoEntity toEntity(ConInfoDto conInfoDto) {
+
+//		ConInfoEntityBuilder conInfoEntityBuilder = ConInfoEntity.builder().conId(conInfoDto.getConId())
+//				.conName(conInfoDto.getConName()).conType(conInfoDto.getConType()).conNum(conInfoDto.getConNum())
+//				.conCnt(conInfoDto.getConCnt()).conPort(conInfoDto.getConPort()).orgName(conInfoDto.getOrgName())
+//				.orgType(conInfoDto.getOrgType()).consoOrgs(conInfoDto.getConsoOrgs())
+//				.couchdbYn(conInfoDto.isCouchdbYn()).gossipBootAddr(conInfoDto.getGossipBootAddress())
+//				.ordererPorts(conInfoDto.getOrdererPorts());
+//
+//		if (conInfoDto.getCreatedAt() == null) {
+//			return conInfoEntityBuilder.build();
+//		} else {
+//			return conInfoEntityBuilder.createdAt(conInfoDto.getCreatedAt()).build();
+//		}
+
+		return ConInfoEntity.builder().conId(conInfoDto.getConId()).conName(conInfoDto.getConName())
+				.conType(conInfoDto.getConType()).conNum(conInfoDto.getConNum()).conCnt(conInfoDto.getConCnt())
+				.conPort(conInfoDto.getConPort()).orgName(conInfoDto.getOrgName()).orgType(conInfoDto.getOrgType())
+				.consoOrgs(conInfoDto.getConsoOrgs()).couchdbYn(conInfoDto.isCouchdbYn())
+				.gossipBootAddr(conInfoDto.getGossipBootAddr()).ordererPorts(conInfoDto.getOrdererPorts())
+				.createdAt(conInfoDto.getCreatedAt()).build();
+	}
+
+	public CcInfoEntity toEntity(CcInfoDto ccInfoDto) {
+
+//		CcInfoEntityBuilder ccInfoEntityBuilder = CcInfoEntity.builder().ccName(ccInfoDto.getCcName())
+//				.ccPath(ccInfoDto.getCcPath()).ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc());
+//
+//		if (ccInfoDto.getCreatedAt() == null) {
+//			return ccInfoEntityBuilder.build();
+//		} else {
+//			return ccInfoEntityBuilder.createdAt(ccInfoDto.getCreatedAt()).build();
+//		}
+//
+		return CcInfoEntity.builder().ccName(ccInfoDto.getCcName()).ccPath(ccInfoDto.getCcPath())
+				.ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc()).createdAt(ccInfoDto.getCreatedAt())
+				.build();
+	}
+
+	public CcInfoPeerEntity toEntity(CcInfoPeerDto ccInfoPeerDto) {
+
+//		CcInfoPeerEntityBuilder ccInfoPeerEntityBuilder = CcInfoPeerEntity.builder().id(ccInfoPeerDto.getId())
+//				.ccVersion(ccInfoPeerDto.getCcVersion()).conInfoEntity(ccInfoPeerDto.getConInfoEntity())
+//				.ccInfoEntity(ccInfoPeerDto.getCcInfoEntity());
+//
+//		if (ccInfoPeerDto.getCreatedAt() == null) {
+//			return ccInfoPeerEntityBuilder.build();
+//		} else {
+//			return ccInfoPeerEntityBuilder.createdAt(ccInfoPeerDto.getCreatedAt()).build();
+//		}
+
+		return CcInfoPeerEntity.builder().id(ccInfoPeerDto.getId()).ccVersion(ccInfoPeerDto.getCcVersion())
+				.conInfoEntity(ccInfoPeerDto.getConInfoEntity()).ccInfoEntity(ccInfoPeerDto.getCcInfoEntity())
+				.createdAt(ccInfoPeerDto.getCreatedAt()).build();
+	}
+
+	public CcInfoChannelEntity toEntity(CcInfoChannelDto ccInfoChannelDto) {
+
+//		CcInfoChannelEntityBuilder ccInfoChannelEntityBuilder = CcInfoChannelEntity.builder()
+//				.id(ccInfoChannelDto.getId()).ccVersion(ccInfoChannelDto.getCcVersion())
+//				.channelInfoEntity(ccInfoChannelDto.getChannelInfoEntity())
+//				.ccInfoEntity(ccInfoChannelDto.getCcInfoEntity());
+//
+//		if (ccInfoChannelDto.getCreatedAt() == null) {
+//			return ccInfoChannelEntityBuilder.build();
+//		} else {
+//			return ccInfoChannelEntityBuilder.createdAt(ccInfoChannelDto.getCreatedAt()).build();
+//		}
+
+		return CcInfoChannelEntity.builder().id(ccInfoChannelDto.getId()).ccVersion(ccInfoChannelDto.getCcVersion())
+				.channelInfoEntity(ccInfoChannelDto.getChannelInfoEntity())
+				.ccInfoEntity(ccInfoChannelDto.getCcInfoEntity()).createdAt(ccInfoChannelDto.getCreatedAt()).build();
+
+	}
+
+	public ChannelInfoEntity toEntity(ChannelInfoDto channelInfoDto) {
+
+//		ChannelInfoEntityBuilder channelInfoEntityBuilder = ChannelInfoEntity.builder()
+//				.channelName(channelInfoDto.getChannelName()).channelBlock(channelInfoDto.getChannelBlock())
+//				.channelTx(channelInfoDto.getChannelTx()).orderingOrg(channelInfoDto.getOrderingOrg())
+//				.appAdminPolicyType(channelInfoDto.getAppAdminPolicyType())
+//				.appAdminPolicyValue(channelInfoDto.getAppAdminPolicyValue())
+//				.ordererAdminPolicyType(channelInfoDto.getOrdererAdminPolicyType())
+//				.ordererAdminPolicyValue(channelInfoDto.getOrdererAdminPolicyValue())
+//				.channelAdminPolicyType(channelInfoDto.getChannelAdminPolicyType())
+//				.channelAdminPolicyValue(channelInfoDto.getChannelAdminPolicyValue())
+//				.batchTimeout(channelInfoDto.getBatchTimeout()).batchSizeAbsolMax(channelInfoDto.getBatchSizeAbsolMax())
+//				.batchSizeMaxMsg(channelInfoDto.getBatchSizeMaxMsg())
+//				.batchSizePreferMax(channelInfoDto.getBatchSizePreferMax());
+//
+//		if (channelInfoDto.getCreatedAt() == null) {
+//			return channelInfoEntityBuilder.build();
+//		} else {
+//			return channelInfoEntityBuilder.createdAt(channelInfoDto.getCreatedAt()).build();
+//		}
+
+		return ChannelInfoEntity.builder().channelName(channelInfoDto.getChannelName())
+				.channelBlock(channelInfoDto.getChannelBlock()).channelTx(channelInfoDto.getChannelTx())
+				.orderingOrg(channelInfoDto.getOrderingOrg()).appAdminPolicyType(channelInfoDto.getAppAdminPolicyType())
+				.appAdminPolicyValue(channelInfoDto.getAppAdminPolicyValue())
+				.ordererAdminPolicyType(channelInfoDto.getOrdererAdminPolicyType())
+				.ordererAdminPolicyValue(channelInfoDto.getOrdererAdminPolicyValue())
+				.channelAdminPolicyType(channelInfoDto.getChannelAdminPolicyType())
+				.channelAdminPolicyValue(channelInfoDto.getChannelAdminPolicyValue())
+				.batchTimeout(channelInfoDto.getBatchTimeout()).batchSizeAbsolMax(channelInfoDto.getBatchSizeAbsolMax())
+				.batchSizeMaxMsg(channelInfoDto.getBatchSizeMaxMsg())
+				.batchSizePreferMax(channelInfoDto.getBatchSizePreferMax()).createdAt(channelInfoDto.getCreatedAt())
+				.build();
+	}
+
+	public ChannelInfoPeerEntity toEntity(ChannelInfoPeerDto channelInfoPeerDto) {
+
+//		ChannelInfoPeerEntityBuilder channelInfoPeerEntityBuilder = ChannelInfoPeerEntity.builder()
+//				.id(channelInfoPeerDto.getId()).anchorYn(channelInfoPeerDto.isAnchorYn())
+//				.conInfoEntity(channelInfoPeerDto.getConInfoEntity())
+//				.channelInfoEntity(channelInfoPeerDto.getChannelInfoEntity());
+//
+//		if (channelInfoPeerDto.getCreatedAt() == null) {
+//			return channelInfoPeerEntityBuilder.build();
+//		} else {
+//			return channelInfoPeerEntityBuilder.createdAt(channelInfoPeerDto.getCreatedAt()).build();
+//		}
+
+		return ChannelInfoPeerEntity.builder().id(channelInfoPeerDto.getId()).anchorYn(channelInfoPeerDto.isAnchorYn())
+				.conInfoEntity(channelInfoPeerDto.getConInfoEntity())
+				.channelInfoEntity(channelInfoPeerDto.getChannelInfoEntity())
+				.createdAt(channelInfoPeerDto.getCreatedAt()).build();
+	}
+
+	public ChannelHandleEntity toEntity(ChannelHandleDto channelHandleDto) {
+
+//		ChannelHandleEntityBuilder channelHandleEntityBuilder = ChannelHandleEntity.builder()
+//				.handle(channelHandleDto.getHandle()).channelName(channelHandleDto.getChannelName());
+//		if (channelHandleDto.getCreatedAt() == null) {
+//			return channelHandleEntityBuilder.build();
+//		} else {
+//			return channelHandleEntityBuilder.createdAt(channelHandleDto.getCreatedAt()).build();
+//		}
+
+		return ChannelHandleEntity.builder().handle(channelHandleDto.getHandle())
+				.channelName(channelHandleDto.getChannelName()).createdAt(channelHandleDto.getCreatedAt()).build();
+	}
+
+	public TransactionEntity toEntity(TransactionDto transactionDto) {
+
+//		TransactionEntityBuilder transactionEntityBuilder = TransactionEntity.builder().txID(transactionDto.getTxID())
+//				.creatorId(transactionDto.getCreatorId()).txType(transactionDto.getTxType())
+//				.timestamp(transactionDto.getTimestamp()).ccName(transactionDto.getCcName())
+//				.ccVersion(transactionDto.getCcVersion()).ccArgs(transactionDto.getCcArgs())
+//				.blockEntity(transactionDto.getBlockEntity()).channelInfoEntity(transactionDto.getChannelInfoEntity());
+//
+//		if (transactionDto.getCreatedAt() == null) {
+//			return transactionEntityBuilder.build();
+//		} else {
+//			return transactionEntityBuilder.createdAt(transactionDto.getCreatedAt()).build();
+//		}
+
+		return TransactionEntity.builder().txID(transactionDto.getTxID()).creatorId(transactionDto.getCreatorId())
+				.txType(transactionDto.getTxType()).timestamp(transactionDto.getTimestamp())
+				.ccName(transactionDto.getCcName()).ccVersion(transactionDto.getCcVersion())
+				.ccArgs(transactionDto.getCcArgs()).blockEntity(transactionDto.getBlockEntity())
+				.channelInfoEntity(transactionDto.getChannelInfoEntity()).createdAt(transactionDto.getCreatedAt())
+				.build();
+	}
+
+	public BlockEntity toEntity(BlockDto blockDto) {
+
+//		BlockEntityBuilder blockEntityBuilder = BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash())
+//				.blockNum(blockDto.getBlockNum()).txCount(blockDto.getTxCount())
+//				.prevDataHash(blockDto.getPrevDataHash()).channelInfoEntity(blockDto.getChannelInfoEntity());
+//
+//		if (blockDto.getCreatedAt() == null) {
+//			return blockEntityBuilder.build();
+//		} else {
+//			return blockEntityBuilder.createdAt(blockDto.getCreatedAt()).build();
+//		}
+
+		return BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash()).blockNum(blockDto.getBlockNum())
+				.txCount(blockDto.getTxCount()).prevDataHash(blockDto.getPrevDataHash())
+				.channelInfoEntity(blockDto.getChannelInfoEntity()).createdAt(blockDto.getCreatedAt()).build();
+
+	}
+
+	/*
+	 * ########################################################################
+	 * 
+	 * TEST to Dto
+	 * 
+	 * ########################################################################
+	 */
+
+	public ConInfoDto toDto(ConInfoEntity conInfoEntity) {
+		return ConInfoDto.builder().conName(conInfoEntity.getConName()).conId(conInfoEntity.getConId())
+				.conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum())
+				.conPort(conInfoEntity.getConPort()).orgName(conInfoEntity.getOrgName())
+				.orgType(conInfoEntity.getOrgType()).consoOrgs(conInfoEntity.getConsoOrgs())
+				.couchdbYn(conInfoEntity.isCouchdbYn()).gossipBootAddr(conInfoEntity.getGossipBootAddr())
+				.ordererPorts(conInfoEntity.getOrdererPorts()).createdAt(conInfoEntity.getCreatedAt()).build();
+
+	}
+
+	public CcInfoDto toDto(CcInfoEntity ccInfoEntity) {
+		return CcInfoDto.builder().ccName(ccInfoEntity.getCcName()).ccPath(ccInfoEntity.getCcPath())
+				.ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc())
+				.createdAt(ccInfoEntity.getCreatedAt()).build();
+	}
+
+	public CcInfoPeerDto toDto(CcInfoPeerEntity ccInfoPeerEntity) {
+		return CcInfoPeerDto.builder().id(ccInfoPeerEntity.getId()).ccVersion(ccInfoPeerEntity.getCcVersion())
+				.conInfoEntity(ccInfoPeerEntity.getConInfoEntity()).ccInfoEntity(ccInfoPeerEntity.getCcInfoEntity())
+				.createdAt(ccInfoPeerEntity.getCreatedAt()).build();
+	}
+
+	public CcInfoChannelDto toDto(CcInfoChannelEntity ccInfoChannelEntity) {
+		return CcInfoChannelDto.builder().id(ccInfoChannelEntity.getId()).ccVersion(ccInfoChannelEntity.getCcVersion())
+				.channelInfoEntity(ccInfoChannelEntity.getChannelInfoEntity())
+				.ccInfoEntity(ccInfoChannelEntity.getCcInfoEntity()).createdAt(ccInfoChannelEntity.getCreatedAt())
+				.build();
+	}
+
+	public ChannelInfoDto toDto(ChannelInfoEntity channelInfoEntity) {
+
+		return ChannelInfoDto.builder().channelName(channelInfoEntity.getChannelName())
+				.channelBlock(channelInfoEntity.getChannelBlock()).channelTx(channelInfoEntity.getChannelTx())
+				.orderingOrg(channelInfoEntity.getOrderingOrg())
+				.appAdminPolicyType(channelInfoEntity.getAppAdminPolicyType())
+				.appAdminPolicyValue(channelInfoEntity.getAppAdminPolicyValue())
+				.ordererAdminPolicyType(channelInfoEntity.getOrdererAdminPolicyType())
+				.ordererAdminPolicyValue(channelInfoEntity.getOrdererAdminPolicyValue())
+				.channelAdminPolicyType(channelInfoEntity.getChannelAdminPolicyType())
+				.channelAdminPolicyValue(channelInfoEntity.getChannelAdminPolicyValue())
+				.batchTimeout(channelInfoEntity.getBatchTimeout())
+				.batchSizeAbsolMax(channelInfoEntity.getBatchSizeAbsolMax())
+				.batchSizeMaxMsg(channelInfoEntity.getBatchSizeMaxMsg())
+				.batchSizePreferMax(channelInfoEntity.getBatchSizePreferMax())
+				.createdAt(channelInfoEntity.getCreatedAt()).build();
+	}
+
+	public ChannelInfoPeerDto doDto(ChannelInfoPeerEntity channelInfoPeerEntity) {
+		return ChannelInfoPeerDto.builder().id(channelInfoPeerEntity.getId())
+				.anchorYn(channelInfoPeerEntity.isAnchorYn()).conInfoEntity(channelInfoPeerEntity.getConInfoEntity())
+				.channelInfoEntity(channelInfoPeerEntity.getChannelInfoEntity())
+				.createdAt(channelInfoPeerEntity.getCreatedAt()).build();
+	}
+
+	public ChannelHandleDto toDto(ChannelHandleEntity channelHandleEntity) {
+		return ChannelHandleDto.builder().handle(channelHandleEntity.getHandle())
+				.channelName(channelHandleEntity.getChannelName()).createdAt(channelHandleEntity.getCreatedAt())
+				.build();
+
+	}
+
+	public TransactionDto toDto(TransactionEntity transactionEntity) {
+		return TransactionDto.builder().txID(transactionEntity.getTxID()).creatorId(transactionEntity.getCreatorId())
+				.txID(transactionEntity.getTxType()).timestamp(transactionEntity.getTimestamp())
+				.ccName(transactionEntity.getCcName()).ccVersion(transactionEntity.getCcVersion())
+				.ccArgs(transactionEntity.getCcArgs()).blockEntity(transactionEntity.getBlockEntity())
+				.channelInfoEntity(transactionEntity.getChannelInfoEntity()).createdAt(transactionEntity.getCreatedAt())
+				.build();
+	}
+
+	public BlockDto toDto(BlockEntity blockEntity) {
+		return BlockDto.builder().blockDataHash(blockEntity.getBlockDataHash()).blockNum(blockEntity.getBlockNum())
+				.txCount(blockEntity.getTxCount()).prevDataHash(blockEntity.getPrevDataHash())
+				.channelInfoEntity(blockEntity.getChannelInfoEntity()).createdAt(blockEntity.getCreatedAt()).build();
+
+	}
+
+	/*
+	 * ########################################################################
+	 * 
+	 * TEST
+	 * 
+	 * ########################################################################
+	 */
 
 //	public Object configtxRequest(String url, String channelName, byte[] param1, byte[] param2) {
 //		Object result = "";

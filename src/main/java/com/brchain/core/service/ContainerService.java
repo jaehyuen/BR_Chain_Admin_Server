@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,36 +14,34 @@ import com.brchain.core.entity.ConInfoEntity;
 import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ContainerService {
 
-	@NonNull
-	private ConInfoRepository conInfoRepository;
-
-	@Autowired
-	private Util util;
+	private final ConInfoRepository conInfoRepository;
+	
+	private final Util util;
 
 	@Value("${brchain.ip}")
-	String ip;
+	private String ip;
 
 	/**
 	 * 컨테이너 정보 저장 서비스
 	 * 
 	 * @param conInfoDto 컨테이너 정보 DTO
 	 * 
-	 * @return
+	 * @return 저장한 컨테이너 정보 엔티티
+	 * 
+	 * TODO 리턴를 dto로 변경해야 할거같음
 	 */
 
 	public ConInfoEntity saveConInfo(ConInfoDto conInfoDto) {
 
-		return conInfoRepository.save(conInfoDto.toEntity());
+		return conInfoRepository.save(util.toEntity(conInfoDto));
 
 	}
-
 
 	/**
 	 * 컨테이너 정보 삭제 서비스
@@ -52,9 +49,11 @@ public class ContainerService {
 	 * @param conId 삭제할 컨테이너 ID
 	 * 
 	 * @return 삭제한 조직명
+	 * 
+	 * TODO 리턴를 dto로 변경해야 할거같음
 	 */
 
-	public ConInfoEntity removeConInfo(String conId) {
+	public ConInfoEntity deleteConInfo(String conId) {
 
 		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId);
 
@@ -69,21 +68,17 @@ public class ContainerService {
 	 * 
 	 * @param conName 컨테이너 이름
 	 * 
-	 * @return 컨테이너 정보
+	 * @return 컨테이너 정보 엔티티
+	 * 
+	 * TODO 리턴를 dto로 변경해야 할거같음
 	 */
 
-	public ConInfoDto selectByConName(String conName) {
+	public ConInfoEntity findConInfoByConName(String conName) {
 
-		ConInfoEntity conInfoEntity = conInfoRepository.findById(conName).get();
-
-		return ConInfoDto.builder().conId(conInfoEntity.getConId()).conName(conInfoEntity.getConName())
-				.conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum()).conCnt(conInfoEntity.getConCnt())
-				.conPort(conInfoEntity.getConPort()).orgName(conInfoEntity.getOrgName())
-				.orgType(conInfoEntity.getOrgType()).couchdbYn(conInfoEntity.isCouchdbYn())
-				.gossipBootAddress(conInfoEntity.getGossipBootAddr()).ordererPorts(conInfoEntity.getOrdererPorts())
-				.build();
+		return conInfoRepository.findById(conName).get();
 
 	}
+	
 
 	/**
 	 * 컨테이너 타입으로 조회 서비스
@@ -91,11 +86,11 @@ public class ContainerService {
 	 * @param conType 컨테이너 타입
 	 * @param orgType 조직 타입
 	 * 
-	 * @return
+	 * @return 조회한 조직 리스트
 	 * 
 	 */
 
-	public String selectByConType(String conType, String orgType) {
+	public String findConInfoByConType(String conType, String orgType) {
 
 		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
 		String result = "";
@@ -106,7 +101,7 @@ public class ContainerService {
 					.conType(entity.getConType()).conNum(entity.getConNum()).conCnt(entity.getConCnt())
 					.conPort(conInfoEntity.get(0).getConPort()).orgName(entity.getOrgName())
 					.orgType(entity.getOrgType()).couchdbYn(entity.isCouchdbYn())
-					.gossipBootAddress(entity.getGossipBootAddr()).ordererPorts(entity.getOrdererPorts()).build();
+					.gossipBootAddr(entity.getGossipBootAddr()).ordererPorts(entity.getOrdererPorts()).build();
 
 			result = result + conInfoDto.getOrgName() + " ";
 		}
@@ -170,13 +165,15 @@ public class ContainerService {
 
 		for (ConInfoEntity entity : conInfoEntity) {
 
-			if (entity.getConType().contains("ca") || entity.getConType().contains("setup")) {
+			if (entity.getConType().contains("ca") || entity.getConType().contains("setup")
+					|| entity.getConType().contains("couchdb")) {
+
 				continue;
 			}
 			JSONObject resultJson = new JSONObject();
 
 			resultJson.put("orgName", entity.getOrgName());
-			resultJson.put("orgType", entity.getOrgType());
+			resultJson.put("conType", entity.getConType());
 			resultJson.put("conNum", entity.getConNum());
 			resultJson.put("conName", entity.getConName());
 			resultJson.put("conPort", entity.getConPort());
@@ -185,7 +182,7 @@ public class ContainerService {
 
 		}
 
-		return util.setResult("0000", true, "Success get " + orgName + " member info", resultJsonArr);
+		return util.setResult("0000", true, "Success get " + orgName + " member info list", resultJsonArr);
 
 	}
 
@@ -283,7 +280,7 @@ public class ContainerService {
 	 * @return 결과 DTO(포트 사용가능 여부)
 	 */
 
-	public ResultDto checkConPort(String port) {
+	public ResultDto canUseConPort(String port) {
 
 		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConPort(port);
 
@@ -295,9 +292,6 @@ public class ContainerService {
 		return resultDto;
 
 	}
-	
-	public ConInfoEntity findConInfoByConName(String conName) {
-		
-		return conInfoRepository.findById(conName).get();
-	}
+
 }
+

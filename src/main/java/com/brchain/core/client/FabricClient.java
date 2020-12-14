@@ -31,8 +31,6 @@ import org.hyperledger.fabric.gateway.Gateway;
 import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallet.Identity;
-import org.hyperledger.fabric.protos.common.Common.Block;
-import org.hyperledger.fabric.sdk.BlockEvent;
 import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
@@ -45,6 +43,7 @@ import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.ProposalResponse;
 import org.hyperledger.fabric.sdk.TransactionRequest;
 import org.hyperledger.fabric.sdk.UpdateChannelConfiguration;
+import org.hyperledger.fabric.sdk.UpgradeProposalRequest;
 import org.hyperledger.fabric.sdk.exception.CryptoException;
 import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
 import org.hyperledger.fabric.sdk.exception.ProposalException;
@@ -57,42 +56,35 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
 import com.brchain.core.dto.FabricMemberDto;
-import com.brchain.core.service.ContainerService;
+import com.brchain.core.entity.channel.ChannelInfoEntity;
+import com.brchain.core.service.ChannelService;
 import com.brchain.core.util.BrchainUser;
 import com.brchain.core.util.Util;
-import com.google.protobuf.InvalidProtocolBufferException;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class FabricClient {
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	@Autowired
-	Environment environment;
-
-	@Autowired
-	SshClient sshClient;
-
-	@Autowired
-	private ContainerService containerService;
-
-	@Autowired
-	private SimpMessagingTemplate webSocket;
+	private final Environment environment;
+	private final SshClient sshClient;
 
 	@Value("${brchain.sourcedir}")
-	String sourceDir;
+	private String sourceDir;
 
 	@Value("${brchain.logdir}")
-	String logDir;
+	private String logDir;
 
 	@Value("${brchain.datadir}")
-	String dataDir;
+	private String dataDir;
+
+	private ArrayList<Channel> channelListener = new ArrayList<Channel>();
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 패브릭 네트워크 연결 함수 (테스트중)
@@ -111,44 +103,14 @@ public class FabricClient {
 		ArrayList<FabricMemberDto> ordererArrDto = new ArrayList<FabricMemberDto>();
 		ArrayList<FabricMemberDto> peerArrDto = new ArrayList<FabricMemberDto>();
 
-		for (int i = 0; i < 3; i++) {
-			FabricMemberDto ordererDto = new FabricMemberDto();
-			int testip = i + 7;
-			ordererDto.setOrgName("orderer");
-			ordererDto.setConPort("7050");
-			ordererDto.setConName("orderer" + i + ".orgorderer.com");
-			ordererDto.setConNum(i);
-			ordererDto.setConUrl("grpcs://192.168.65.16" + testip + ":7050");
-			ordererDto.setOrgMspId("ordererMSP");
-			ordererDto.setOrgType("orderer");
-			ordererArrDto.add(ordererDto);
-
-		}
-		for (int i = 0; i < 3; i++) {
-			FabricMemberDto peerDto = new FabricMemberDto();
-			int testip = i + 7;
-			peerDto.setOrgName("nonghyupit");
-			peerDto.setConPort("7051");
-			peerDto.setConName("peer" + i + ".orgnonghyupit.com");
-			peerDto.setConNum(i);
-			peerDto.setConUrl("grpcs://192.168.65.16" + testip + ":7051");
-			peerDto.setOrgMspId("nonghyupitMSP");
-			peerDto.setOrgType("peer");
-			peerDto.setCaUrl("http://192.168.65.167:7054");
-			peerArrDto.add(peerDto);
-
-		}
-
 		logger.info("[ordererArrVo]" + ordererArrDto);
 		logger.info("[peerArrVo]" + peerArrDto);
-//		InputStream is = new ByteArrayInputStream(
+
 //				createFabrcSetting("cert-channel", ordererArrDto, peerArrDto).toString().replace("\\", "").getBytes());
 		InputStream is = new ByteArrayInputStream(connectionJson.toString().replace("\\", "").getBytes());
 		// 파라미터 설정
-//		String channelName = (String) fabricJson.get("channels");
 
 		Path walletPath = Paths.get("wallet");
-//		Path networkConfigPath = HelperUtil.resourcesUrlPath("application.yml");
 
 		Wallet wallet = Wallet.createFileSystemWallet(walletPath);
 		Gateway.Builder builder = Gateway.createBuilder();
@@ -257,28 +219,6 @@ public class FabricClient {
 
 	public HFClient createChannel(ArrayList<FabricMemberDto> peerDtoArr, FabricMemberDto ordererDto, String channelName)
 			throws Exception {
-		Util util = new Util();
-
-		for (FabricMemberDto peerDto : peerDtoArr) {
-
-			if (!containerService.isMemOfConso(ordererDto.getOrgName(), peerDto.getOrgName())) {
-
-				JSONObject genesisJson = getChannelConfig(ordererDto, "testchainid");
-				JSONObject testJson = util.createOrgJson(peerDto);
-
-				logger.info(genesisJson.toString());
-				logger.info(testJson.toString());
-
-				JSONObject modifiedJson = util.test(genesisJson, testJson, "", peerDto.getOrgName());
-
-				File updateFile = createUpdateFile(ordererDto, "testchainid", genesisJson, modifiedJson);
-
-				setUpdateTest(ordererDto, "testchainid", updateFile);
-
-				containerService.updateConsoOrgs(ordererDto.getOrgName(), peerDto.getOrgName());
-
-			}
-		}
 
 		FabricMemberDto peerDto = peerDtoArr.get((int) (Math.random() * peerDtoArr.size()));
 		// 가저온 인증서 정보로 user 생성
@@ -298,13 +238,14 @@ public class FabricClient {
 
 		logger.info("[채널생성] 오더러설정 완료");
 
-		// 채널 생성 작업
-		Channel newChannel = client.newChannel(channelName, orderer,
+		Channel channel = client.newChannel(channelName, orderer,
 				new ChannelConfiguration(new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
 				client.getChannelConfigurationSignature(
 						new ChannelConfiguration(
 								new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
 						userContext));
+
+		channel.shutdown(true);
 
 		return client;
 
@@ -319,10 +260,20 @@ public class FabricClient {
 	 * 
 	 * @throws InvalidArgumentException
 	 * @throws ProposalException
+	 * @throws IOException
+	 * @throws TransactionException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws ClassNotFoundException
+	 * @throws CryptoException
 	 */
 
 	public void joinChannel(HFClient client, FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
-			throws InvalidArgumentException, ProposalException {
+			throws InvalidArgumentException, ProposalException, CryptoException, ClassNotFoundException,
+			IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException,
+			TransactionException, IOException {
 
 		// 오더러 정보 생성
 		Properties ordererProps = createFabricProperties(ordererDto);
@@ -332,11 +283,16 @@ public class FabricClient {
 		Properties peerProps = createFabricProperties(peerDto);
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
 
+		// 채널 정보 생성
 		Channel channel = client.newChannel(channelName);
+
 		channel.addOrderer(orderer);
+		channel.initialize();
+
 		channel.joinPeer(peer);
 
 		logger.info("[채널가입] : " + peerDto.getConName() + " 컨테이너 " + channelName + " 채널 가입완료");
+		channel.shutdown(true);
 
 	}
 
@@ -394,6 +350,65 @@ public class FabricClient {
 
 		return client;
 
+	}
+
+	public Channel initChannel(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, int startCnt)
+			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
+			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
+			TransactionException {
+
+		// 성공 여부 플래그?
+		boolean flag = true;
+		// 인덱스정보?
+		int index = 0;
+
+		// 채널 리스트에 채널이있는지 조회
+		if (!channelListener.isEmpty()) {
+			for (int i = 0; i < channelListener.size(); i++) {
+				Channel channel = channelListener.get(i);
+				if ((channel.getName().equals(channelName))) {
+					System.out.println("channel arr에 존재 : " + channelName);
+					flag = false;
+					index = i;
+				}
+			}
+		}
+
+		Channel channel = null;
+
+		// 채널이 없다면 등록
+		if (flag) {
+
+			// 클라이언트 생성
+			HFClient client = createClient(peerDto);
+
+			// 채널 등록
+			channel = client.newChannel(channelName);
+
+			// 피어 설정
+			Properties props = createFabricProperties(peerDto);
+			Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
+
+			// 이벤트 리슨 시작 위치 설정
+			Channel.PeerOptions opt = Channel.PeerOptions.createPeerOptions();
+
+			opt.startEvents(startCnt);
+			channel.addPeer(peer, opt);
+
+			client = createClient(ordererDto);
+			props = createFabricProperties(ordererDto);
+			Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
+			channel.addOrderer(orderer);
+
+			channel.initialize();
+			channelListener.add(channel);
+		}
+
+		if (channel == null) {
+			channel = channelListener.get(index);
+		}
+
+		return channel;
 	}
 
 	/**
@@ -475,7 +490,7 @@ public class FabricClient {
 		Thread.sleep(1000);
 		// 변경된 파일 다운로드
 		sshClient.downloadFile(path, fileName + ".json");
-
+		channel.shutdown(true);
 		Thread.sleep(1000);
 		return (JSONObject) jsonParser
 				.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
@@ -574,36 +589,28 @@ public class FabricClient {
 	 * @throws TransactionException
 	 */
 
-	public void setUpdateTest(FabricMemberDto memberDto, String channelName, File updateFile)
+	public void setUpdate(FabricMemberDto memberDto, FabricMemberDto ordererDto, String channelName, File updateFile)
 			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
 			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
 			TransactionException {
 
-		HFClient client = createClient(memberDto);
+		HFClient client = createClient(ordererDto);
 
 		// 채널 설정 변경 요청할 정보 생성
-		Properties props = createFabricProperties(memberDto);
+		Properties props = createFabricProperties(ordererDto);
 
-		Orderer orderer = client.newOrderer(memberDto.getConName(), memberDto.getConUrl(), props);
-		Peer peer = client.newPeer(memberDto.getConName(), memberDto.getConUrl(), props);
-
+		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 		Channel channel = client.newChannel(channelName).initialize();
 
-		byte[] configBlock;
+		channel.addOrderer(orderer);
 
-		if (memberDto.getOrgType().equals("peer")) {
-			channel.addPeer(peer);
-			configBlock = channel.getChannelConfigurationBytes(createContext(memberDto), peer);
+		UpdateChannelConfiguration updateChannelConfiguration = new UpdateChannelConfiguration(updateFile);
+		BrchainUser user = createContext(memberDto);
+		byte[] signers = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
+		user = createContext(ordererDto);
+		channel.updateChannelConfiguration(user, updateChannelConfiguration, orderer, signers);
 
-		} else {
-			channel.addOrderer(orderer);
-
-			UpdateChannelConfiguration updateChannelConfiguration = new UpdateChannelConfiguration(updateFile);
-			BrchainUser user = createContext(memberDto);
-			byte[] signers = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
-			channel.updateChannelConfiguration(user, updateChannelConfiguration, orderer, signers);
-
-		}
+		channel.shutdown(true);
 
 	}
 
@@ -683,7 +690,7 @@ public class FabricClient {
 	 */
 
 	public void instantiateChaincode(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
-			String ccName, String ccVersion, String ccLang) throws Exception {
+			String ccName, String ccVersion, String ccLang, boolean upgrade) throws Exception {
 
 		// 클라이언트 생성
 		HFClient client = createClient(peerDto);
@@ -699,8 +706,10 @@ public class FabricClient {
 		// 채널 정보 생성
 		Channel channel = client.newChannel(channelName);
 		channel.addPeer(peer);
+
 		channel.addOrderer(orderer);
 		channel.initialize();
+
 		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
 				.setPath(ccName + "/");
 
@@ -710,17 +719,31 @@ public class FabricClient {
 		tm.put("HyperLedgerFabric", "InstantiateProposalRequest:JavaSDK".getBytes(UTF_8));
 		tm.put("method", "InstantiateProposalRequest".getBytes(UTF_8));
 
-		// 체인코드 인스턴스화 리퀘스트 생성
-		InstantiateProposalRequest instantiateProposalRequest = client.newInstantiationProposalRequest();
-		instantiateProposalRequest.setChaincodeID(chaincodeID);
-		instantiateProposalRequest.setChaincodeLanguage(TransactionRequest.Type.GO_LANG);
-		instantiateProposalRequest.setFcn("");
-		instantiateProposalRequest.setArgs("");
-		instantiateProposalRequest.setProposalWaitTime(300000);
-		instantiateProposalRequest.setTransientMap(tm);
+		TransactionRequest proposalRequest = null;
 
+		// 체인코드 인스턴스화 리퀘스트 생성
+		if (!upgrade) {
+			proposalRequest = client.newInstantiationProposalRequest();
+		} else {
+
+			proposalRequest = client.newUpgradeProposalRequest();
+		}
+
+		proposalRequest.setChaincodeID(chaincodeID);
+		proposalRequest.setChaincodeLanguage(TransactionRequest.Type.GO_LANG);
+		proposalRequest.setFcn("");
+		proposalRequest.setArgs("");
+		proposalRequest.setProposalWaitTime(300000);
+//		proposalRequest.setTransientMap(tm);
+		Collection<ProposalResponse> responses = null;
 		// 리퀘스트 결과 오더러로 전송
-		Collection<ProposalResponse> responses = channel.sendInstantiationProposal(instantiateProposalRequest);
+		if (!upgrade) {
+			responses = channel.sendInstantiationProposal((InstantiateProposalRequest) proposalRequest);
+		} else {
+
+			responses = channel.sendUpgradeProposal((UpgradeProposalRequest) proposalRequest);
+		}
+
 		for (ProposalResponse response : responses) {
 			System.out.println(response.getMessage());
 			if (response.isVerified() && response.getStatus() == ProposalResponse.Status.SUCCESS) {
@@ -735,6 +758,7 @@ public class FabricClient {
 			}
 
 		}
+		channel.shutdown(true);
 
 	}
 
@@ -750,70 +774,39 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
-			throws Exception {
+	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
+			BlockListener listener, int startCnt) throws Exception {
 
-		System.out.println("eventTest 1");
-		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		Channel channel = initChannel(peerDto, ordererDto, channelName, startCnt);
 
-		// 오더러 정보 생성
-		Properties ordererProps = createFabricProperties(ordererDto);
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
-
-		// 피어 정보 생성
-		Properties peerProps = createFabricProperties(peerDto);
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
-
-		// 채널 정보 생성
-		Channel channel = client.newChannel(channelName);
-		channel.addPeer(peer);
-		channel.addOrderer(orderer);
-		channel.initialize();
-		System.out.println("eventTest 2");
-		BlockListener blockListener = new BlockListener() {
-
-			@Override
-			public void received(BlockEvent blockEvent) {
-				Block block = blockEvent.getBlock();
-
-				try {
-					System.out.println("channelId:" + blockEvent.getChannelId());
-				} catch (InvalidProtocolBufferException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("BLock Number :" + blockEvent.getBlockNumber());
-				webSocket.convertAndSend("/event", blockEvent.getBlockNumber());
-
-			}
-
-		};
-
-		return channel.registerBlockListener(blockListener);
+		return channel.registerBlockListener(listener);
 
 	}
 
 	public void unregisterEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
 			String handle) throws Exception {
 
-		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		Channel channel = initChannel(peerDto, ordererDto, channelName, 0);
 
-		// 오더러 정보 생성
-		Properties ordererProps = createFabricProperties(ordererDto);
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
-
-		// 피어 정보 생성
-		Properties peerProps = createFabricProperties(peerDto);
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
-
-		// 채널 정보 생성
-		Channel channel = client.newChannel(channelName);
-		channel.addPeer(peer);
-		channel.addOrderer(orderer);
-		channel.initialize();
+		System.out.println("in Unregister Listenrt func");
+		System.out.println("handle is " + handle);
 		channel.unregisterBlockListener(handle);
+		channelListener.remove(channel);
+
+	}
+
+	public void setAnchorConfig(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
+			throws Exception {
+		Util util = new Util();
+
+		JSONObject genesisJson = getChannelConfig(peerDto, channelName);
+		logger.info("[앵커피어 설정] 기존 설정 : " + genesisJson);
+
+		JSONObject modifiedJson = util.modifyAnchorConfig(genesisJson, util.createAnchorJson(peerDto), "", peerDto);
+		logger.info("[앵커피어 설정] 변경된 설정 : " + modifiedJson.toString());
+		File updateFile = createUpdateFile(peerDto, channelName, genesisJson, modifiedJson);
+
+		setUpdate(peerDto, ordererDto, channelName, updateFile);
 
 	}
 
@@ -951,4 +944,4 @@ public class FabricClient {
 //
 //	}
 
-}
+};

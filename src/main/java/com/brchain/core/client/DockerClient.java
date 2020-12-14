@@ -8,12 +8,10 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.service.ContainerService;
 import com.brchain.core.util.ContainerSetting;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;
@@ -28,22 +26,23 @@ import com.spotify.docker.client.messages.LogConfig;
 import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+
+@RequiredArgsConstructor
 public class DockerClient {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired
-	private ContainerService containerService;
-
 	@Value("${brchain.ip}")
-	private String ip;
+	private  String ip;
 
-	private String networkMode = "brchain-network";
+	private  String networkMode = "brchain-network";
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
-	private final DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
+	private  DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
 			.apiVersion("v1.40").build();
 
 	/**
@@ -107,7 +106,7 @@ public class DockerClient {
 	 * 
 	 */
 
-	public String createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
+	public ConInfoDto createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
 
 		// 도커 네트워크 체크로직
 		// 네트워크 조회 에러시 네트워크 생성
@@ -176,7 +175,7 @@ public class DockerClient {
 
 		// hostconfig 빌더 생성
 		HostConfig hostConfig = HostConfig.builder().binds(binds)
-//				.logConfig(logconfig)
+				.logConfig(logconfig)
 				.networkMode(networkMode).portBindings(portBindings)
 //				.extraHosts(extraHosts)
 				.build();
@@ -189,7 +188,7 @@ public class DockerClient {
 
 		if (createConDto.getConType().equals("peer")) {
 
-			containerEnv = containerSetting.setContainerEnv(createConDto.getGossipBootAddress(),
+			containerEnv = containerSetting.setContainerEnv(createConDto.getGossipBootAddr(),
 					createConDto.isCouchdbYn());
 
 		} else if (createConDto.getConType().equals("setup_channel")) {
@@ -214,7 +213,7 @@ public class DockerClient {
 		List<String> cmd = containerSetting.setCmd();
 
 		// 볼륨 설정
-		Map<String, Map> volumes = containerSetting.setVolumes();
+//		Map<String, Map> volumes = containerSetting.setVolumes();
 
 		// 라벨 설정
 		Map<String, String> labels = new HashMap<String, String>();
@@ -237,42 +236,14 @@ public class DockerClient {
 		docker.startContainer(id);
 		docker.renameContainer(id, containerName);
 
-		ConInfoDto conInfoDto = new ConInfoDto();
+	
+		createConDto.setConId(id);
+		createConDto.setConName(containerName);
 
-		conInfoDto.setConId(id);
-		conInfoDto.setConName(containerName);
-		conInfoDto.setConType(createConDto.getConType());
-		conInfoDto.setOrgName(createConDto.getOrgName());
-		conInfoDto.setOrgType(createConDto.getOrgType());
-		conInfoDto.setConPort(createConDto.getConPort());
-		conInfoDto.setConsoOrgs(createConDto.getPeerOrgs());
+		logger.info("[도커 컨테이너 생성 dto] " + createConDto);
 
-		// 컨테이너 설정 객체 생성
-		if (createConDto.getConType().equals("ca") || createConDto.getConType().contains("setup")) {
-
-			conInfoDto.setConCnt(createConDto.getConCnt());
-
-		} else if (createConDto.getConType().equals("couchdb")) {
-
-			conInfoDto.setConNum(createConDto.getConNum());
-
-		} else {
-
-			conInfoDto.setConNum(createConDto.getConNum());
-			conInfoDto.setGossipBootAddress(createConDto.getGossipBootAddress());
-			conInfoDto.setCouchdbYn(createConDto.isCouchdbYn());
-
-		}
-		if (createConDto.getConType().equals("setup_orderer")) {
-
-			conInfoDto.setOrdererPorts(createConDto.getOrdererPorts());
-
-		}
-
-		containerService.saveConInfo(conInfoDto);
-		logger.info("[도커 컨테이너 생성 dto] " + conInfoDto);
-
-		return "";
+		return createConDto;
 	}
 
 }
+

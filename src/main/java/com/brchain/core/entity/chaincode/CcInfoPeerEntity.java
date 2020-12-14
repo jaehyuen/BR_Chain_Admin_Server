@@ -1,5 +1,8 @@
-package com.brchain.core.entity;
+package com.brchain.core.entity.chaincode;
 
+import java.time.LocalDateTime;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,19 +14,21 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
+import com.brchain.core.entity.BlockEntity;
+import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.entity.channel.ChannelInfoEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CCINFO_PEER")
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class CcInfoPeerEntity extends BaseEntity {
 
 	@Id
@@ -34,12 +39,22 @@ public class CcInfoPeerEntity extends BaseEntity {
 	@Column(name = "CC_VERSION", nullable = false)
 	private String ccVersion;
 
-	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER)
+	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CONINFO_CON_NAME")
 	private ConInfoEntity conInfoEntity;
 
-	@ManyToOne(targetEntity = CcInfoEntity.class, fetch = FetchType.EAGER)
+	@ManyToOne(targetEntity = CcInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CCINFO_CC_NAME")
 	private CcInfoEntity ccInfoEntity;
 
+	@Builder
+	public CcInfoPeerEntity(Long id, String ccVersion, ConInfoEntity conInfoEntity, CcInfoEntity ccInfoEntity,
+			LocalDateTime createdAt) {
+		this.id = id;
+		this.ccVersion = ccVersion;
+		this.ccInfoEntity = ccInfoEntity;
+		this.conInfoEntity = conInfoEntity;
+		super.setCreatedAt(createdAt);
+
+	}
 }

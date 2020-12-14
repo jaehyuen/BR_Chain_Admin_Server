@@ -1,6 +1,9 @@
 package com.brchain.core.dto;
 
+import java.time.LocalDateTime;
+
 import com.brchain.core.entity.ConInfoEntity;
+import com.brchain.core.entity.ConInfoEntity.ConInfoEntityBuilder;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,20 +25,25 @@ public class ConInfoDto {
 	private String orgName; // 조직명
 	private String orgType; // 조직 타입 (ca, setup, peer, couchdb, orderer)
 	private String ordererPorts; // 오더러 포트(오더러)
-	private String gossipBootAddress; // 가쉽 부트스트랩 주소(피어)
+	private String gossipBootAddr; // 가쉽 부트스트랩 주소(피어)
 	private String anchorPeerSetting; // 앵커피어 정보(setup_channel)
 	private String peerOrgs; // 참가조직 정보
 	private String consoOrgs; // 컨소시움 참가 조직 정보(orderer)
 	private int conNum; // 피어,오더러 번호
 	private int conCnt; // 피어,오더러 개수
 	private boolean couchdbYn; // 카우치디비 사용여부(피어)
+	private LocalDateTime createdAt;
 
-	public ConInfoEntity toEntity() {
-
-		ConInfoEntity conInfoEntity = ConInfoEntity.builder().conId(conId).conName(conName).conType(conType)
-				.conNum(conNum).conCnt(conCnt).conPort(conPort).orgName(orgName).orgType(orgType).consoOrgs(consoOrgs)
-				.couchdbYn(couchdbYn).gossipBootAddr(gossipBootAddress).ordererPorts(ordererPorts).build();
-		return conInfoEntity;
-	}
+//	public ConInfoEntity toEntity() {
+//
+//		ConInfoEntityBuilder conInfoEntityBuilder = ConInfoEntity.builder().conId(conId).conName(conName)
+//				.conType(conType).conNum(conNum).conCnt(conCnt).conPort(conPort).orgName(orgName).orgType(orgType)
+//				.consoOrgs(consoOrgs).couchdbYn(couchdbYn).gossipBootAddr(gossipBootAddress).ordererPorts(ordererPorts);
+//		if (createdAt == null) {
+//			return conInfoEntityBuilder.build();
+//		} else {
+//			return conInfoEntityBuilder.createdAt(createdAt).build();
+//		}
+//	}
 
 }

@@ -3,8 +3,10 @@ package com.brchain.core.dto;
 import java.util.ArrayList;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 public class PolicyDto {
 	
 	private int policyType;  						                      //정책 타입 1 == Signature 3 == ImplicitMeta

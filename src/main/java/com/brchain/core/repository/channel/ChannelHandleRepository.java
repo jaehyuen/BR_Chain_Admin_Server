@@ -1,11 +1,8 @@
-package com.brchain.core.repository;
-
-import java.util.ArrayList;
+package com.brchain.core.repository.channel;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.brchain.core.entity.ChannelHandleEntity;
-import com.brchain.core.entity.ChannelInfoEntity;
+import com.brchain.core.entity.channel.ChannelHandleEntity;
 
 public interface ChannelHandleRepository extends JpaRepository<ChannelHandleEntity, String> {
 

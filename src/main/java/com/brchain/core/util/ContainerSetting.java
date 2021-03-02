@@ -17,12 +17,15 @@ public class ContainerSetting {
 
 	@Value("${brchain.sourcedir}")
 	private String sourceDir;
-	
+
 	@Value("${brchain.logdir}")
 	private String logDir;
-	
+
 	@Value("${brchain.datadir}")
 	private String dataDir;
+
+	@Value("${brchain.networkmode}")
+	private String networkMode;
 
 	private String orgName;
 	private String type;
@@ -116,7 +119,7 @@ public class ContainerSetting {
 		if (type.equals("peer")) {
 
 			containerEnv.add("CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock");
-			containerEnv.add("CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=brchain-network");
+			containerEnv.add("CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=" + networkMode);
 			containerEnv
 					.add("CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/tls/server.crt");
 			containerEnv
@@ -142,8 +145,8 @@ public class ContainerSetting {
 				containerEnv.add("CORE_LEDGER_STATE_STATEDATABASE=CouchDB");
 				containerEnv.add("CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb" + num + ".org" + orgName
 						+ ".com:5984");
-				containerEnv.add("CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=");
-				containerEnv.add("CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=");
+				containerEnv.add("CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin");
+				containerEnv.add("CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password");
 			}
 
 		} else if (type.equals("orderer")) {
@@ -168,23 +171,28 @@ public class ContainerSetting {
 
 		} else if (type.equals("couchdb")) {
 
-			containerEnv.add("COUCHDB_USER=");
-			containerEnv.add("COUCHDB_PASSWORD=");
-			containerEnv.add(
-					"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/go/bin:/opt/gopath/bin");
-			containerEnv.add("GOPATH=/opt/gopath");
-			containerEnv.add("GOROOT=/opt/go");
-			containerEnv.add("GOCACHE=off");
-			containerEnv.add("GOSU_VERSION=1.10");
-			containerEnv.add("TINI_VERSION=0.16.1");
-			containerEnv.add(
-					"GPG_KEYS=15DD4F3B8AACA54740EB78C7B7B7C53943ECCEE1   1CFBFA43C19B6DF4A0CA3934669C02FFDF3CEBA3   25BBBAC113C1BFD5AA594A4C9F96B92930380381   4BFCA2B99BADC6F9F105BEC9C5E32E2D6B065BFB   5D680346FAA3E51B29DBCB681015F68F9DA248BC   7BCCEB868313DDA925DF1805ECA5BCB7BB9656B0   C3F4DFAEAD621E1C94523AEEC376457E61D50B88   D2B17F9DA23C0A10991AF2E3D9EE01E47852AEE4   E0AF0A194D55C84E4A19A801CDB0C0F904F4EE9B   29E4F38113DF707D722A6EF91FE9AF73118F1A7C   2EC788AE3F239FA13E82D215CDE711289384AE37");
-			containerEnv.add("COUCHDB_VERSION=2.2.0");
+			containerEnv.add("COUCHDB_USER=admin");
+			containerEnv.add("COUCHDB_PASSWORD=password");
+			containerEnv.add("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
+//			containerEnv.add("GOPATH=/opt/gopath");
+//			containerEnv.add("GOROOT=/opt/go");
+//			containerEnv.add("GOCACHE=off");
+			containerEnv.add("GOSU_VERSION=1.11");
+			containerEnv.add("TINI_VERSION=0.18.0");
+			containerEnv.add("GPG_COUCH_KEY=8756C4F765C9AC3CB6B85D62379CE192D401AB61");
+			containerEnv.add("COUCHDB_VERSION=3.1.1");
+
+//			
+//            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+//            "GOSU_VERSION=1.11",
+//            "TINI_VERSION=0.18.0",
+//            "GPG_COUCH_KEY=8756C4F765C9AC3CB6B85D62379CE192D401AB61",
+//            "COUCHDB_VERSION=3.1.1"
 
 		} else {
 
 			containerEnv.add("ADMINCERTS=true");
-			containerEnv.add("PROD_USER=1001");
+			// containerEnv.add("PROD_USER=1001");
 			containerEnv.add("CA_SERVER_PORT_" + orgName + "=" + port);
 			containerEnv.add("ORDERER_HOME=/etc/hyperledger/orderer");
 			containerEnv.add("PEER_HOME=/opt/gopath/src/github.com/hyperledger/fabric/peer");
@@ -231,8 +239,11 @@ public class ContainerSetting {
 
 	public List<String> setCmd() {
 		List<String> cmd = new ArrayList<>();
-		cmd.add("/bin/bash");
-		cmd.add("-c");
+		if (!type.equals("couchdb")) {
+
+			cmd.add("/bin/sh");
+			cmd.add("-c");
+		}
 
 		switch (type) {
 		case "peer":
@@ -325,19 +336,20 @@ public class ContainerSetting {
 
 		switch (type) {
 		case "peer":
-			imageName = "hyperledger/fabric-peer:1.4.3";
+			imageName = "hyperledger/fabric-peer:2.2.0";
 			break;
 		case "setup_peer":
 		case "setup_orderer":
 		case "setup_channel":
 		case "ca":
-			imageName = "hyperledger/fabric-ca:1.4.3";
+			imageName = "hyperledger/fabric-ca:1.4.8";
 			break;
 		case "couchdb":
-			imageName = "hyperledger/fabric-couchdb:0.4.15";
+//			imageName = "hyperledger/fabric-couchdb:0.4.15";
+			imageName = "couchdb:3.1.1";
 			break;
 		case "orderer":
-			imageName = "hyperledger/fabric-orderer:1.4.3";
+			imageName = "hyperledger/fabric-orderer:2.2.0";
 			break;
 		}
 		return imageName;

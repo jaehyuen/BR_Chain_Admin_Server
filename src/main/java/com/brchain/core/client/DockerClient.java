@@ -43,7 +43,8 @@ public class DockerClient {
 	@Value("${brchain.ip}")
 	private String ip;
 
-	private String networkMode = "brchain-network";
+	@Value("${brchain.networkmode}")
+	private String networkMode;
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
@@ -171,7 +172,7 @@ public class DockerClient {
 		List<String> binds = containerSetting.setBinds();
 
 		// 로깅설정
-		LogConfig logconfig = LogConfig.create("none");
+//		LogConfig logconfig = LogConfig.create("none");
 
 		// 포트 오픈설정
 		String[] ports;
@@ -196,7 +197,9 @@ public class DockerClient {
 //		List<String> extraHosts = containerenv.setExtraHosts();
 
 		// hostconfig 빌더 생성
-		HostConfig hostConfig = HostConfig.builder().binds(binds).logConfig(logconfig).networkMode(networkMode)
+		HostConfig hostConfig = HostConfig.builder().binds(binds)
+//				.logConfig(logconfig)
+				.networkMode(networkMode)
 				.portBindings(portBindings)
 //				.extraHosts(extraHosts)
 				.build();

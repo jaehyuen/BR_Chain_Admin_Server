@@ -5,14 +5,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+@Component
 @Data
 public class ContainerSetting {
 
-	private String sourceDir = "/svc/nhblock/brchain";
-	private String logDir = "/svc/nhblock/logs";
-	private String dataDir = "/svc/nhblock/data";
+	@Value("${brchain.sourcedir}")
+	private String sourceDir;
+	
+	@Value("${brchain.logdir}")
+	private String logDir;
+	
+	@Value("${brchain.datadir}")
+	private String dataDir;
 
 	private String orgName;
 	private String type;
@@ -20,7 +30,7 @@ public class ContainerSetting {
 	private String port;
 	private int num;
 
-	public ContainerSetting(String orgName, String type, String port, int num) {
+	public void initSetting(String orgName, String type, String port, int num) {
 		this.orgName = orgName;
 		this.type = type;
 		this.port = port;
@@ -332,7 +342,7 @@ public class ContainerSetting {
 		}
 		return imageName;
 	}
-	
+
 //	public String setWorkingDir() {
 //		String imageName = "";
 //

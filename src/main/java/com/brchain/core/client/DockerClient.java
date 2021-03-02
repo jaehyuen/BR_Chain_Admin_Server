@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,8 @@ public class DockerClient {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	private final ContainerSetting containerSetting;
+
 	@Value("${brchain.ip}")
 	private String ip;
 
@@ -43,8 +47,17 @@ public class DockerClient {
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
-	private DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
-			.apiVersion("v1.40").build();
+//	private DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
+//			.apiVersion("v1.40").build();
+	
+	private DefaultDockerClient docker;
+
+	@PostConstruct
+	public void init() {
+
+		docker = DefaultDockerClient.builder().uri("http://" + ip + ":2375").apiVersion("v1.40").build();
+
+	}
 
 	/**
 	 * 실행중인 컨테이너 조회 함수
@@ -133,22 +146,20 @@ public class DockerClient {
 
 		}
 
-		ContainerSetting containerSetting;
-
 		// 컨테이너 설정 객체 생성
 		if (createConDto.getConType().equals("ca") || createConDto.getConType().contains("setup")) {
 
-			containerSetting = new ContainerSetting(createConDto.getOrgName(), createConDto.getConType(),
+			containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
 					createConDto.getConPort(), createConDto.getConCnt());
 
 		} else if (createConDto.getConType().equals("couchdb")) {
 
-			containerSetting = new ContainerSetting(createConDto.getOrgName(), createConDto.getConType(), "",
+			containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), "",
 					createConDto.getConNum());
 
 		} else {
 
-			containerSetting = new ContainerSetting(createConDto.getOrgName(), createConDto.getConType(),
+			containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
 					createConDto.getConPort(), createConDto.getConNum());
 
 		}

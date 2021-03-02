@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
 
@@ -19,6 +20,8 @@ import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.chaincode.CcInfoDto;
 import com.brchain.core.dto.chaincode.CcInfoPeerDto;
+import com.brchain.core.dto.channel.ChannelInfoDto;
+import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
 import com.brchain.core.entity.chaincode.CcInfoEntity;
 import com.brchain.core.entity.chaincode.CcInfoPeerEntity;
@@ -31,14 +34,17 @@ import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
 
+@SuppressWarnings("unused")
 @Service
 @RequiredArgsConstructor
 public class ChaincodeService {
 
+	// jpa 레파지토리
 	private final CcInfoRepository ccInfoRepository;
 	private final CcInfoPeerRepository ccInfoPeerRepository;
 	private final CcInfoChannelRepository ccInfoChannelRepository;
 
+	// 서비스
 	private final ContainerService containerService;
 	private final ChannelService channelService;
 
@@ -51,9 +57,7 @@ public class ChaincodeService {
 	 * 
 	 * @param ccInfoDto 체인코드 정보 관련 DTO
 	 * 
-	 * @return 저장한 체인코드 정보 엔티티
-	 * 
-	 *         TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 체인코드 정보 DTO
 	 */
 
 	public CcInfoDto saveCcInfo(CcInfoDto ccInfoDto) {
@@ -67,9 +71,7 @@ public class ChaincodeService {
 	 * 
 	 * @param ccName 체인코드 이름
 	 * 
-	 * @return 조죄한 체인코드 정보 엔티티
-	 * 
-	 *         TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 조죄한 체인코드 정보 DTO
 	 */
 
 	public CcInfoDto findCcInfoByCcName(String ccName) {
@@ -177,9 +179,7 @@ public class ChaincodeService {
 	 * 
 	 * @param ccInfoPeerDto 체인코드 정보 (피어) 관련 DTO
 	 * 
-	 * @return 저장한 체인코드 정보 엔티티
-	 * 
-	 *         TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 체인코드 정보 DTO
 	 */
 
 	public CcInfoPeerDto saveCcnInfoPeer(CcInfoPeerDto ccInfoPeerDto) {
@@ -201,7 +201,7 @@ public class ChaincodeService {
 		JSONArray resultJsonArr = new JSONArray();
 
 		ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
-				.findByConInfoEntity(containerService.findConInfoByConName(conName));
+				.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
 		for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
 
@@ -228,12 +228,13 @@ public class ChaincodeService {
 	public ResultDto getCcListToActiveInChannel(String channelName) {
 		JSONArray jsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
+		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
 				.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
 
-		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
+		for (ChannelInfoPeerDto channelInfoPeer : channelInfoPeerDtoArr) {
+
 			ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
-					.findByConInfoEntity(channelInfoPeer.getConInfoEntity());
+					.findByConInfoEntity(util.toEntity(channelInfoPeer.getConInfoDto()));
 			for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
 
 				JSONObject ccInfoChannelJson = new JSONObject();
@@ -255,11 +256,9 @@ public class ChaincodeService {
 	/**
 	 * 체인코드 정보 (채널) 저장 서비스
 	 * 
-	 * @param ccInfoChannelEntity 체인코드 정보 (채널) 엔티티
+	 * @param CcInfoChannelDto 체인코드 정보 (채널) DTO
 	 * 
-	 * @return 저장한 체인코드 정보 (채널) 엔티티
-	 * 
-	 *         TODO 파라미터를 dto로 변경해야 할거같음 TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 체인코드 정보 (채널) DTO
 	 */
 
 	public CcInfoChannelDto saveCcInfoChannel(CcInfoChannelDto ccInfoChannelDto) {
@@ -280,7 +279,7 @@ public class ChaincodeService {
 		JSONArray jsonArr = new JSONArray();
 
 		ArrayList<CcInfoChannelEntity> ccInfoChannelArr = ccInfoChannelRepository
-				.findByChannelInfoEntity(channelService.findChannelInfoByChannelName(channelName));
+				.findByChannelInfoEntity(util.toEntity(channelService.findChannelInfoByChannelName(channelName)));
 
 		for (CcInfoChannelEntity ccInfoChannel : ccInfoChannelArr) {
 
@@ -301,38 +300,31 @@ public class ChaincodeService {
 	/**
 	 * 채널 정보, 체인코드 정보로 체인코드 정보 (채널) 조회 서비스
 	 * 
-	 * @param channelInfoEntity 채널 정보 엔티티
-	 * @param ccInfoEntity      체인코드 정보 엔티티
+	 * @param channelInfoDto 채널 정보 DTO
+	 * @param ccInfoDto      체인코드 정보 DTO
 	 * 
-	 * @return 조회한 체인코드 정보 (채널) 엔티티
-	 * 
-	 *         TODO 파라미터를 dto로 변경해야 할거같음 TODO 리턴를 dto array로 변경해야 할거같음
+	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
-	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoEntity channelInfoEntity,
-			CcInfoEntity ccInfoEntity) {
+	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoDto channelInfoDto,
+			CcInfoDto ccInfoDto) {
 
-		return util.toDto(
-				ccInfoChannelRepository.findByChannelInfoEntityAndCcInfoEntity(channelInfoEntity, ccInfoEntity)
+		return util
+				.toDto(ccInfoChannelRepository.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto))
 						.orElseThrow(IllegalArgumentException::new));
 
+	
 	}
+	
+//	public void test() {
+//
+//		Date before =new Date(System.currentTimeMillis() -3000L);
+//		Date now =new Date();
+//			System.out.println(before);
+//			System.out.println(now);
+//			String a = ccInfoPeerRepository.
+//		
+//
+//	}
 
-//	private CcInfoDto toCcInfoDto(CcInfoEntity ccInfoEntity) {
-//		return CcInfoDto.builder().ccName(ccInfoEntity.getCcName()).ccPath(ccInfoEntity.getCcPath())
-//				.ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc()).createdAt(ccInfoEntity.getCreatedAt()).build();
-//	}
-//
-//	private CcInfoChannelDto toCcInfoChannelDto(CcInfoChannelEntity ccInfoChannelEntity) {
-//		return CcInfoChannelDto.builder().id(ccInfoChannelEntity.getId()).ccVersion(ccInfoChannelEntity.getCcVersion())
-//				.channelInfoEntity(ccInfoChannelEntity.getChannelInfoEntity())
-//				.ccInfoEntity(ccInfoChannelEntity.getCcInfoEntity()).createdAt(ccInfoChannelEntity.getCreatedAt())
-//				.build();
-//	}
-//
-//	private CcInfoPeerDto toCcInfoPeerDto(CcInfoPeerEntity ccInfoPeerEntity) {
-//		return CcInfoPeerDto.builder().ccVersion(ccInfoPeerEntity.getCcVersion())
-//				.conInfoEntity(ccInfoPeerEntity.getConInfoEntity()).ccInfoEntity(ccInfoPeerEntity.getCcInfoEntity())
-//				.build();
-//	}
 }

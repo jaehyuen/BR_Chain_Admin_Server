@@ -2,11 +2,7 @@ package com.brchain.core.dto.chaincode;
 
 import java.time.LocalDateTime;
 
-import com.brchain.core.entity.ConInfoEntity;
-import com.brchain.core.entity.chaincode.CcInfoEntity;
-import com.brchain.core.entity.chaincode.CcInfoPeerEntity;
-import com.brchain.core.entity.chaincode.CcInfoPeerEntity.CcInfoPeerEntityBuilder;
-
+import com.brchain.core.dto.ConInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,21 +16,10 @@ import lombok.ToString;
 @AllArgsConstructor
 public class CcInfoPeerDto {
 
-	private Long id;
+	private Long id; // 아이
 	private String ccVersion; // 체인코드 버전
-	private ConInfoEntity conInfoEntity; // 컨테이너 정보
-	private CcInfoEntity ccInfoEntity;// 체인코드 정보
-	private LocalDateTime createdAt;
-
-//	public CcInfoPeerEntity toEntity() {
-//
-//		CcInfoPeerEntityBuilder ccInfoPeerEntityBuilder = CcInfoPeerEntity.builder().id(id).ccVersion(ccVersion)
-//				.conInfoEntity(conInfoEntity).ccInfoEntity(ccInfoEntity);
-//		if (createdAt == null) {
-//			return ccInfoPeerEntityBuilder.build();
-//		} else {
-//			return ccInfoPeerEntityBuilder.createdAt(createdAt).build();
-//		}
-//	}
+	private ConInfoDto conInfoDto; // 컨테이너 정보
+	private CcInfoDto ccInfoDto;// 체인코드 정보
+	private LocalDateTime createdAt; // 생성 시
 
 }

@@ -2,9 +2,13 @@ package com.brchain.core.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -40,6 +44,14 @@ import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
 import com.brchain.core.entity.channel.ChannelHandleEntity.ChannelHandleEntityBuilder;
 import com.brchain.core.entity.channel.ChannelInfoEntity.ChannelInfoEntityBuilder;
 import com.brchain.core.entity.channel.ChannelInfoPeerEntity.ChannelInfoPeerEntityBuilder;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.PortBinding;
 
 @Component
 public class Util {
@@ -493,6 +505,125 @@ public class Util {
 
 	}
 
+	public JSONObject createConJson(ContainerInfo info) {
+
+		JSONObject logJson = new JSONObject();
+
+		JSONObject conJson1 = new JSONObject();
+		JSONObject conJson2 = new JSONObject();
+
+		ImmutableList<String> cmdArr = info.config().cmd();
+		String resultCmd = "";
+
+		for (String cmd : cmdArr) {
+			resultCmd = resultCmd + cmd + " ";
+
+		}
+
+		ImmutableMap<String, List<PortBinding>> portMap = info.hostConfig().portBindings();
+
+		ArrayList<String> portList = new ArrayList<String>();
+
+		for (Entry<String, List<PortBinding>> entry : portMap.entrySet()) {
+
+			String port1 = entry.getKey();
+
+			List<PortBinding> value = entry.getValue();
+			PortBinding portBinding = value.get(0);
+
+			String port2 = portBinding.hostPort();
+			portList.add(port1 + ":" + port2);
+		}
+		if (!portMap.isEmpty()) {
+			conJson2.put("ports", portList);
+		}
+
+		logJson.put("driver", "none");
+
+		conJson2.put("container_name", info.name().replace("/", ""));
+		conJson2.put("image", info.image());
+		conJson2.put("environment", info.config().env());
+
+		conJson2.put("command", resultCmd);
+
+		conJson2.put("logging", logJson);
+		conJson2.put("volumes", info.hostConfig().binds());
+
+		conJson2.put("networks", new String[] { info.hostConfig().networkMode() });
+
+//		conJson1.put(info.name(), conJson2);
+
+		return conJson2;
+
+	}
+
+	public JSONObject createComposeJson(JSONObject conJson) {
+
+		JSONObject ipamConfigJson = new JSONObject();
+
+		JSONArray ipamConfigJsonArr = new JSONArray();
+
+		JSONObject ipamJson = new JSONObject();
+
+		JSONObject networksJson2 = new JSONObject();
+		JSONObject networksJson1 = new JSONObject();
+		JSONObject composeJson = new JSONObject();
+
+		ipamConfigJson.put("subnet", "123.123.123.0/24");
+		ipamConfigJson.put("gateway", "123.123.123.1");
+
+		ipamConfigJsonArr.add(ipamConfigJson);
+
+		ipamJson.put("config", ipamConfigJsonArr);
+		ipamJson.put("driver", "default");
+
+		networksJson2.put("ipam", ipamJson);
+		networksJson2.put("name", "brchain-network");
+
+		networksJson1.put("brchain-network", networksJson2);
+
+		composeJson.put("services", conJson);
+		composeJson.put("networks", networksJson1);
+		composeJson.put("version", "2.1");
+		return composeJson;
+
+	}
+
+	/**
+	 * docker-compose yaml file 생성함수
+	 * 
+	 * @param fileName 파일 명
+	 * @param conJson  컨테이너 JSON
+	 * 
+	 */
+	public void createYamlFile(String fileName, JSONObject conJson) {
+		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+		try {
+
+			File file = new File(System.getProperty("user.dir") + "/compose-files/");
+
+			if (!file.exists()) {
+				try {
+					file.mkdirs();
+				} catch (Exception e) {
+					e.getStackTrace();
+				}
+			}
+
+			objectMapper.writeValue(new File(System.getProperty("user.dir") + "/compose-files/" + fileName + ".yaml"),
+					createComposeJson(conJson));
+		} catch (JsonGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	/*
 	 * ########################################################################
 	 * 
@@ -553,8 +684,8 @@ public class Util {
 //		}
 
 		return CcInfoPeerEntity.builder().id(ccInfoPeerDto.getId()).ccVersion(ccInfoPeerDto.getCcVersion())
-				.conInfoEntity(ccInfoPeerDto.getConInfoEntity()).ccInfoEntity(ccInfoPeerDto.getCcInfoEntity())
-				.createdAt(ccInfoPeerDto.getCreatedAt()).build();
+				.conInfoEntity(toEntity(ccInfoPeerDto.getConInfoDto()))
+				.ccInfoEntity(toEntity(ccInfoPeerDto.getCcInfoDto())).createdAt(ccInfoPeerDto.getCreatedAt()).build();
 	}
 
 	public CcInfoChannelEntity toEntity(CcInfoChannelDto ccInfoChannelDto) {
@@ -571,8 +702,9 @@ public class Util {
 //		}
 
 		return CcInfoChannelEntity.builder().id(ccInfoChannelDto.getId()).ccVersion(ccInfoChannelDto.getCcVersion())
-				.channelInfoEntity(ccInfoChannelDto.getChannelInfoEntity())
-				.ccInfoEntity(ccInfoChannelDto.getCcInfoEntity()).createdAt(ccInfoChannelDto.getCreatedAt()).build();
+				.channelInfoEntity(toEntity(ccInfoChannelDto.getChannelInfoDto()))
+				.ccInfoEntity(toEntity(ccInfoChannelDto.getCcInfoDto())).createdAt(ccInfoChannelDto.getCreatedAt())
+				.build();
 
 	}
 
@@ -625,8 +757,8 @@ public class Util {
 //		}
 
 		return ChannelInfoPeerEntity.builder().id(channelInfoPeerDto.getId()).anchorYn(channelInfoPeerDto.isAnchorYn())
-				.conInfoEntity(channelInfoPeerDto.getConInfoEntity())
-				.channelInfoEntity(channelInfoPeerDto.getChannelInfoEntity())
+				.conInfoEntity(toEntity(channelInfoPeerDto.getConInfoDto()))
+				.channelInfoEntity(toEntity(channelInfoPeerDto.getChannelInfoDto()))
 				.createdAt(channelInfoPeerDto.getCreatedAt()).build();
 	}
 
@@ -661,9 +793,9 @@ public class Util {
 		return TransactionEntity.builder().txID(transactionDto.getTxID()).creatorId(transactionDto.getCreatorId())
 				.txType(transactionDto.getTxType()).timestamp(transactionDto.getTimestamp())
 				.ccName(transactionDto.getCcName()).ccVersion(transactionDto.getCcVersion())
-				.ccArgs(transactionDto.getCcArgs()).blockEntity(transactionDto.getBlockEntity())
-				.channelInfoEntity(transactionDto.getChannelInfoEntity()).createdAt(transactionDto.getCreatedAt())
-				.build();
+				.ccArgs(transactionDto.getCcArgs()).blockEntity(toEntity(transactionDto.getBlockDto()))
+				.channelInfoEntity(toEntity(transactionDto.getChannelInfoDto()))
+				.createdAt(transactionDto.getCreatedAt()).build();
 	}
 
 	public BlockEntity toEntity(BlockDto blockDto) {
@@ -680,7 +812,7 @@ public class Util {
 
 		return BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash()).blockNum(blockDto.getBlockNum())
 				.txCount(blockDto.getTxCount()).prevDataHash(blockDto.getPrevDataHash())
-				.channelInfoEntity(blockDto.getChannelInfoEntity()).createdAt(blockDto.getCreatedAt()).build();
+				.channelInfoEntity(toEntity(blockDto.getChannelInfoDto())).createdAt(blockDto.getCreatedAt()).build();
 
 	}
 
@@ -710,14 +842,15 @@ public class Util {
 
 	public CcInfoPeerDto toDto(CcInfoPeerEntity ccInfoPeerEntity) {
 		return CcInfoPeerDto.builder().id(ccInfoPeerEntity.getId()).ccVersion(ccInfoPeerEntity.getCcVersion())
-				.conInfoEntity(ccInfoPeerEntity.getConInfoEntity()).ccInfoEntity(ccInfoPeerEntity.getCcInfoEntity())
-				.createdAt(ccInfoPeerEntity.getCreatedAt()).build();
+				.conInfoDto(toDto(ccInfoPeerEntity.getConInfoEntity()))
+				.ccInfoDto(toDto(ccInfoPeerEntity.getCcInfoEntity())).createdAt(ccInfoPeerEntity.getCreatedAt())
+				.build();
 	}
 
 	public CcInfoChannelDto toDto(CcInfoChannelEntity ccInfoChannelEntity) {
 		return CcInfoChannelDto.builder().id(ccInfoChannelEntity.getId()).ccVersion(ccInfoChannelEntity.getCcVersion())
-				.channelInfoEntity(ccInfoChannelEntity.getChannelInfoEntity())
-				.ccInfoEntity(ccInfoChannelEntity.getCcInfoEntity()).createdAt(ccInfoChannelEntity.getCreatedAt())
+				.channelInfoDto(toDto(ccInfoChannelEntity.getChannelInfoEntity()))
+				.ccInfoDto(toDto(ccInfoChannelEntity.getCcInfoEntity())).createdAt(ccInfoChannelEntity.getCreatedAt())
 				.build();
 	}
 
@@ -741,8 +874,9 @@ public class Util {
 
 	public ChannelInfoPeerDto doDto(ChannelInfoPeerEntity channelInfoPeerEntity) {
 		return ChannelInfoPeerDto.builder().id(channelInfoPeerEntity.getId())
-				.anchorYn(channelInfoPeerEntity.isAnchorYn()).conInfoEntity(channelInfoPeerEntity.getConInfoEntity())
-				.channelInfoEntity(channelInfoPeerEntity.getChannelInfoEntity())
+				.anchorYn(channelInfoPeerEntity.isAnchorYn())
+				.conInfoDto(toDto(channelInfoPeerEntity.getConInfoEntity()))
+				.channelInfoDto(toDto(channelInfoPeerEntity.getChannelInfoEntity()))
 				.createdAt(channelInfoPeerEntity.getCreatedAt()).build();
 	}
 
@@ -757,15 +891,16 @@ public class Util {
 		return TransactionDto.builder().txID(transactionEntity.getTxID()).creatorId(transactionEntity.getCreatorId())
 				.txID(transactionEntity.getTxType()).timestamp(transactionEntity.getTimestamp())
 				.ccName(transactionEntity.getCcName()).ccVersion(transactionEntity.getCcVersion())
-				.ccArgs(transactionEntity.getCcArgs()).blockEntity(transactionEntity.getBlockEntity())
-				.channelInfoEntity(transactionEntity.getChannelInfoEntity()).createdAt(transactionEntity.getCreatedAt())
-				.build();
+				.ccArgs(transactionEntity.getCcArgs()).blockDto(toDto(transactionEntity.getBlockEntity()))
+				.channelInfoDto(toDto(transactionEntity.getChannelInfoEntity()))
+				.createdAt(transactionEntity.getCreatedAt()).build();
 	}
 
 	public BlockDto toDto(BlockEntity blockEntity) {
 		return BlockDto.builder().blockDataHash(blockEntity.getBlockDataHash()).blockNum(blockEntity.getBlockNum())
 				.txCount(blockEntity.getTxCount()).prevDataHash(blockEntity.getPrevDataHash())
-				.channelInfoEntity(blockEntity.getChannelInfoEntity()).createdAt(blockEntity.getCreatedAt()).build();
+				.channelInfoDto(toDto(blockEntity.getChannelInfoEntity())).createdAt(blockEntity.getCreatedAt())
+				.build();
 
 	}
 

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.codec.binary.Hex;
@@ -43,15 +42,12 @@ import com.brchain.core.dto.channel.ChannelHandleDto;
 import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.dto.channel.CreateChannelDto;
-import com.brchain.core.entity.BlockEntity;
-import com.brchain.core.entity.ConInfoEntity;
-import com.brchain.core.entity.TransactionEntity;
-import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
-import com.brchain.core.entity.chaincode.CcInfoEntity;
-import com.brchain.core.entity.channel.ChannelHandleEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
 import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
 import com.brchain.core.util.Util;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.RequiredArgsConstructor;
@@ -94,6 +90,8 @@ public class FabricService {
 		try {
 			String ordererPorts = "";
 			String gossipBootAddress = "";
+			JSONObject conJson = new JSONObject();
+			JSONObject returnJson = new JSONObject();
 
 			// 컨테이너 생성시 필요한 변수 선언
 			for (ConInfoDto dto : conInfoDtoArr) {
@@ -119,7 +117,9 @@ public class FabricService {
 
 					// 컨테이너 생성 함수 호출
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
-					containerService.saveConInfo(dockerService.createContainer(dto));
+//					containerService.saveConInfo(dockerService.createContainer(dto));
+					returnJson = dockerService.createContainer(dto);
+					conJson.put(returnJson.get("container_name"), returnJson);
 
 					// setup 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					ConInfoDto setupContainer = new ConInfoDto();
@@ -141,7 +141,9 @@ public class FabricService {
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + setupContainer.getOrgName() + " 조직의 "
 							+ setupContainer.getConType() + " 컨테이너 생성");
 					logger.info(setupContainer.toString());
-					dockerService.createContainer(setupContainer);
+					returnJson = dockerService.createContainer(setupContainer);
+					conJson.put(returnJson.get("container_name"), returnJson);
+//					dockerService.createContainer(setupContainer);
 					Thread.sleep(5000);
 
 					conInfoDtoArr.add(i + 1, setupContainer);
@@ -153,7 +155,9 @@ public class FabricService {
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType()
 							+ dto.getConNum() + " 컨테이너 생성");
 					logger.info(dto.toString());
-					containerService.saveConInfo(dockerService.createContainer(dto));
+//					containerService.saveConInfo(dockerService.createContainer(dto));
+					returnJson = dockerService.createContainer(dto);
+					conJson.put(returnJson.get("container_name"), returnJson);
 
 					// couchdb 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					if (dto.isCouchdbYn()) {
@@ -167,7 +171,10 @@ public class FabricService {
 						logger.info("[조직생성] 도커 컨테이너 생성 -> " + couchdbContainer.getOrgName() + " 조직의 "
 								+ couchdbContainer.getConType() + couchdbContainer.getConNum() + " 컨테이너 생성");
 
-						containerService.saveConInfo(dockerService.createContainer(couchdbContainer));
+//						containerService.saveConInfo(dockerService.createContainer(couchdbContainer));
+//						dockerService.createContainer(couchdbContainer);
+						returnJson = dockerService.createContainer(couchdbContainer);
+						conJson.put(returnJson.get("container_name"), returnJson);
 
 					}
 
@@ -175,16 +182,22 @@ public class FabricService {
 
 					// 컨테이너 생성 함수 호출
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
-					dto.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
+//					dto.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
+					dto.setConsoOrgs(containerService.findConInfoByConType("ca", "peer"));
 					logger.info(dto.toString());
 
-					containerService.saveConInfo(dockerService.createContainer(dto));
+//					containerService.saveConInfo(dockerService.createContainer(dto));
+					returnJson = dockerService.createContainer(dto);
+					conJson.put(returnJson.get("container_name"), returnJson);
 
 				}
 
 				Thread.sleep(2000);
 				i++;
 			}
+			
+			//생성된 조직의 docker-compose yaml file 생성
+			util.createYamlFile(conInfoDtoArr.get(0).getOrgName(), conJson);
 
 			String path = null;
 
@@ -246,6 +259,9 @@ public class FabricService {
 		logger.info("[채널생성] CreateChannelVo : " + createChannelDto);
 
 		Util util = new Util();
+		
+		JSONObject conJson = new JSONObject();
+		JSONObject returnJson = new JSONObject();
 
 		try {
 
@@ -266,7 +282,10 @@ public class FabricService {
 			conInfoDto.setConPort("");
 			conInfoDto.setConCnt(0);
 			logger.info("[채널생성] conInfoDto : " + conInfoDto);
-			dockerService.createContainer(conInfoDto);
+			
+
+			returnJson = dockerService.createContainer(conInfoDto);
+			conJson.put(returnJson.get("container_name"), returnJson);
 
 			// 채널 생성시 필요한 fabricMemvber(peer, orderer) Dto 생성
 			ArrayList<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
@@ -311,6 +330,8 @@ public class FabricService {
 					logger.info(genesisJson.toString());
 					logger.info(testJson.toString());
 
+					// 시스템 채널 컨소시움 추가
+
 					JSONObject modifiedJson = util.modifyConsoConfig(genesisJson, testJson, "", peerDto.getOrgName());
 
 					File updateFile = fabricClient.createUpdateFile(ordererDto, "testchainid", genesisJson,
@@ -344,7 +365,9 @@ public class FabricService {
 			channelInfoDto.setBatchSizeAbsolMax(81920);
 			channelInfoDto.setBatchSizeMaxMsg(20);
 			channelInfoDto.setBatchSizePreferMax(20480);
-			channelService.saveChannelInfo(util.toEntity(channelInfoDto));
+			channelService.saveChannelInfo(channelInfoDto);
+			
+			util.createYamlFile(createChannelDto.getChannelName(), conJson);
 
 			logger.info("[채널생성] 종료");
 
@@ -393,17 +416,21 @@ public class FabricService {
 
 		for (FabricMemberDto peerDto : peerDtoArr) {
 
+			// 클라이언트 생성
 			HFClient client = fabricClient.createClient(peerDto);
+
+			// 채널 조인
 			fabricClient.joinChannel(client, peerDto, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 					channelName);
 
 			ChannelInfoPeerDto channelInfoPeerDto = new ChannelInfoPeerDto();
 
 			channelInfoPeerDto.setAnchorYn(false);
-			channelInfoPeerDto.setChannelInfoEntity(channelService.findChannelInfoByChannelName(channelName));
-			channelInfoPeerDto.setConInfoEntity(containerService.findConInfoByConName(peerDto.getConName()));
+			channelInfoPeerDto.setChannelInfoDto(channelService.findChannelInfoByChannelName(channelName));
+			channelInfoPeerDto.setConInfoDto(containerService.findConInfoByConName(peerDto.getConName()));
 
-			channelService.saveChannelInfoPeer(util.toEntity(channelInfoPeerDto));
+			// 채널 가입한 피어정보 저장
+			channelService.saveChannelInfoPeer(channelInfoPeerDto);
 
 		}
 
@@ -421,6 +448,7 @@ public class FabricService {
 		logger.info("[체인코드 설치] 시작");
 		logger.info("[체인코드 설치] InstallCcDto : " + installCcDto);
 
+		// 체인코드를 설치할 FabricMembetDto(peer) 생성
 		ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", installCcDto.getOrgName());
 
 		FabricMemberDto peerDto = null;
@@ -434,16 +462,22 @@ public class FabricService {
 
 		try {
 
+			// 체인코드 설치
 			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
 
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
+
+			// 설치한 체인코드 정보 조회
 			CcInfoDto ccInfoDto = chaincodeService.findCcInfoByCcName(installCcDto.getCcName());
-			ConInfoEntity conInfoEntity = containerService.findConInfoByConName(peerDto.getConName());
+
+			// 체인코드를 설치한 컨테이너 정보 조회
+			ConInfoDto conInfoDto = containerService.findConInfoByConName(peerDto.getConName());
 
 			ccInfoPeerDto.setCcVersion(installCcDto.getCcVersion());
-			ccInfoPeerDto.setCcInfoEntity(util.toEntity(ccInfoDto));
-			ccInfoPeerDto.setConInfoEntity(conInfoEntity);
+			ccInfoPeerDto.setCcInfoDto(ccInfoDto);
+			ccInfoPeerDto.setConInfoDto(conInfoDto);
 
+			// 체인코드 설치한 피어정보 저장
 			chaincodeService.saveCcnInfoPeer(ccInfoPeerDto);
 
 		} catch (Exception e) {
@@ -475,44 +509,60 @@ public class FabricService {
 
 		try {
 
-			ChannelInfoEntity channelInfoEntity = channelService
+			// 채인코드 인스턴스화를 진항항 채널 정보 조회
+			ChannelInfoDto channelInfoDto = channelService
 					.findChannelInfoByChannelName(instantiateCcDto.getChannelName());
 
+			// 인스턴스화를 진행할 체인코드 정보 조회
 			CcInfoDto ccInfoDto = chaincodeService.findCcInfoByCcName(instantiateCcDto.getCcName());
 
-			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoEntity);
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
-					.findChannelInfoPeerByChannelInfo(channelInfoEntity);
+			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoDto);
 
-			logger.info("[체인코드 인스턴스화] channelInfoPeerArr : " + channelInfoPeerArr);
-			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
-					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			// 체인코드 인스턴스화를 진행할 피어조회
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
+					.findChannelInfoPeerByChannelInfo(channelInfoDto);
+
+			logger.info("[체인코드 인스턴스화] channelInfoPeerDtoArr : " + channelInfoPeerDtoArr);
+
+			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr
+					.get((int) (Math.random() * channelInfoPeerDtoArr.size())).getConInfoDto().getOrgName());
+
+			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
-					channelInfoEntity.getOrderingOrg());
+					channelInfoDto.getOrderingOrg());
 
 			CcInfoChannelDto ccInfoChannelDto;
 			try {
-				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoEntity,
-						util.toEntity(ccInfoDto));
 
+				// 이미 인스턴스화가 진행된 체인코드인지 조회
+				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
+
+				// 조회가 되면 업데이트 진행
 				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
 						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 						instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(),
 						instantiateCcDto.getCcVersion(), instantiateCcDto.getCcLang(), true);
 
 				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
+
+				// 채널에 활성화된 체인코드정보 업데이트
 				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 
 			} catch (IllegalArgumentException e) {
+
+				// 조회가 안되면 인스턴스화 진행
 				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
 						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 						instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(),
 						instantiateCcDto.getCcVersion(), instantiateCcDto.getCcLang(), false);
 
 				ccInfoChannelDto = new CcInfoChannelDto();
-				ccInfoChannelDto.setCcInfoEntity(util.toEntity(ccInfoDto));
-				ccInfoChannelDto.setChannelInfoEntity(channelInfoEntity);
+				ccInfoChannelDto.setCcInfoDto(ccInfoDto);
+				ccInfoChannelDto.setChannelInfoDto(channelInfoDto);
 				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
+
+				// 채널에 활성화된 체인코드정보 저장
 				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 			}
 
@@ -544,34 +594,65 @@ public class FabricService {
 
 		try {
 
-			ChannelInfoEntity channelInfo = channelService.findChannelInfoByChannelName(channelName);
+			// 이벤트 리슨을 등록할 채널 정보 조회
+			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
 
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
-					.findChannelInfoPeerByChannelInfo(channelInfo);
+			// 이벤트 리슨을 등록할 피어 정보 조회
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
+					.findChannelInfoPeerByChannelInfo(channelInfoDto);
 
-			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
-					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			// 이벤트 리슨을 등록할 FabricMembetDto(peer) 생성
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr
+					.get((int) (Math.random() * channelInfoPeerDtoArr.size())).getConInfoDto().getOrgName());
+
+			// 이벤트 리슨을 등록할 FabricMembetDto(orderer) 생성
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
-					channelInfo.getOrderingOrg());
+					channelInfoDto.getOrderingOrg());
 
-			Optional<ChannelHandleEntity> channelHandleEntity = channelService.findChannelHandleByChannel(channelName);
-			ChannelHandleDto channelHandleDto = new ChannelHandleDto();
+//			Optional<ChannelHandleEntity> channelHandleEntity = channelService.findChannelHandleByChannel(channelName);
+//			ChannelHandleDto channelHandleDto = new ChannelHandleDto();
+//
+//			if (channelHandleEntity.isPresent()) {
+//				throw new Exception("already registered event listener");
+//
+//			} else {
+//
+//				String handle = fabricClient.registerEventListener(
+//						peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+//						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
+//						createBlockListener(channelName),
+//						channelInfoDto.getChannelBlock() < 1 ? 0 : channelInfoDto.getChannelBlock() - 1);
+//
+//				channelHandleDto.setChannelName(channelName);
+//				channelHandleDto.setHandle(handle);
+//				channelService.saveChannelHandle(channelHandleDto);
+//
+//			}
+			ChannelHandleDto channelHandleDto;
+			try {
 
-			if (channelHandleEntity.isPresent()) {
+				// 이벤트 리슨이 등록된 채널인지 채널 핸들 조회
+				channelHandleDto = channelService.findChannelHandleByChannel(channelName);
+
+				// 이벤트 리슨이 등록된 채널이면 에러 발생
 				throw new Exception("already registered event listener");
 
-			} else {
+			} catch (IllegalArgumentException e) {
 
+				channelHandleDto = new ChannelHandleDto();
+
+				// 이벤트 리슨 등록
 				String handle = fabricClient.registerEventListener(
 						peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
 						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
 						createBlockListener(channelName),
-						channelInfo.getChannelBlock() < 1 ? 0 : channelInfo.getChannelBlock() - 1);
+						channelInfoDto.getChannelBlock() < 1 ? 0 : channelInfoDto.getChannelBlock() - 1);
 
 				channelHandleDto.setChannelName(channelName);
 				channelHandleDto.setHandle(handle);
-				channelService.saveChannelHandle(channelHandleDto);
 
+				// 채널 핸들 정보 저장
+				channelService.saveChannelHandle(channelHandleDto);
 			}
 
 			logger.info("[채널 블럭 이벤트 등록] 종료");
@@ -598,22 +679,29 @@ public class FabricService {
 
 		try {
 
-			ChannelInfoEntity channelInfo = channelService.findChannelInfoByChannelName(channelName);
+			// 이벤트 리슨을 삭제할 채널 정보 조회
+			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
 
-			ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelService
-					.findChannelInfoPeerByChannelInfo(channelInfo);
+			// 이벤트 리슨을 삭제할 피어 정보 조회
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
+					.findChannelInfoPeerByChannelInfo(channelInfoDto);
 
-			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerArr
-					.get((int) (Math.random() * channelInfoPeerArr.size())).getConInfoEntity().getOrgName());
+			// 이벤트 리슨을 삭제할 FabricMemberDto(peer) 생성
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr
+					.get((int) (Math.random() * channelInfoPeerDtoArr.size())).getConInfoDto().getOrgName());
+
+			// 이벤트 리슨을 삭제할 FabricMemberDto(orderer) 생성
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
-					channelInfo.getOrderingOrg());
+					channelInfoDto.getOrderingOrg());
 
-			String channelHandle = channelService.findChannelHandleByChannel(channelName)
-					.orElseThrow(IllegalArgumentException::new).getHandle();
+			// 삭제할 채널 핸들 조회
+			String channelHandle = channelService.findChannelHandleByChannel(channelName).getHandle();
 
+			// 이벤트 리슨을 삭제
 			fabricClient.unregisterEventListener(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
 					ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName, channelHandle);
 
+			// 채널 핸들 삭제
 			channelService.deleteChannelHandle(channelName);
 
 		} catch (Exception e) {
@@ -639,17 +727,24 @@ public class FabricService {
 
 		try {
 
-			ConInfoEntity conInfoEntity = containerService.findConInfoByConName(conName);
-			ChannelInfoEntity channelInfoEntity = channelService.findChannelInfoByChannelName(channelName);
-			ChannelInfoPeerEntity channelInfoPeerEntity = channelService
-					.findChannelInfoPeerByChannelNameAndConName(channelInfoEntity, conInfoEntity).get(0);
+			// 앵커피어를 등록할 컨테이너 정보 조회
+			ConInfoDto conInfoDto = containerService.findConInfoByConName(conName);
 
-			if (channelInfoPeerEntity.isAnchorYn()) {
+			// 앵커피어를 등록할 채널정보 조회
+			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
+
+			// 앵커피어를 등록할 채널에 피어 정보 조회??
+			ChannelInfoPeerDto channelInfoPeerDto = channelService
+					.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto).get(0);
+
+			// 조회한 피어에 앵커피어 설정이 되어있으면 에러발샐
+			if (channelInfoPeerDto.isAnchorYn()) {
 				throw new Exception(conName + " is already anchor peer");
 			}
 
-			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr(conInfoEntity.getOrgType(),
-					conInfoEntity.getOrgName());
+			// 앵커피어를 등록한 FabricMemberDto(peer) 생성
+			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr(conInfoDto.getOrgType(),
+					conInfoDto.getOrgName());
 			FabricMemberDto peerDto = null;
 
 			for (FabricMemberDto peerDto2 : peerDtoArr) {
@@ -658,8 +753,9 @@ public class FabricService {
 				}
 			}
 
+			// 앵커피어를 등록을 진행할 FabricMemberDto(orderer) 생성
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
-					channelInfoEntity.getOrderingOrg());
+					channelInfoDto.getOrderingOrg());
 
 			// wallet 생성
 			fabricClient.createWallet(peerDto);
@@ -672,8 +768,10 @@ public class FabricService {
 			fabricClient.setAnchorConfig(peerDto, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 					channelName);
 
-			channelInfoPeerEntity.setAnchorYn(true);
-			channelService.saveChannelInfoPeer(channelInfoPeerEntity);
+			channelInfoPeerDto.setAnchorYn(true);
+
+			// 채널에 가인된 피어 정보 업데이트
+			channelService.saveChannelInfoPeer(channelInfoPeerDto);
 
 		} catch (Exception e) {
 
@@ -696,40 +794,51 @@ public class FabricService {
 
 	private BlockListener createBlockListener(String channelName) {
 
+		// 블록 리스너 생성
 		BlockListener blockListener = new BlockListener() {
 
 			@Override
 			public void received(BlockEvent blockEvent) {
 
-				ChannelInfoEntity channelInfoEntity = channelService.findChannelInfoByChannelName(channelName);
+				// 채널 정보 조
+				ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
 				BlockDto blockDto;
 
 				try {
+
+					// 이벤트로 받은 blockDataHash이 있는지 조회
 					blockDto = blockService.findBlockByBlockDataHash(Hex.encodeHexString(blockEvent.getDataHash()));
 
 				} catch (IllegalArgumentException e) {
+
+					// 조회가 안되면 리슨받은 블록 정보 저장
 					blockDto = new BlockDto();
 					blockDto.setBlockDataHash(Hex.encodeHexString(blockEvent.getDataHash()));
 					blockDto.setBlockNum((int) blockEvent.getBlockNumber());
 					blockDto.setPrevDataHash(Hex.encodeHexString(blockEvent.getPreviousHash()));
 					blockDto.setTxCount(blockEvent.getTransactionCount());
-					blockDto.setChannelInfoEntity(channelInfoEntity);
+					blockDto.setChannelInfoDto(channelInfoDto);
 
 					blockService.saveBLock(blockDto);
 				}
 
+				// 블록 내 트렌젝션 순회
 				for (EnvelopeInfo envelopeInfo : blockEvent.getEnvelopeInfos()) {
 
 					try {
+						// 이벤트로 받은 txID가 있는지 조회
 						transactionService.findBlockByTxId(envelopeInfo.getTransactionID());
+
 					} catch (IllegalArgumentException e) {
+
+						// 조회가 안되면 트렌젝션 정보 저장
 						TransactionDto transactionDto = new TransactionDto();
 						transactionDto.setTxID(envelopeInfo.getTransactionID());
 						transactionDto.setCreatorId(envelopeInfo.getCreator().getMspid());
 						transactionDto.setTxType(envelopeInfo.getType().toString());
 						transactionDto.setTimestamp(envelopeInfo.getTimestamp());
-						transactionDto.setBlockEntity(util.toEntity(blockDto));
-						transactionDto.setChannelInfoEntity(channelInfoEntity);
+						transactionDto.setBlockDto(blockDto);
+						transactionDto.setChannelInfoDto(channelInfoDto);
 
 						if (envelopeInfo.getType() == EnvelopeType.TRANSACTION_ENVELOPE) {
 							TransactionEnvelopeInfo transactionEnvelopeInfo = (TransactionEnvelopeInfo) envelopeInfo;
@@ -757,16 +866,20 @@ public class FabricService {
 
 				}
 
-				System.out.println("channel Block : " + blockService.countBychannelBlock(channelInfoEntity)
-						+ " channel Tx : " + transactionService.countBychannelTransaction(channelInfoEntity)
+				// 채널정보 조회
+				System.out.println("channel Block : " + blockService.countBychannelBlock(channelInfoDto)
+						+ " channel Tx : " + transactionService.countBychannelTransaction(channelInfoDto)
 						+ " current BLock : " + blockEvent.getBlockNumber());
-				channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(channelInfoEntity));
-				channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(channelInfoEntity));
-				channelService.saveChannelInfo(channelInfoEntity);
+				channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
+				channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
+				channelService.saveChannelInfo(channelInfoDto);
 
 				try {
+
+					// 웹소캣 연결된 클라이언트에게 이벤트 전송
 					webSocket.convertAndSend("/event",
 							blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
+
 				} catch (MessagingException | InvalidProtocolBufferException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.brchain.core.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,8 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContainerService {
 
+	// jpa 레파지토리
 	private final ConInfoRepository conInfoRepository;
-	
+
 	private final Util util;
 
 	@Value("${brchain.ip}")
@@ -32,14 +34,12 @@ public class ContainerService {
 	 * 
 	 * @param conInfoDto 컨테이너 정보 DTO
 	 * 
-	 * @return 저장한 컨테이너 정보 엔티티
-	 * 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 컨테이너 정보 DTO
 	 */
 
-	public ConInfoEntity saveConInfo(ConInfoDto conInfoDto) {
+	public ConInfoDto saveConInfo(ConInfoDto conInfoDto) {
 
-		return conInfoRepository.save(util.toEntity(conInfoDto));
+		return util.toDto(conInfoRepository.save(util.toEntity(conInfoDto)));
 
 	}
 
@@ -48,18 +48,16 @@ public class ContainerService {
 	 * 
 	 * @param conId 삭제할 컨테이너 ID
 	 * 
-	 * @return 삭제한 조직명
-	 * 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 삭제한 컨테이너 정보 DTO
 	 */
 
-	public ConInfoEntity deleteConInfo(String conId) {
+	public ConInfoDto deleteConInfo(String conId) {
 
 		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId);
 
 		conInfoRepository.deleteById(conInfoEntity.getConName());
 
-		return conInfoEntity;
+		return util.toDto(conInfoEntity);
 
 	}
 
@@ -68,20 +66,17 @@ public class ContainerService {
 	 * 
 	 * @param conName 컨테이너 이름
 	 * 
-	 * @return 컨테이너 정보 엔티티
-	 * 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 컨테이너 정보 DTO
 	 */
 
-	public ConInfoEntity findConInfoByConName(String conName) {
+	public ConInfoDto findConInfoByConName(String conName) {
 
-		return conInfoRepository.findById(conName).get();
+		return util.toDto(conInfoRepository.findById(conName).orElseThrow(IllegalArgumentException::new));
 
 	}
-	
 
 	/**
-	 * 컨테이너 타입으로 조회 서비스
+	 * 컨테이너 타입으로 조직 조회 서비스
 	 * 
 	 * @param conType 컨테이너 타입
 	 * @param orgType 조직 타입
@@ -97,12 +92,13 @@ public class ContainerService {
 
 		for (ConInfoEntity entity : conInfoEntity) {
 
-			ConInfoDto conInfoDto = ConInfoDto.builder().conId(entity.getConId()).conName(entity.getConName())
-					.conType(entity.getConType()).conNum(entity.getConNum()).conCnt(entity.getConCnt())
-					.conPort(conInfoEntity.get(0).getConPort()).orgName(entity.getOrgName())
-					.orgType(entity.getOrgType()).couchdbYn(entity.isCouchdbYn())
-					.gossipBootAddr(entity.getGossipBootAddr()).ordererPorts(entity.getOrdererPorts()).build();
+//			ConInfoDto conInfoDto = ConInfoDto.builder().conId(entity.getConId()).conName(entity.getConName())
+//					.conType(entity.getConType()).conNum(entity.getConNum()).conCnt(entity.getConCnt())
+//					.conPort(conInfoEntity.get(0).getConPort()).orgName(entity.getOrgName())
+//					.orgType(entity.getOrgType()).couchdbYn(entity.isCouchdbYn())
+//					.gossipBootAddr(entity.getGossipBootAddr()).ordererPorts(entity.getOrdererPorts()).build();
 
+			ConInfoDto conInfoDto = util.toDto(entity);
 			result = result + conInfoDto.getOrgName() + " ";
 		}
 
@@ -293,5 +289,5 @@ public class ContainerService {
 
 	}
 
-}
 
+}

@@ -22,6 +22,8 @@ import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.Ipam;
+import com.spotify.docker.client.messages.IpamConfig;
 import com.spotify.docker.client.messages.LogConfig;
 import com.spotify.docker.client.messages.NetworkConfig;
 import com.spotify.docker.client.messages.PortBinding;
@@ -29,20 +31,19 @@ import com.spotify.docker.client.messages.PortBinding;
 import lombok.RequiredArgsConstructor;
 
 @Component
-
 @RequiredArgsConstructor
 public class DockerClient {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Value("${brchain.ip}")
-	private  String ip;
+	private String ip;
 
-	private  String networkMode = "brchain-network";
+	private String networkMode = "brchain-network";
 //	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
 //			.build();
 
-	private  DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
+	private DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
 			.apiVersion("v1.40").build();
 
 	/**
@@ -99,14 +100,14 @@ public class DockerClient {
 	 * 
 	 * @param createConDto 컨테이너 생성 관련 DTO
 	 * 
-	 * @return 공백
+	 * @return 생성된 컨테이너 정보
 	 * 
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 * 
 	 */
 
-	public ConInfoDto createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
+	public ContainerInfo createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
 
 		// 도커 네트워크 체크로직
 		// 네트워크 조회 에러시 네트워크 생성
@@ -116,8 +117,18 @@ public class DockerClient {
 
 		} catch (NetworkNotFoundException e) {
 
+			// 도커 네트워크 설정
+			ArrayList<IpamConfig> configList = new ArrayList<IpamConfig>();
+
+			IpamConfig config = IpamConfig.create("123.123.123.0/24", "123.123.123.0/24", "123.123.123.1");
+			configList.add(config);
+
+			Ipam ipam = Ipam.builder().driver("default").config(configList).build();
+
 			NetworkConfig networkConfig = NetworkConfig.builder().checkDuplicate(true).attachable(true)
-					.name(networkMode).build();
+					.name(networkMode).ipam(ipam).build();
+
+			// 도커 네트워크 생성
 			docker.createNetwork(networkConfig);
 
 		}
@@ -174,9 +185,8 @@ public class DockerClient {
 //		List<String> extraHosts = containerenv.setExtraHosts();
 
 		// hostconfig 빌더 생성
-		HostConfig hostConfig = HostConfig.builder().binds(binds)
-				.logConfig(logconfig)
-				.networkMode(networkMode).portBindings(portBindings)
+		HostConfig hostConfig = HostConfig.builder().binds(binds).logConfig(logconfig).networkMode(networkMode)
+				.portBindings(portBindings)
 //				.extraHosts(extraHosts)
 				.build();
 
@@ -221,29 +231,21 @@ public class DockerClient {
 		ContainerConfig containerConfig = ContainerConfig.builder().hostConfig(hostConfig).exposedPorts(exposedPorts)
 				.env(containerEnv).cmd(cmd)
 //				.volumes(volumes)
-				.image(containerSetting.setImages()).labels(labels).domainname(containerName).build();
+				.image(containerSetting.setImages()).labels(labels).domainname(containerName)
+//				.workingDir(workingDir)
+				.build();
 
 		// 컨테이너 생성
 		ContainerCreation creation = docker.createContainer(containerConfig);
 
 		String id = creation.id();
 
-		ContainerInfo info = docker.inspectContainer(id);
-
-		info.name();
-
 		// 컨테이너 시작 및 이름 변경
 		docker.startContainer(id);
 		docker.renameContainer(id, containerName);
+		ContainerInfo info = docker.inspectContainer(id);
 
-	
-		createConDto.setConId(id);
-		createConDto.setConName(containerName);
-
-		logger.info("[도커 컨테이너 생성 dto] " + createConDto);
-
-		return createConDto;
+		return info;
 	}
 
 }
-

@@ -3,11 +3,7 @@ package com.brchain.core.dto;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-import com.brchain.core.entity.BlockEntity;
-import com.brchain.core.entity.TransactionEntity;
-import com.brchain.core.entity.TransactionEntity.TransactionEntityBuilder;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
-
+import com.brchain.core.dto.channel.ChannelInfoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,26 +17,15 @@ import lombok.ToString;
 @AllArgsConstructor
 public class TransactionDto {
 
-	private String txID;
-	private String creatorId;
-	private String txType;
-	private Date timestamp;
-	private String ccName;
-	private String ccVersion;
-	private String ccArgs;
-	private BlockEntity blockEntity;
-	private ChannelInfoEntity channelInfoEntity;
-	private LocalDateTime createdAt;
+	private String txID; // 트렌젝션 아이디
+	private String creatorId; // 트렌젝션 생성자 아이디
+	private String txType;// 트렌젝션 타입
+	private Date timestamp;// 트렌젝션 타임스테프
+	private String ccName; // 체인코드 이름
+	private String ccVersion;// 체인코드 버전
+	private String ccArgs; // 체인코드 파라미터
+	private BlockDto blockDto;// 블록정보 DTO
+	private ChannelInfoDto channelInfoDto; // 채널정보 DTO
+	private LocalDateTime createdAt;// 생성 시간
 
-//	public TransactionEntity toEntity() {
-//
-//		TransactionEntityBuilder transactionEntityBuilder = TransactionEntity.builder().txID(txID).creatorId(creatorId).txType(txType)
-//				.timestamp(timestamp).ccName(ccName).ccVersion(ccVersion).ccArgs(ccArgs).blockEntity(blockEntity)
-//				.channelInfoEntity(channelInfoEntity);
-//		if (createdAt == null) {
-//			return transactionEntityBuilder.build();
-//		} else {
-//			return transactionEntityBuilder.createdAt(createdAt).build();
-//		}
-//	}
 }

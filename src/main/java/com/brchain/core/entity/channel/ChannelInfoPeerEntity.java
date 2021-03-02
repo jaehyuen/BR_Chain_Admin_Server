@@ -14,7 +14,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.entity.BlockEntity;
 import com.brchain.core.entity.ConInfoEntity;
 
 import lombok.AllArgsConstructor;

@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.entity.BlockEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

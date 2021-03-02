@@ -12,11 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
-import com.brchain.core.entity.chaincode.CcInfoEntity;
 import com.brchain.core.entity.channel.ChannelInfoEntity;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

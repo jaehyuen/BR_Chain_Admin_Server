@@ -61,8 +61,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.brchain.core.dto.FabricMemberDto;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
-import com.brchain.core.service.ChannelService;
 import com.brchain.core.util.BrchainUser;
 import com.brchain.core.util.Util;
 import lombok.RequiredArgsConstructor;
@@ -158,6 +156,7 @@ public class FabricClient {
 			return;
 		}
 
+		// 인증서 설정
 		if (memberDto.getOrgType().equals("peer")) {
 
 			path = "crypto-config/peerOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org"
@@ -199,6 +198,7 @@ public class FabricClient {
 		}
 
 		X509Enrollment enrollment = new X509Enrollment(key, certificate);
+
 		// 인증서를 wallet형식으로 변환
 		Identity user = Identity.createIdentity(memberDto.getOrgMspId(), enrollment.getCert(), enrollment.getKey());
 		wallet.put(memberDto.getOrgName(), user);
@@ -238,6 +238,7 @@ public class FabricClient {
 
 		logger.info("[채널생성] 오더러설정 완료");
 
+		// 채널 생성
 		Channel channel = client.newChannel(channelName, orderer,
 				new ChannelConfiguration(new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
 				client.getChannelConfigurationSignature(
@@ -289,6 +290,7 @@ public class FabricClient {
 		channel.addOrderer(orderer);
 		channel.initialize();
 
+		// 채널 조인
 		channel.joinPeer(peer);
 
 		logger.info("[채널가입] : " + peerDto.getConName() + " 컨테이너 " + channelName + " 채널 가입완료");
@@ -299,7 +301,7 @@ public class FabricClient {
 	/**
 	 * UserContext 생성 함수
 	 * 
-	 * @param memberDto 생성할 UserContext 정
+	 * @param memberDto 생성할 UserContext 정보
 	 * 
 	 * @return BrchainUser
 	 * 
@@ -307,6 +309,7 @@ public class FabricClient {
 	 */
 
 	public BrchainUser createContext(FabricMemberDto memberDto) throws IOException {
+
 		// wallet에서 피어의 인증서 정보를 가져옴
 		Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet"));
 		X509Enrollment enrollment = new X509Enrollment(wallet.get(memberDto.getOrgName()).getPrivateKey(),
@@ -352,6 +355,27 @@ public class FabricClient {
 
 	}
 
+	/**
+	 * 이벤트 리슨용 채널 설정 함수
+	 * 
+	 * @param peerDto     피어 정보 DTO
+	 * @param ordererDto  오더러 정보 DTO
+	 * @param channelName 채널 이름
+	 * @param startCnt    이벤트 리슨 시작 블록 번호
+	 * 
+	 * @return 설정된 채널
+	 * 
+	 * @throws InvalidArgumentException
+	 * @throws CryptoException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IOException
+	 * @throws TransactionException
+	 * 
+	 */
 	public Channel initChannel(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, int startCnt)
 			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
 			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
@@ -397,6 +421,7 @@ public class FabricClient {
 
 			client = createClient(ordererDto);
 			props = createFabricProperties(ordererDto);
+
 			Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 			channel.addOrderer(orderer);
 
@@ -488,6 +513,7 @@ public class FabricClient {
 		sshClient.execCommand(command);
 
 		Thread.sleep(1000);
+		
 		// 변경된 파일 다운로드
 		sshClient.downloadFile(path, fileName + ".json");
 		channel.shutdown(true);
@@ -547,15 +573,18 @@ public class FabricClient {
 			sshClient.uploadFile(path, fileName + ".json");
 		}
 
+		// proto encode
 		String command = "configtxlator proto_encode --input " + sourceDir + "/" + path + fileName + ".json"
 				+ " --type common.Config --output " + sourceDir + "/" + path + fileName + ".pb";
 		sshClient.execCommand(command);
 
+		// 업데이트 계산
 		command = "configtxlator compute_update --channel_id " + channelName + " --original " + sourceDir + "/" + path
 				+ channelName + "_config.pb --updated " + sourceDir + "/" + path + fileName + ".pb --output "
 				+ sourceDir + "/" + path + channelName + "_config_update.pb";
 		sshClient.execCommand(command);
 
+		// proto decode
 		fileName = channelName + "_config_update";
 		command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName
 				+ ".pb --type common.ConfigUpdate > " + sourceDir + "/" + path + fileName + ".json";
@@ -604,10 +633,15 @@ public class FabricClient {
 
 		channel.addOrderer(orderer);
 
+		// 업데이트 설정 생성
 		UpdateChannelConfiguration updateChannelConfiguration = new UpdateChannelConfiguration(updateFile);
 		BrchainUser user = createContext(memberDto);
+
+		// 업데이트 승인
 		byte[] signers = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
 		user = createContext(ordererDto);
+
+		// 업데이트 리퀘스트 전송
 		channel.updateChannelConfiguration(user, updateChannelConfiguration, orderer, signers);
 
 		channel.shutdown(true);
@@ -710,6 +744,7 @@ public class FabricClient {
 		channel.addOrderer(orderer);
 		channel.initialize();
 
+		// 체인코드 ID 생성
 		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
 				.setPath(ccName + "/");
 
@@ -736,6 +771,7 @@ public class FabricClient {
 		proposalRequest.setProposalWaitTime(300000);
 //		proposalRequest.setTransientMap(tm);
 		Collection<ProposalResponse> responses = null;
+
 		// 리퀘스트 결과 오더러로 전송
 		if (!upgrade) {
 			responses = channel.sendInstantiationProposal((InstantiateProposalRequest) proposalRequest);
@@ -768,6 +804,8 @@ public class FabricClient {
 	 * @param peerDto     이벤트 등록을 진행할 피어 정보 DTO
 	 * @param ordererDto  이벤트 등록을 진행할 오더러 정보 DTO
 	 * @param channelName 채널 이름
+	 * @param listener    등록할 리스너
+	 * @param startCnt    이벤트 시작 위치
 	 * 
 	 * @return 이벤트 핸들러
 	 * 
@@ -777,19 +815,35 @@ public class FabricClient {
 	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
 			BlockListener listener, int startCnt) throws Exception {
 
+		// 이벤트 리슨용 채널 생성
 		Channel channel = initChannel(peerDto, ordererDto, channelName, startCnt);
 
+		// 블록 이벤트 리스너 등록
 		return channel.registerBlockListener(listener);
 
 	}
 
+	/**
+	 * 채널 블록 이벤트 삭제 함수
+	 * 
+	 * @param peerDto     이벤트 삭제를 진행할 피어 정보 DTO
+	 * @param ordererDto  이벤트 삭제를 진행할 오더러 정보 DTO
+	 * @param channelName 채널 이름
+	 * @param handle      이벤트 리스너 핸들
+	 * 
+	 * @throws Exception
+	 */
+
 	public void unregisterEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
 			String handle) throws Exception {
 
+		// 이벤트 리슨용 채널 생성
 		Channel channel = initChannel(peerDto, ordererDto, channelName, 0);
 
 		System.out.println("in Unregister Listenrt func");
 		System.out.println("handle is " + handle);
+
+		// 블록 이벤트 리스너 삭제
 		channel.unregisterBlockListener(handle);
 		channelListener.remove(channel);
 
@@ -799,11 +853,15 @@ public class FabricClient {
 			throws Exception {
 		Util util = new Util();
 
+		// 채널 설정 조회
 		JSONObject genesisJson = getChannelConfig(peerDto, channelName);
 		logger.info("[앵커피어 설정] 기존 설정 : " + genesisJson);
 
+		// 앵커피어 설정 추가
 		JSONObject modifiedJson = util.modifyAnchorConfig(genesisJson, util.createAnchorJson(peerDto), "", peerDto);
 		logger.info("[앵커피어 설정] 변경된 설정 : " + modifiedJson.toString());
+
+		// 파일 업데이트
 		File updateFile = createUpdateFile(peerDto, channelName, genesisJson, modifiedJson);
 
 		setUpdate(peerDto, ordererDto, channelName, updateFile);

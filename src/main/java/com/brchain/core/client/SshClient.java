@@ -220,9 +220,7 @@ public class SshClient {
 			} catch (Exception e) {
 				e.getStackTrace();
 			}
-		} else {
-
-		}
+		} 
 		outputStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + path + downloadFileName));
 		int i;
 

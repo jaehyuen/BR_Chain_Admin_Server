@@ -8,9 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.entity.BlockEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "CCINFO")
+@Table(name = "messages")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

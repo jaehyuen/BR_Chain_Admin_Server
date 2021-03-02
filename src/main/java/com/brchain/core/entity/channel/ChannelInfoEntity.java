@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.entity.BlockEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,9 +19,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CHANNELINFO")
-@Builder
+//@Builder
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 public class ChannelInfoEntity extends BaseEntity {
 
 	@Id

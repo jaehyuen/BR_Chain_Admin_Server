@@ -2,17 +2,16 @@ package com.brchain.core.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 
+import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.ResultDto;
-import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.channel.ChannelHandleDto;
+import com.brchain.core.dto.channel.ChannelInfoDto;
+import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.entity.ConInfoEntity;
-import com.brchain.core.entity.channel.ChannelHandleEntity;
 import com.brchain.core.entity.channel.ChannelInfoEntity;
 import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
 import com.brchain.core.repository.channel.ChannelHandleRepository;
@@ -26,10 +25,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChannelService {
 
+	// jpa 레파지토리
 	private final ChannelInfoRepository channelInfoRepository;
 	private final ChannelInfoPeerRepository channelInfoPeerRepository;
 	private final ChannelHandleRepository channelHandleRepository;
 
+	// 서비스
 	private final ContainerService containerService;
 
 	private final Util util;
@@ -39,15 +40,12 @@ public class ChannelService {
 	 * 
 	 * @param channelInfoDto 채널 정보 DTO
 	 * 
-	 * @return 저장 채널 정보 엔티티
-	 * 
-	 * TODO 파라미터를 dto로 변경해야 할거같음 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장 채널 정보 DTO
 	 */
 
-	public ChannelInfoEntity saveChannelInfo(ChannelInfoEntity channelInfoEntity) {
+	public ChannelInfoDto saveChannelInfo(ChannelInfoDto channelInfoDto) {
 
-		return channelInfoRepository.save(channelInfoEntity);
+		return util.toDto(channelInfoRepository.save(util.toEntity(channelInfoDto)));
 
 	}
 
@@ -56,13 +54,12 @@ public class ChannelService {
 	 * 
 	 * @param channelName 채널 이름
 	 * 
-	 * @return 조회한 채널 정보 엔티티
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 조회한 채널 정보 DTO
 	 */
 
-	public ChannelInfoEntity findChannelInfoByChannelName(String channelName) {
+	public ChannelInfoDto findChannelInfoByChannelName(String channelName) {
 
-		return channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new);
+		return util.toDto(channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
 	}
 
 	/**
@@ -130,19 +127,16 @@ public class ChannelService {
 	}
 
 	/**
-	 * 채널 정보 (피어) 저장 서비스
+	 * 채널 정보 (파이) 저장 서비스
 	 * 
 	 * @param channelInfoPeerDto 채널 정보 (피어) 관련 DTO
 	 * 
-	 * @return 저장한 채널 정보 (피어) 엔티티
-	 * 
-	 * TODO 파라미터를 dto로 변경해야 할거같음 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 채널 정보 (피어) DTO
 	 */
 
-	public ChannelInfoPeerEntity saveChannelInfoPeer(ChannelInfoPeerEntity channelInfoPeerEntity) {
+	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) {
 
-		return channelInfoPeerRepository.save(channelInfoPeerEntity);
+		return util.doDto(channelInfoPeerRepository.save(util.toEntity(channelInfoPeerDto)));
 
 	}
 
@@ -159,7 +153,7 @@ public class ChannelService {
 		JSONArray resultJsonArr = new JSONArray();
 
 		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-				.findByConInfoEntity(containerService.findConInfoByConName(conName));
+				.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
@@ -188,7 +182,7 @@ public class ChannelService {
 		JSONArray resultJsonArr = new JSONArray();
 
 		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-				.findByChannelInfoEntity(findChannelInfoByChannelName(channelName));
+				.findByChannelInfoEntity(util.toEntity(findChannelInfoByChannelName(channelName)));
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
@@ -206,48 +200,61 @@ public class ChannelService {
 	/**
 	 * 채널 정보로 채널 정보 (피어) 조회 서비스
 	 * 
-	 * @param channelInfo 채널 정보 엔티티
+	 * @param channelInfoDto 채널 정보 DTO
 	 * 
-	 * @return 조회한 채널 정보 (피어) 엔티티 리스트
-	 * 
-	 * TODO 파라미터를 dto로 변경해야 할거같음 
-	 * TODO 리턴를 dto array로 변경해야 할거같음
+	 * @return 조회한 채널 정보 (피어) DTO 리스트
 	 */
 
-	public ArrayList<ChannelInfoPeerEntity> findChannelInfoPeerByChannelInfo(ChannelInfoEntity channelInfoEntity) {
+	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelInfo(ChannelInfoDto channelInfoDto) {
 
-		return channelInfoPeerRepository.findByChannelInfoEntity(channelInfoEntity);
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository
+				.findByChannelInfoEntity(util.toEntity(channelInfoDto));
+
+		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
+
+		for (ChannelInfoPeerEntity channelInfoPeerEntity : channelInfoPeerEntityArr) {
+			channelInfoPeerDtoArr.add(util.doDto(channelInfoPeerEntity));
+		}
+
+		return channelInfoPeerDtoArr;
 	}
 
 	/**
 	 * 채널 정보, 컨테이너 정보로 채널 정버 (피어) 조회 서비스
 	 * 
-	 * @param channelInfo 채널 정보 엔티티
-	 * @param conInfo     컨테이너 정보 엔티티
+	 * @param channelInfoDto 채널 정보 DTO
+	 * @param conInfoDto     컨테이너 정보 DTO
 	 * 
-	 * @return 조회한 채널 정보 (피어) 엔티티 리스트
-	 * TODO 리턴를 dto array로 변경해야 할거같음
+	 * @return 조회한 채널 정보 (피어) DTO 리스트
 	 */
 
-	public ArrayList<ChannelInfoPeerEntity> findChannelInfoPeerByChannelNameAndConName(ChannelInfoEntity channelInfoEntity,
-			ConInfoEntity conInfoEntity) {
-		return channelInfoPeerRepository.findByChannelInfoEntityAndConInfoEntity(channelInfoEntity, conInfoEntity);
+	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelNameAndConName(ChannelInfoDto channelInfoDto,
+			ConInfoDto conInfoDto) {
+
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository
+				.findByChannelInfoEntityAndConInfoEntity(util.toEntity(channelInfoDto), util.toEntity(conInfoDto));
+
+		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
+
+		for (ChannelInfoPeerEntity channelInfoPeerEntity : channelInfoPeerEntityArr) {
+			channelInfoPeerDtoArr.add(util.doDto(channelInfoPeerEntity));
+		}
+
+		return channelInfoPeerDtoArr;
 
 	}
 
 	/**
 	 * 채널 핸들 정보 저장 서비스
 	 * 
-	 * @param channelHandleEntity 채널 핸들 정보 엔티티
+	 * @param channelHandleDto 채널 핸들 정보 DTO
 	 * 
-	 * @return 저장한 채널 핸들 정보 엔티티
-	 * 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 저장한 채널 핸들 정보 DTO
 	 */
 
-	public ChannelHandleEntity saveChannelHandle(ChannelHandleDto channelHandleDto) {
+	public ChannelHandleDto saveChannelHandle(ChannelHandleDto channelHandleDto) {
 
-		return channelHandleRepository.save(util.toEntity(channelHandleDto));
+		return util.toDto(channelHandleRepository.save(util.toEntity(channelHandleDto)));
 
 	}
 
@@ -268,16 +275,12 @@ public class ChannelService {
 	 * 
 	 * @param channelName 채널 이름
 	 * 
-	 * @return 조회한 채널 핸들 정보 엔티티
-	 * 
-	 * TODO 리턴를 dto로 변경해야 할거같음
+	 * @return 조회한 채널 핸들 정보 DTO
 	 */
-	
-	public Optional<ChannelHandleEntity> findChannelHandleByChannel(String channelName) {
 
-		return channelHandleRepository.findById(channelName);
+	public ChannelHandleDto findChannelHandleByChannel(String channelName) {
+
+		return util.toDto(channelHandleRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
 	}
-	
-	
 
 }

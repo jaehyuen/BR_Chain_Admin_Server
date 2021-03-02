@@ -54,14 +54,14 @@ public class ContainerSetting {
 			binds.add(dataDir + "/production/" + containerName + ":/var/hyperledger/production:rw");
 			binds.add("/var/run:/host/var/run:rw");
 			break;
-		case "setup_peer":
-		case "setup_orderer":
-		case "setup_channel":
 		case "ca":
-			binds.add(sourceDir + "/crypto-config:/crypto-config:rw");
-			binds.add(sourceDir + "/scripts/container:/scripts:rw");
 			binds.add(logDir + "/container_logs/ca.org" + orgName + ".com:/log:rw");
 			binds.add(dataDir + "/ca/ca.org" + orgName + ".com:/etc/hyperledger/fabric-ca:rw");
+		case "setup_orderer":
+		case "setup_channel":
+		case "setup_peer":
+			binds.add(sourceDir + "/crypto-config:/crypto-config:rw");
+			binds.add(sourceDir + "/scripts/container:/scripts:rw");
 			binds.add(sourceDir + "/channel-artifacts:/root/data:rw"); // setup
 			break;
 		case "couchdb":
@@ -99,7 +99,7 @@ public class ContainerSetting {
 		List<String> containerEnv = new ArrayList<>();
 
 		containerEnv.add("TZ=Asia/Seoul");
-		containerEnv.add("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
+//		containerEnv.add("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
 		containerEnv.add("FABRIC_LOGGING_SPEC=INFO");
 		containerEnv.add("FABRIC_CFG_PATH=/etc/hyperledger/fabric");
 
@@ -332,5 +332,25 @@ public class ContainerSetting {
 		}
 		return imageName;
 	}
+	
+//	public String setWorkingDir() {
+//		String imageName = "";
+//
+//		switch (type) {
+//		case "peer":
+//			imageName = "/opt/gopath/src/github.com/hyperledger/fabric/peer";
+//			break;
+//		case "ca":
+//			imageName = "/opt/gopath/src/github.com/hyperledger/fabric";
+//			break;
+//		case "couchdb":
+//			imageName = "";
+//			break;
+//		case "orderer":
+//			imageName = "hyperledger/fabric-orderer:1.4.3";
+//			break;
+//		}
+//		return imageName;
+//	}
 
 }

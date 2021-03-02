@@ -2,9 +2,6 @@ package com.brchain.core.dto.channel;
 
 import java.time.LocalDateTime;
 
-import com.brchain.core.entity.channel.ChannelInfoEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity.ChannelInfoEntityBuilder;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,28 +29,13 @@ public class ChannelInfoDto {
 	private String channelAdminPolicyValue; // Channel 어드민 정책 벨류
 
 	// 블록 설정 관련
-	private String batchTimeout;
-	private long batchSizeAbsolMax;
-	private long batchSizeMaxMsg;
-	private long batchSizePreferMax;
+	private String batchTimeout; // batchTimeout 옵션
+	private long batchSizeAbsolMax;// batchSizeAbsolMax 옵션
+	private long batchSizeMaxMsg;// batchSizeMaxMsg 옵션
+	private long batchSizePreferMax;// batchSizePreferMax 옵션
 
-	private LocalDateTime createdAt;
+	private LocalDateTime createdAt;// 생성 시간
 
-//	public ChannelInfoEntity toEntity() {
-//
-//		ChannelInfoEntityBuilder channelInfoEntityBuilder = ChannelInfoEntity.builder().channelName(channelName)
-//				.channelBlock(channelBlock).channelTx(channelTx).orderingOrg(orderingOrg)
-//				.appAdminPolicyType(appAdminPolicyType).appAdminPolicyValue(appAdminPolicyValue)
-//				.ordererAdminPolicyType(ordererAdminPolicyType).ordererAdminPolicyValue(ordererAdminPolicyValue)
-//				.channelAdminPolicyType(channelAdminPolicyType).channelAdminPolicyValue(channelAdminPolicyValue)
-//				.batchTimeout(batchTimeout).batchSizeAbsolMax(batchSizeAbsolMax).batchSizeMaxMsg(batchSizeMaxMsg)
-//				.batchSizePreferMax(batchSizePreferMax);
-//		
-//		if (createdAt == null) {
-//			return channelInfoEntityBuilder.build();
-//		} else {
-//			return channelInfoEntityBuilder.createdAt(createdAt).build();
-//		}
-//	}
+
 
 }

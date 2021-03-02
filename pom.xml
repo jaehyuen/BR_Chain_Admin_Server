@@ -66,6 +66,10 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+		</dependency>
 		<!-- JWT related dependencies -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

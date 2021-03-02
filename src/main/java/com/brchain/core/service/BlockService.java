@@ -1,13 +1,9 @@
 package com.brchain.core.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import com.brchain.core.dto.BlockDto;
-import com.brchain.core.entity.BlockEntity;
-import com.brchain.core.entity.channel.ChannelHandleEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
+import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.repository.BlockRepository;
 import com.brchain.core.util.Util;
 
@@ -17,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BlockService {
 
+	// jpa 레파지토리
 	private final BlockRepository blockRepository;
 
 	private final Util util;
@@ -51,15 +48,14 @@ public class BlockService {
 	/**
 	 * 채널의 블록 개수 카운트 서비스
 	 * 
-	 * @param channelInfoEntity 채널정보 엔티티
+	 * @param channelInfoDto 채널정보 DTO
 	 * 
 	 * @return 카운트한 채널의 블록 개수
-	 * 
-	 *         TODO 채널 엔티티로 조회를 해도 될까?
 	 */
 
-	public int countBychannelBlock(ChannelInfoEntity channelInfoEntity) {
-		return blockRepository.countByChannelInfoEntity(channelInfoEntity);
+	public int countBychannelBlock(ChannelInfoDto channelInfoDto) {
+
+		return blockRepository.countByChannelInfoEntity(util.toEntity(channelInfoDto));
 
 	}
 

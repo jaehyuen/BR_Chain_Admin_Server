@@ -195,8 +195,8 @@ public class FabricService {
 				Thread.sleep(2000);
 				i++;
 			}
-			
-			//생성된 조직의 docker-compose yaml file 생성
+
+			// 생성된 조직의 docker-compose yaml file 생성
 			util.createYamlFile(conInfoDtoArr.get(0).getOrgName(), conJson);
 
 			String path = null;
@@ -259,7 +259,7 @@ public class FabricService {
 		logger.info("[채널생성] CreateChannelVo : " + createChannelDto);
 
 		Util util = new Util();
-		
+
 		JSONObject conJson = new JSONObject();
 		JSONObject returnJson = new JSONObject();
 
@@ -282,7 +282,6 @@ public class FabricService {
 			conInfoDto.setConPort("");
 			conInfoDto.setConCnt(0);
 			logger.info("[채널생성] conInfoDto : " + conInfoDto);
-			
 
 			returnJson = dockerService.createContainer(conInfoDto);
 			conJson.put(returnJson.get("container_name"), returnJson);
@@ -366,7 +365,7 @@ public class FabricService {
 			channelInfoDto.setBatchSizeMaxMsg(20);
 			channelInfoDto.setBatchSizePreferMax(20480);
 			channelService.saveChannelInfo(channelInfoDto);
-			
+
 			util.createYamlFile(createChannelDto.getChannelName(), conJson);
 
 			logger.info("[채널생성] 종료");
@@ -463,6 +462,7 @@ public class FabricService {
 		try {
 
 			// 체인코드 설치
+			fabricClient.installChaincode(peerDto, "test-cc", installCcDto.getCcVersion());
 			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
 
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();

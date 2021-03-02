@@ -12,12 +12,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,22 +28,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.xml.bind.DatatypeConverter;
 
 import org.hyperledger.fabric.gateway.Gateway;
+import org.hyperledger.fabric.gateway.Identities;
+import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
-import org.hyperledger.fabric.gateway.Wallet.Identity;
+import org.hyperledger.fabric.gateway.Wallets;
+import org.hyperledger.fabric.gateway.X509Identity;
 import org.hyperledger.fabric.sdk.BlockListener;
+import org.hyperledger.fabric.sdk.ChaincodeCollectionConfiguration;
 import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.ChannelConfiguration;
 import org.hyperledger.fabric.sdk.HFClient;
 import org.hyperledger.fabric.sdk.InstallProposalRequest;
 import org.hyperledger.fabric.sdk.InstantiateProposalRequest;
+import org.hyperledger.fabric.sdk.LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleApproveChaincodeDefinitionForMyOrgRequest;
+import org.hyperledger.fabric.sdk.LifecycleChaincodePackage;
+import org.hyperledger.fabric.sdk.LifecycleCheckCommitReadinessProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleCheckCommitReadinessRequest;
+import org.hyperledger.fabric.sdk.LifecycleCommitChaincodeDefinitionProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleCommitChaincodeDefinitionRequest;
+import org.hyperledger.fabric.sdk.LifecycleInstallChaincodeProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleInstallChaincodeRequest;
+import org.hyperledger.fabric.sdk.LifecycleQueryChaincodeDefinitionProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleQueryInstalledChaincodesProposalResponse;
+import org.hyperledger.fabric.sdk.LifecycleQueryInstalledChaincodesProposalResponse.LifecycleQueryInstalledChaincodesResult;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.ProposalResponse;
+import org.hyperledger.fabric.sdk.QueryLifecycleQueryChaincodeDefinitionRequest;
 import org.hyperledger.fabric.sdk.TransactionRequest;
 import org.hyperledger.fabric.sdk.UpdateChannelConfiguration;
 import org.hyperledger.fabric.sdk.UpgradeProposalRequest;
@@ -63,6 +84,7 @@ import org.springframework.stereotype.Component;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.util.BrchainUser;
 import com.brchain.core.util.Util;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -110,8 +132,12 @@ public class FabricClient {
 
 		Path walletPath = Paths.get("wallet");
 
-		Wallet wallet = Wallet.createFileSystemWallet(walletPath);
+		Wallet wallet = Wallets.newFileSystemWallet(walletPath); // 2.2
+
+//		Wallet wallet = Wallet.createFileSystemWallet(walletPath); 1.4
+
 		Gateway.Builder builder = Gateway.createBuilder();
+
 		builder.identity(wallet, orgName).networkConfig(is).discovery(false);
 		Gateway gateway = builder.connect();
 
@@ -147,12 +173,17 @@ public class FabricClient {
 		CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
 		caClient.setCryptoSuite(cryptoSuite);
 
-		Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet"));
+		// Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet")); 1.4
+		Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet")); // 2.2
 
-		// wallet경로에 인증서 체크
-		boolean walletExists = wallet.exists(memberDto.getOrgName());
+//		// wallet경로에 인증서 체크 1.4
+//		boolean walletExists = wallet.exists(memberDto.getOrgName());
+//
+//		if (walletExists) {
+//			return;
+//		}
 
-		if (walletExists) {
+		if (wallet.get(memberDto.getOrgName()) != null) { // 2.2
 			return;
 		}
 
@@ -200,7 +231,10 @@ public class FabricClient {
 		X509Enrollment enrollment = new X509Enrollment(key, certificate);
 
 		// 인증서를 wallet형식으로 변환
-		Identity user = Identity.createIdentity(memberDto.getOrgMspId(), enrollment.getCert(), enrollment.getKey());
+//		Identity user = Identity.createIdentity(memberDto.getOrgMspId(), enrollment.getCert(), enrollment.getKey()); //1.4
+
+		Identity user = Identities.newX509Identity(memberDto.getOrgMspId(), enrollment); // 2.2
+
 		wallet.put(memberDto.getOrgName(), user);
 
 	}
@@ -311,9 +345,21 @@ public class FabricClient {
 	public BrchainUser createContext(FabricMemberDto memberDto) throws IOException {
 
 		// wallet에서 피어의 인증서 정보를 가져옴
-		Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet"));
-		X509Enrollment enrollment = new X509Enrollment(wallet.get(memberDto.getOrgName()).getPrivateKey(),
-				wallet.get(memberDto.getOrgName()).getCertificate());
+		// Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet")); //1.4
+		Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
+		X509Identity identity = (X509Identity) wallet.get(memberDto.getOrgName());
+
+		StringWriter sw = new StringWriter();
+		try {
+			sw.write("-----BEGIN CERTIFICATE-----\n");
+			sw.write(DatatypeConverter.printBase64Binary(identity.getCertificate().getEncoded()).replaceAll("(.{64})",
+					"$1\n"));
+			sw.write("\n-----END CERTIFICATE-----\n");
+		} catch (CertificateEncodingException e) {
+			e.printStackTrace();
+		}
+
+		X509Enrollment enrollment = new X509Enrollment(identity.getPrivateKey(), sw.toString()); // 2.2
 
 		// 가저온 인증서 정보로 user 생성
 		return new BrchainUser(memberDto.getOrgName(), memberDto.getOrgName(), memberDto.getOrgMspId(), enrollment);
@@ -513,7 +559,7 @@ public class FabricClient {
 		sshClient.execCommand(command);
 
 		Thread.sleep(1000);
-		
+
 		// 변경된 파일 다운로드
 		sshClient.downloadFile(path, fileName + ".json");
 		channel.shutdown(true);
@@ -649,7 +695,7 @@ public class FabricClient {
 	}
 
 	/**
-	 * 체인코드 설치 함수
+	 * 체인코드 설치 함수 1.4
 	 * 
 	 * @param peerDto   설치할 피어 정보 DTO
 	 * @param ccName    체인코드 이름
@@ -865,6 +911,403 @@ public class FabricClient {
 		File updateFile = createUpdateFile(peerDto, channelName, genesisJson, modifiedJson);
 
 		setUpdate(peerDto, ordererDto, channelName, updateFile);
+
+	}
+
+	/*
+	 * ########################################################################
+	 * 
+	 * TEST to 2.2 chaincode install
+	 * 
+	 * ########################################################################
+	 */
+
+	public void installChaincode(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
+
+		String chaincodeName = "test-cc";
+
+		String packageID = "";
+
+		// 클라이언트 생성
+		HFClient client = createClient(peerDto);
+
+//		Channel channel = client.newChannel(channelName);
+		// 설치할 피어 정보 생성
+		List<Peer> peers = new ArrayList<Peer>();
+		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
+		peers.add(peer);
+
+		// 체인코드 시퀀스번호 확인 함수
+//		long sequence = getChaincodeSequence(client, channel, chaincodeName);
+
+		LifecycleChaincodePackage ccPackage = packageChaincodeWithLifecycle(client, chaincodeName, ccVersion);
+//		for (FabricMemberDto peerDto : peerDtoArr) {
+
+//			client = createClient(peerDto);
+//			channel = getChannel(peerDto, ordererDto, channelName, client);
+
+		// 체인코드 설치 함수 시작
+		packageID = installChaincodeWithLifecycle(client, peers, ccPackage);
+
+		// 체인코드 설치 확인 함수 시작
+		verifyChaincodeInstalled(client, peers);
+
+		// 체인코드 승인 함수 시작
+//			approveChaincodeWithLifecycle(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
+
+//		}
+
+		Thread.sleep(10000);
+
+//		// 체인코드 승인 확인 함수 시작
+//		verifyChaincodeApproved(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
+//
+//		// 체인코드 커밋 함수 시작
+//		commitChaincodeWithLifecycle(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
+	}
+
+	/**
+	 * 체인코드 패키지 함수
+	 * 
+	 * @param client           HFClient 클라이언트
+	 * @param peers          패브릭 채널
+	 * @param chaincodeName    체인코드 이름
+	 * @param chaincodeVersion 체인코드 버전
+	 * 
+	 * @return 패키지한 체인코드
+	 * 
+	 * @throws Exception
+	 */
+
+	private LifecycleChaincodePackage packageChaincodeWithLifecycle(HFClient client,
+			String chaincodeName, String chaincodeVersion) throws Exception {
+
+		System.out.println("[packageChaincodeWithLifecycle()] Start Package Chaincode With LifeCycle");
+
+		Path metadataSourcePath = null;
+
+		// lifecycleChaincode 패키징
+		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromSource(
+				chaincodeName + "_" + chaincodeVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"),
+				TransactionRequest.Type.GO_LANG, "test-cc/go/", metadataSourcePath);
+		
+		lifecycleChaincodePackage.toFile(Paths.get(System.getProperty("user.dir") + "/chaincode/package/"+chaincodeName+"_v"+chaincodeVersion+".tar"), StandardOpenOption.CREATE);
+
+		System.out.println("[packageChaincodeWithLifecycle()] getLabel() : " + lifecycleChaincodePackage.getLabel());
+		System.out.println("[packageChaincodeWithLifecycle()] getPath() : " + lifecycleChaincodePackage.getPath());
+		System.out.println("[packageChaincodeWithLifecycle()] getType() : " + lifecycleChaincodePackage.getType());
+//		System.out.println("[packageChaincodeWithLifecycle()] getType() : " + lifecycleChaincodePackage);
+
+		System.out.println("[packageChaincodeWithLifecycle()] Finish Package Chaincode With LifeCycle");
+		System.out.println("");
+		System.out.println("");
+
+		return lifecycleChaincodePackage;
+
+	}
+
+	/**
+	 * 체인코드 설치 함수
+	 * 
+	 * @param client                    HFClient 클라이언트
+	 * @param channel                   패브릭 채널
+	 * @param lifecycleChaincodePackage 체인코드 패키지 파일
+	 * 
+	 * @return 설치한 체인코드 패키지 아이디
+	 * 
+	 * @throws Exception
+	 */
+
+	private String installChaincodeWithLifecycle(HFClient client, List<Peer> peers,
+			LifecycleChaincodePackage lifecycleChaincodePackage) throws Exception {
+
+		System.out.println("[installChaincodeWithLifecycle()] Start Install Chaincode With LifeCycle In "
+				+ client.getUserContext().getName());
+
+		// lifecycleChaincode 설치 리퀘스트 생성
+		LifecycleInstallChaincodeRequest installProposalRequest = client.newLifecycleInstallChaincodeRequest();
+		installProposalRequest.setLifecycleChaincodePackage(lifecycleChaincodePackage);
+
+		// lifecycleChaincode 설치 리퀘스트 피어로 전송
+		Collection<LifecycleInstallChaincodeProposalResponse> responses = client
+				.sendLifecycleInstallChaincodeRequest(installProposalRequest, peers);
+
+		String packageID = null;
+
+		// 설치 완료후 체인코드 패키지 ID 파싱
+		for (LifecycleInstallChaincodeProposalResponse response : responses) {
+			if (response.getStatus() == ProposalResponse.Status.SUCCESS) {
+				System.out.println("[installChaincodeWithLifecycle()] Successful install proposal response Txid: "
+						+ response.getTransactionID() + " from peer " + response.getPeer().getName());
+
+				if (packageID == null) {
+					packageID = response.getPackageId();
+					System.out.println("[installChaincodeWithLifecycle()] package ID : " + packageID);
+				}
+			}
+
+		}
+
+		System.out.println("[installChaincodeWithLifecycle()] Finish Install Chaincode With LifeCycle");
+		System.out.println("");
+		System.out.println("");
+		return packageID;
+	}
+
+	/**
+	 * 체인코드 설치 확인 함수
+	 * 
+	 * @param client  HFClient 클라이언트
+	 * @param channel 패브릭 채널
+	 * 
+	 * @throws Exception
+	 */
+
+	private void verifyChaincodeInstalled(HFClient client, List<Peer> peers) throws Exception {
+
+		System.out.println("[verifyChaincodeInstalled()] Start Verify Chaincode Installed");
+
+		// 체인코드 설치확인 리퀘스트 피어로 전송
+		Collection<LifecycleQueryInstalledChaincodesProposalResponse> results = client
+				.sendLifecycleQueryInstalledChaincodes(client.newLifecycleQueryInstalledChaincodesRequest(),
+						peers);
+
+		// 설치된 체인코드 확인
+		for (LifecycleQueryInstalledChaincodesProposalResponse peerResults : results) {
+
+			String peerName = peerResults.getPeer().getName();
+
+			for (LifecycleQueryInstalledChaincodesResult lifecycleQueryInstalledChaincodesResult : peerResults
+					.getLifecycleQueryInstalledChaincodesResult()) {
+
+				System.out.println("[verifyChaincodeInstalled()] Peer : " + peerName);
+				System.out.println("[verifyChaincodeInstalled()] getLabel : "
+						+ lifecycleQueryInstalledChaincodesResult.getLabel());
+				System.out.println("[verifyChaincodeInstalled()] getPackageId() : "
+						+ lifecycleQueryInstalledChaincodesResult.getPackageId());
+
+			}
+		}
+
+		System.out.println("[verifyChaincodeInstalled()] Finish Verify Chaincode Installed");
+		System.out.println("");
+		System.out.println("");
+	}
+
+	/**
+	 * 체인코드 현재 시퀀스 조회 함수
+	 * 
+	 * @param client        HFClient 클라이언트
+	 * @param channel       패브릭 채널
+	 * @param chaincodeName 체인코드 이름
+	 * 
+	 * @return 조회한 체인코드희 현재 시퀀스 번호
+	 * @throws Exception
+	 */
+
+	private long getChaincodeSequence(HFClient client, Channel channel, String chaincodeName) throws Exception {
+
+		System.out.println("[getChaincodeSequence()] Start Get Chaincode Sequence");
+
+		long sequence = 1L;
+
+		// TODO 체인코드가 없을떄는 시퀀스가 1로 시작되야함
+		// 현재 체인코드가 없으면 (namespace test-cc is not defined) 에러
+
+		try {
+
+			// 체인코드 시퀀스 확인 리퀘스트 생성
+			QueryLifecycleQueryChaincodeDefinitionRequest queryLifecycleQueryChaincodeDefinitionRequest = client
+					.newQueryLifecycleQueryChaincodeDefinitionRequest();
+			queryLifecycleQueryChaincodeDefinitionRequest.setChaincodeName(chaincodeName);
+
+			// 생성한 리퀘스트 전송
+			Collection<LifecycleQueryChaincodeDefinitionProposalResponse> firstQueryDefininitions = channel
+					.lifecycleQueryChaincodeDefinition(queryLifecycleQueryChaincodeDefinitionRequest,
+							channel.getPeers());
+
+			for (LifecycleQueryChaincodeDefinitionProposalResponse firstDefinition : firstQueryDefininitions) {
+
+				System.out.println("[getChaincodeSequence()] chaincode name : " + chaincodeName);
+				System.out.println("[getChaincodeSequence()] sequence : " + firstDefinition.getSequence());
+
+				// 조회된 시퀀스 증가
+				sequence = firstDefinition.getSequence() + 1L;
+
+				System.out.println("[getChaincodeSequence()] next sequence : " + sequence);
+			}
+
+			System.out.println("[getChaincodeSequence()] Finish Get Chaincode Sequence");
+			System.out.println("");
+			System.out.println("");
+
+		} catch (ProposalException e) {
+
+			if (e.getMessage().contains("namespace " + chaincodeName + " is not defined")) {
+
+				System.out.println("[getChaincodeSequence()] sequence : x");
+				System.out.println("[getChaincodeSequence()] next sequence : " + sequence);
+				System.out.println("[getChaincodeSequence()] Finish Get Chaincode Sequence");
+				System.out.println("");
+				System.out.println("");
+
+				return sequence;
+			}
+			throw new Exception(e.getMessage());
+		}
+
+		return sequence;
+	}
+
+	/**
+	 * 체인코드 승인 함수
+	 * 
+	 * @param client           HFClient 클라이언트
+	 * @param channel          패브릭 채널
+	 * @param chaincodeName    체인코드 이름
+	 * @param packageID        체인코드 패키지 아이디
+	 * @param chaincodeVersion 체인코드 버전
+	 * @param sequence         체인코드 시퀀스
+	 * 
+	 * @throws Exception
+	 */
+
+	private void approveChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID,
+			String chaincodeVersion, long sequence) throws Exception {
+
+		System.out.println("[approveChaincodeWithLifecycle()] Start Approve Chaincode With LifeCycle In "
+				+ client.getUserContext().getName());
+
+		// 체인코드 PDC 설정파일 설정
+		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
+				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+
+		// 체인코드 승인 리퀘스트 생성
+		LifecycleApproveChaincodeDefinitionForMyOrgRequest lifecycleApproveChaincodeDefinitionForMyOrgRequest = client
+				.newLifecycleApproveChaincodeDefinitionForMyOrgRequest();
+
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setSequence(sequence);
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeName(chaincodeName);
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeVersion(chaincodeVersion);
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setInitRequired(false);
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setPackageId(packageID);
+		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeCollectionConfiguration(collectionConfig);
+
+		// 생성한 리퀘스트 전송
+		Collection<LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse> lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse = channel
+				.sendLifecycleApproveChaincodeDefinitionForMyOrgProposal(
+						lifecycleApproveChaincodeDefinitionForMyOrgRequest, channel.getPeers());
+
+		for (LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse response : lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse) {
+
+			System.out.println("[approveChaincodeWithLifecycle()] message : " + response.getMessage());
+			System.out.println("[approveChaincodeWithLifecycle()] status : " + response.getStatus());
+		}
+
+		// 체인코드 승인 결과 오더러로 전송
+		channel.sendTransaction(lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse);
+
+		System.out.println("[approveChaincodeWithLifecycle()] Finish Approve Chaincode With LifeCycle");
+		System.out.println("");
+		System.out.println("");
+
+	}
+
+	/**
+	 * 체인코드 승인 확인 함수
+	 * 
+	 * @param client           HFClient 클라이언트
+	 * @param channel          패브릭 채널
+	 * @param chaincodeName    체인코드 이름
+	 * @param packageID        체인코드 패키지 아이디
+	 * @param chaincodeVersion 체인코드 버전
+	 * @param sequence         체인코드 시퀀스
+	 * 
+	 * @throws Exception
+	 */
+
+	public void verifyChaincodeApproved(HFClient client, Channel channel, String chaincodeName, String packageID,
+			String chaincodeVersion, long sequence) throws Exception {
+
+		System.out.println("[verifyChaincodeApproved()] Start Verify Chaincode Approved");
+
+		// 체인코드 PDC 설정파일 설정
+		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
+				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+
+		// 체인코드 승인 확인 리퀘스트 생성
+		LifecycleCheckCommitReadinessRequest lifecycleCheckCommitReadinessRequest = client
+				.newLifecycleSimulateCommitChaincodeDefinitionRequest();
+
+		lifecycleCheckCommitReadinessRequest.setSequence(sequence);
+		lifecycleCheckCommitReadinessRequest.setChaincodeName(chaincodeName);
+		lifecycleCheckCommitReadinessRequest.setChaincodeVersion(chaincodeVersion);
+		lifecycleCheckCommitReadinessRequest.setInitRequired(false);
+		lifecycleCheckCommitReadinessRequest.setChaincodeCollectionConfiguration(collectionConfig);
+
+		// 생성한 리퀘스트 전송
+		Collection<LifecycleCheckCommitReadinessProposalResponse> lifecycleSimulateCommitChaincodeDefinitionProposalResponse = channel
+				.sendLifecycleCheckCommitReadinessRequest(lifecycleCheckCommitReadinessRequest, channel.getPeers());
+
+		for (LifecycleCheckCommitReadinessProposalResponse response : lifecycleSimulateCommitChaincodeDefinitionProposalResponse) {
+
+			// 승인 완료한 조직리스트 확인
+			System.out.println("[verifyChaincodeApproved()] 승인한 조직 배열 : " + response.getApprovedOrgs());
+		}
+
+		System.out.println("[verifyChaincodeApproved()] Finish Verify Chaincode Approved");
+		System.out.println("");
+		System.out.println("");
+	}
+
+	/**
+	 * 체인코드 커밋 함수
+	 * 
+	 * @param client           HFClient 클라이언트
+	 * @param channel          패브릭 채널
+	 * @param chaincodeName    체인코드 이름
+	 * @param packageID        체인코드 패키지 아이디
+	 * @param chaincodeVersion 체인코드 버전
+	 * @param sequence         체인코드 시퀀스
+	 * 
+	 * @throws Exception
+	 */
+
+	private void commitChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID,
+			String chaincodeVersion, long sequence) throws Exception {
+
+		System.out.println("[commitChaincodeWithLifecycle()] Start Commit Chaincode With LifeCycle");
+
+		// 체인코드 PDC 설정파일 설정
+		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
+				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+
+		// 체인코드 커밋 리퀘스트 생성
+		LifecycleCommitChaincodeDefinitionRequest lifecycleCommitChaincodeDefinitionRequest = client
+				.newLifecycleCommitChaincodeDefinitionRequest();
+
+		lifecycleCommitChaincodeDefinitionRequest.setSequence(sequence);
+		lifecycleCommitChaincodeDefinitionRequest.setChaincodeName(chaincodeName);
+		lifecycleCommitChaincodeDefinitionRequest.setChaincodeVersion(chaincodeVersion);
+		lifecycleCommitChaincodeDefinitionRequest.setInitRequired(false);
+		lifecycleCommitChaincodeDefinitionRequest.setChaincodeCollectionConfiguration(collectionConfig);
+
+		// 생성한 리퀘스트 전송
+		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> lifecycleCommitChaincodeDefinitionProposalResponses = channel
+				.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest,
+						channel.getPeers());
+
+		for (LifecycleCommitChaincodeDefinitionProposalResponse response : lifecycleCommitChaincodeDefinitionProposalResponses) {
+
+			System.out.println("[commitChaincodeWithLifecycle()] ---");
+		}
+
+		// 체인코드 커밋 결과 오더러로 전송
+		channel.sendTransaction(lifecycleCommitChaincodeDefinitionProposalResponses);
+
+		System.out.println("[commitChaincodeWithLifecycle()] Finish Commit Chaincode With LifeCycle");
+		System.out.println("");
+		System.out.println("");
 
 	}
 

@@ -667,8 +667,8 @@ public class Util {
 //		}
 //
 		return CcInfoEntity.builder().ccName(ccInfoDto.getCcName()).ccPath(ccInfoDto.getCcPath())
-				.ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc()).createdAt(ccInfoDto.getCreatedAt())
-				.build();
+				.ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc()).ccVersion(ccInfoDto.getCcVersion())
+				.createdAt(ccInfoDto.getCreatedAt()).build();
 	}
 
 	public CcInfoPeerEntity toEntity(CcInfoPeerDto ccInfoPeerDto) {
@@ -837,7 +837,7 @@ public class Util {
 	public CcInfoDto toDto(CcInfoEntity ccInfoEntity) {
 		return CcInfoDto.builder().ccName(ccInfoEntity.getCcName()).ccPath(ccInfoEntity.getCcPath())
 				.ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc())
-				.createdAt(ccInfoEntity.getCreatedAt()).build();
+				.ccVersion(ccInfoEntity.getCcVersion()).createdAt(ccInfoEntity.getCreatedAt()).build();
 	}
 
 	public CcInfoPeerDto toDto(CcInfoPeerEntity ccInfoPeerEntity) {

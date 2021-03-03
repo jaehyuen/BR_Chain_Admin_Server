@@ -1,7 +1,10 @@
 package com.brchain.core.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,6 +28,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
@@ -891,5 +895,74 @@ public class FabricService {
 
 		return blockListener;
 	}
+
+	/**
+	 * 체인코드 업로드 서비스
+	 * 
+	 * @param ccFile 체인코드 파일 이름
+	 * @param ccName 체인코드 이름
+	 * @param ccDesc 체인코드 설명
+	 * @param ccLang 체인코드 언어
+	 * 
+	 * @return 체인코드 업로드 결과 DTO
+	 */
+
+	public ResultDto ccFileUpload(MultipartFile ccFile, String ccName, String ccDesc, String ccLang, String ccVersion) {
+
+		try {
+
+			// 파일로 변경 작업
+			InputStream inputStream = ccFile.getInputStream();
+			File file = new File(System.getProperty("user.dir") + "/chaincode/src/");
+
+			if (!file.exists()) {
+				try {
+
+					file.mkdirs();
+
+				} catch (Exception e) {
+
+					return util.setResult("9999", false, e.getMessage(), null);
+
+				}
+
+			} else {
+
+			}
+			OutputStream outputStream = new FileOutputStream(new File(
+					System.getProperty("user.dir") + "/chaincode/src/"+ ccFile.getOriginalFilename()));
+			int i;
+
+			while ((i = inputStream.read()) != -1) {
+				outputStream.write(i);
+			}
+
+			outputStream.close();
+			inputStream.close();
+
+			String ccPath =fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
+
+			// 디비에 저장(CCINFO)
+			CcInfoDto ccInfoDto = new CcInfoDto();
+
+			ccInfoDto.setCcName(ccName);
+			ccInfoDto.setCcDesc(ccDesc);
+			ccInfoDto.setCcLang(ccLang);
+			ccInfoDto.setCcPath(ccPath);
+
+			chaincodeService.saveCcInfo(ccInfoDto);
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			return util.setResult("9999", false, e.getMessage(), null);
+
+		}
+
+		return util.setResult("0000", true, "Success chaincode file upload", null);
+	}
+	
+
 
 }

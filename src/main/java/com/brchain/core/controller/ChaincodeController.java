@@ -68,9 +68,9 @@ public class ChaincodeController {
 	@PostMapping(value = "/upload")
 	public ResponseEntity<ResultDto> uploadChaincode(@RequestParam("ccFile") MultipartFile ccFile,
 			@RequestParam("ccName") String ccName, @RequestParam("ccDesc") String ccDesc,
-			@RequestParam("ccLang") String ccLang) throws IOException {
+			@RequestParam("ccLang") String ccLang,@RequestParam("ccVersion") String ccVersion) throws IOException {
 
-		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.ccFileUpload(ccFile, ccName, ccDesc, ccLang));
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang,ccVersion));
 
 	}
 	

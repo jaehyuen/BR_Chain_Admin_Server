@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "messages")
+@Table(name = "CCINFO")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -36,12 +36,17 @@ public class CcInfoEntity extends BaseEntity {
 	@Column(name = "CC_DESC", nullable = false)
 	private String ccDesc;
 
+	@Column(name = "CC_VERSION", nullable = false)
+	private String ccVersion;
+
 	@Builder
-	public CcInfoEntity(String ccName, String ccPath, String ccLang, String ccDesc, LocalDateTime createdAt) {
+	public CcInfoEntity(String ccName, String ccPath, String ccLang, String ccDesc, String ccVersion,
+			LocalDateTime createdAt) {
 		this.ccName = ccName;
 		this.ccPath = ccPath;
 		this.ccLang = ccLang;
 		this.ccDesc = ccDesc;
+		this.ccVersion = ccVersion;
 		super.setCreatedAt(createdAt);
 
 	}

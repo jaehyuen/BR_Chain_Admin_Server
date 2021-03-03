@@ -19,6 +19,7 @@ public class CcInfoDto {
 	private String ccPath; // 체인코드 경로
 	private String ccLang; // 체인코드 언어
 	private String ccDesc; // 체인코드 설명
+	private String ccVersion; // 체인코드 버전
 	private LocalDateTime createdAt; // 생성 시간
 
 }

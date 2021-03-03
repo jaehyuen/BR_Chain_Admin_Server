@@ -108,71 +108,6 @@ public class ChaincodeService {
 
 	}
 
-	/**
-	 * 체인코드 업로드 서비스
-	 * 
-	 * @param ccFile 체인코드 파일 이름
-	 * @param ccName 체인코드 이름
-	 * @param ccDesc 체인코드 설명
-	 * @param ccLang 체인코드 언어
-	 * 
-	 * @return 체인코드 업로드 결과 DTO
-	 */
-
-	public ResultDto ccFileUpload(MultipartFile ccFile, String ccName, String ccDesc, String ccLang) {
-
-		try {
-
-			// 파일로 변경 작업
-			InputStream inputStream = ccFile.getInputStream();
-			File file = new File(System.getProperty("user.dir") + "/chaincode/src/" + ccName + "/");
-
-			if (!file.exists()) {
-				try {
-
-					file.mkdirs();
-
-				} catch (Exception e) {
-
-					return util.setResult("9999", false, e.getMessage(), null);
-
-				}
-
-			} else {
-
-			}
-			OutputStream outputStream = new FileOutputStream(new File(
-					System.getProperty("user.dir") + "/chaincode/src/" + ccName + "/" + ccFile.getOriginalFilename()));
-			int i;
-
-			while ((i = inputStream.read()) != -1) {
-				outputStream.write(i);
-			}
-
-			outputStream.close();
-			inputStream.close();
-
-			// 디비에 저장(CCINFO)
-			CcInfoDto ccInfoDto = new CcInfoDto();
-
-			ccInfoDto.setCcName(ccName);
-			ccInfoDto.setCcDesc(ccDesc);
-			ccInfoDto.setCcLang(ccLang);
-			ccInfoDto.setCcPath(
-					System.getProperty("user.dir") + "/chaincode/src/" + ccName + "/" + ccFile.getOriginalFilename());
-
-			saveCcInfo(ccInfoDto);
-
-		} catch (Exception e) {
-
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
-
-		}
-
-		return util.setResult("0000", true, "Success chaincode file upload", null);
-	}
 
 	/**
 	 * 체인코드 정보 (피어) 저장 서비스
@@ -309,13 +244,12 @@ public class ChaincodeService {
 	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoDto channelInfoDto,
 			CcInfoDto ccInfoDto) {
 
-		return util
-				.toDto(ccInfoChannelRepository.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto))
-						.orElseThrow(IllegalArgumentException::new));
+		return util.toDto(ccInfoChannelRepository
+				.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto))
+				.orElseThrow(IllegalArgumentException::new));
 
-	
 	}
-	
+
 //	public void test() {
 //
 //		Date before =new Date(System.currentTimeMillis() -3000L);

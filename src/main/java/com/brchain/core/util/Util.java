@@ -2,13 +2,16 @@ package com.brchain.core.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -27,23 +30,14 @@ import com.brchain.core.dto.channel.ChannelHandleDto;
 import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.entity.BlockEntity;
-import com.brchain.core.entity.TransactionEntity;
-import com.brchain.core.entity.BlockEntity.BlockEntityBuilder;
 import com.brchain.core.entity.ConInfoEntity;
-import com.brchain.core.entity.ConInfoEntity.ConInfoEntityBuilder;
-import com.brchain.core.entity.TransactionEntity.TransactionEntityBuilder;
+import com.brchain.core.entity.TransactionEntity;
 import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
 import com.brchain.core.entity.chaincode.CcInfoEntity;
 import com.brchain.core.entity.chaincode.CcInfoPeerEntity;
-import com.brchain.core.entity.chaincode.CcInfoChannelEntity.CcInfoChannelEntityBuilder;
-import com.brchain.core.entity.chaincode.CcInfoEntity.CcInfoEntityBuilder;
-import com.brchain.core.entity.chaincode.CcInfoPeerEntity.CcInfoPeerEntityBuilder;
 import com.brchain.core.entity.channel.ChannelHandleEntity;
 import com.brchain.core.entity.channel.ChannelInfoEntity;
 import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
-import com.brchain.core.entity.channel.ChannelHandleEntity.ChannelHandleEntityBuilder;
-import com.brchain.core.entity.channel.ChannelInfoEntity.ChannelInfoEntityBuilder;
-import com.brchain.core.entity.channel.ChannelInfoPeerEntity.ChannelInfoPeerEntityBuilder;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -621,6 +615,99 @@ public class Util {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	public boolean unZip(String zipPath, String zipFileName, String zipUnzipPath) {
+		boolean isChk = false;
+//		zipUnzipPath = zipUnzipPath; 
+		File zipFile = new File(zipPath + zipFileName);
+		FileInputStream fis = null;
+		ZipInputStream zis = null;
+		ZipEntry zipentry = null;
+		try {
+			if (makeFolder(zipUnzipPath)) {
+				System.out.println("폴더를 생성했습니다");
+			}
+			fis = new FileInputStream(zipFile);
+			zis = new ZipInputStream(fis, Charset.forName("EUC-KR"));
+			while ((zipentry = zis.getNextEntry()) != null) {
+				String filename = zipentry.getName();
+//				System.out.println("filename(zipentry.getName()) => " + filename);
+				File file = new File(zipUnzipPath, filename);
+				if (zipentry.isDirectory()) {
+					System.out.println("zipentry가 디렉토리입니다.");
+					file.mkdirs();
+				} else {
+//					System.out.println("zipentry가 파일입니다.");
+					try {
+						createFile(file, zis);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			isChk = true;
+		} catch (Exception e) {
+			isChk = false;
+		} finally {
+			if (zis != null) {
+				try {
+					zis.close();
+				} catch (IOException e) {
+				}
+			}
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return isChk;
+	}
+
+	private boolean makeFolder(String folder) {
+		if (folder.length() < 0) {
+			return false;
+		}
+		String path = folder;
+		File Folder = new File(path);
+		if (!Folder.exists()) {
+			try {
+				Folder.mkdir();
+				System.out.println("폴더가 생성되었습니다.");
+			} catch (Exception e) {
+				e.getStackTrace();
+			}
+		} else {
+			System.out.println("이미 폴더가 생성되어 있습니다.");
+		}
+		return true;
+	}
+
+	private void createFile(File file, ZipInputStream zis) throws Throwable {
+		File parentDir = new File(file.getParent());
+		if (!parentDir.exists()) {
+			parentDir.mkdirs();
+		}
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(file);
+			byte[] buffer = new byte[256];
+			int size = 0;
+			while ((size = zis.read(buffer)) > 0) {
+				fos.write(buffer, 0, size);
+			}
+		} catch (Throwable e) {
+			throw e;
+		} finally {
+			if (fos != null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+				}
+			}
 		}
 	}
 

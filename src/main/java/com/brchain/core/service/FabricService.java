@@ -929,8 +929,8 @@ public class FabricService {
 			} else {
 
 			}
-			OutputStream outputStream = new FileOutputStream(new File(
-					System.getProperty("user.dir") + "/chaincode/src/"+ ccFile.getOriginalFilename()));
+			OutputStream outputStream = new FileOutputStream(
+					new File(System.getProperty("user.dir") + "/chaincode/src/" + ccFile.getOriginalFilename()));
 			int i;
 
 			while ((i = inputStream.read()) != -1) {
@@ -940,7 +940,9 @@ public class FabricService {
 			outputStream.close();
 			inputStream.close();
 
-			String ccPath =fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
+			util.unZip(System.getProperty("user.dir") + "/chaincode/src/", ccFile.getOriginalFilename(),
+					System.getProperty("user.dir") + "/chaincode/src/");
+			String ccPath = fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
 
 			// 디비에 저장(CCINFO)
 			CcInfoDto ccInfoDto = new CcInfoDto();
@@ -949,6 +951,7 @@ public class FabricService {
 			ccInfoDto.setCcDesc(ccDesc);
 			ccInfoDto.setCcLang(ccLang);
 			ccInfoDto.setCcPath(ccPath);
+			ccInfoDto.setCcVersion(ccVersion);
 
 			chaincodeService.saveCcInfo(ccInfoDto);
 
@@ -962,7 +965,5 @@ public class FabricService {
 
 		return util.setResult("0000", true, "Success chaincode file upload", null);
 	}
-	
-
 
 }

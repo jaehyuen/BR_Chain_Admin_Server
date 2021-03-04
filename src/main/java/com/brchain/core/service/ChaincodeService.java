@@ -92,19 +92,19 @@ public class ChaincodeService {
 
 		List<CcInfoEntity> ccInfoArr = ccInfoRepository.findAll();
 
-		for (CcInfoEntity ccInfo : ccInfoArr) {
+//		for (CcInfoEntity ccInfo : ccInfoArr) {
+//
+//			JSONObject resultJson = new JSONObject();
+//
+//			resultJson.put("ccName", ccInfo.getCcName());
+//			resultJson.put("ccPath", ccInfo.getCcPath());
+//			resultJson.put("ccLang", ccInfo.getCcLang());
+//			resultJson.put("ccDesc", ccInfo.getCcDesc());
+//
+//			resultJsonArr.add(resultJson);
+//		}
 
-			JSONObject resultJson = new JSONObject();
-
-			resultJson.put("ccName", ccInfo.getCcName());
-			resultJson.put("ccPath", ccInfo.getCcPath());
-			resultJson.put("ccLang", ccInfo.getCcLang());
-			resultJson.put("ccDesc", ccInfo.getCcDesc());
-
-			resultJsonArr.add(resultJson);
-		}
-
-		return util.setResult("0000", true, "Success get chaincode info", resultJsonArr);
+		return util.setResult("0000", true, "Success get chaincode info", ccInfoArr);
 
 	}
 

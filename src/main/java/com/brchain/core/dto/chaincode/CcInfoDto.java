@@ -15,6 +15,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class CcInfoDto {
 
+	private Long id; // 아이디
 	private String ccName; // 체인코드 이름
 	private String ccPath; // 체인코드 경로
 	private String ccLang; // 체인코드 언어

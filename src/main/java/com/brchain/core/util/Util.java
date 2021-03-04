@@ -627,19 +627,18 @@ public class Util {
 		ZipEntry zipentry = null;
 		try {
 			if (makeFolder(zipUnzipPath)) {
-				System.out.println("폴더를 생성했습니다");
+
 			}
 			fis = new FileInputStream(zipFile);
 			zis = new ZipInputStream(fis, Charset.forName("EUC-KR"));
 			while ((zipentry = zis.getNextEntry()) != null) {
 				String filename = zipentry.getName();
-//				System.out.println("filename(zipentry.getName()) => " + filename);
+
 				File file = new File(zipUnzipPath, filename);
 				if (zipentry.isDirectory()) {
-					System.out.println("zipentry가 디렉토리입니다.");
+
 					file.mkdirs();
 				} else {
-//					System.out.println("zipentry가 파일입니다.");
 					try {
 						createFile(file, zis);
 					} catch (Throwable e) {
@@ -667,7 +666,7 @@ public class Util {
 		return isChk;
 	}
 
-	private boolean makeFolder(String folder) {
+	public boolean makeFolder(String folder) {
 		if (folder.length() < 0) {
 			return false;
 		}
@@ -676,12 +675,12 @@ public class Util {
 		if (!Folder.exists()) {
 			try {
 				Folder.mkdir();
-				System.out.println("폴더가 생성되었습니다.");
+
 			} catch (Exception e) {
 				e.getStackTrace();
 			}
 		} else {
-			System.out.println("이미 폴더가 생성되어 있습니다.");
+
 		}
 		return true;
 	}
@@ -753,7 +752,7 @@ public class Util {
 //			return ccInfoEntityBuilder.createdAt(ccInfoDto.getCreatedAt()).build();
 //		}
 //
-		return CcInfoEntity.builder().ccName(ccInfoDto.getCcName()).ccPath(ccInfoDto.getCcPath())
+		return CcInfoEntity.builder().id(ccInfoDto.getId()).ccName(ccInfoDto.getCcName()).ccPath(ccInfoDto.getCcPath())
 				.ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc()).ccVersion(ccInfoDto.getCcVersion())
 				.createdAt(ccInfoDto.getCreatedAt()).build();
 	}
@@ -922,8 +921,8 @@ public class Util {
 	}
 
 	public CcInfoDto toDto(CcInfoEntity ccInfoEntity) {
-		return CcInfoDto.builder().ccName(ccInfoEntity.getCcName()).ccPath(ccInfoEntity.getCcPath())
-				.ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc())
+		return CcInfoDto.builder().id(ccInfoEntity.getId()).ccName(ccInfoEntity.getCcName())
+				.ccPath(ccInfoEntity.getCcPath()).ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc())
 				.ccVersion(ccInfoEntity.getCcVersion()).createdAt(ccInfoEntity.getCreatedAt()).build();
 	}
 

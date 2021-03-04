@@ -929,8 +929,12 @@ public class FabricService {
 			} else {
 
 			}
-			OutputStream outputStream = new FileOutputStream(
-					new File(System.getProperty("user.dir") + "/chaincode/src/" + ccFile.getOriginalFilename()));
+
+			util.makeFolder(System.getProperty("user.dir") + "/chaincode/src/");
+			util.makeFolder(System.getProperty("user.dir") + "/chaincode/package/");
+
+			OutputStream outputStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/chaincode/src/"
+					+ ccFile.getOriginalFilename() + "_v" + ccVersion));
 			int i;
 
 			while ((i = inputStream.read()) != -1) {
@@ -940,7 +944,8 @@ public class FabricService {
 			outputStream.close();
 			inputStream.close();
 
-			util.unZip(System.getProperty("user.dir") + "/chaincode/src/", ccFile.getOriginalFilename(),
+			util.unZip(System.getProperty("user.dir") + "/chaincode/src/",
+					ccFile.getOriginalFilename() + "_v" + ccVersion,
 					System.getProperty("user.dir") + "/chaincode/src/");
 			String ccPath = fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
 

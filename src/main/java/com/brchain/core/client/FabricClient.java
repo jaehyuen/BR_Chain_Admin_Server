@@ -937,17 +937,9 @@ public class FabricClient {
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
 		peers.add(peer);
 
-		// 체인코드 시퀀스번호 확인 함수
-//		long sequence = getChaincodeSequence(client, channel, chaincodeName);
-
-//		LifecycleChaincodePackage ccPackage = packageChaincodeWithLifecycle(client, ccName, ccVersion);
-//		for (FabricMemberDto peerDto : peerDtoArr) {
-
-//			client = createClient(peerDto);
-//			channel = getChannel(peerDto, ordererDto, channelName, client);
 
 		// 체인코드 설치 함수 시작
-//		packageID = installChaincodeWithLifecycle(client, peers, ccPackage);
+		packageID = installChaincodeWithLifecycle(client, peers, ccName,ccVersion);
 
 		// 체인코드 설치 확인 함수 시작
 		verifyChaincodeInstalled(client, peers);
@@ -1019,12 +1011,15 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	private String installChaincodeWithLifecycle(HFClient client, List<Peer> peers,
-			LifecycleChaincodePackage lifecycleChaincodePackage) throws Exception {
+	private String installChaincodeWithLifecycle(HFClient client, List<Peer> peers,String ccName,String ccVersion
+			) throws Exception {
 
 		System.out.println("[installChaincodeWithLifecycle()] Start Install Chaincode With LifeCycle In "
 				+ client.getUserContext().getName());
 
+		LifecycleChaincodePackage lifecycleChaincodePackage =LifecycleChaincodePackage.fromFile(new File(System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion
+				+ ".tar"));
+		
 		// lifecycleChaincode 설치 리퀘스트 생성
 		LifecycleInstallChaincodeRequest installProposalRequest = client.newLifecycleInstallChaincodeRequest();
 		installProposalRequest.setLifecycleChaincodePackage(lifecycleChaincodePackage);

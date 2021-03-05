@@ -74,9 +74,9 @@ public class ChaincodeService {
 	 * @return 조죄한 체인코드 정보 DTO
 	 */
 
-	public CcInfoDto findCcInfoByCcName(String ccName) {
+	public CcInfoDto findCcInfoById(Long id) {
 
-		return util.toDto(ccInfoRepository.findById(ccName).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(ccInfoRepository.findById(id).orElseThrow(IllegalArgumentException::new));
 
 	}
 

@@ -46,8 +46,9 @@ public class CcInfoEntity extends BaseEntity {
 	private String ccVersion;
 
 	@Builder
-	public CcInfoEntity(String ccName, String ccPath, String ccLang, String ccDesc, String ccVersion,
+	public CcInfoEntity(Long id,String ccName, String ccPath, String ccLang, String ccDesc, String ccVersion,
 			LocalDateTime createdAt) {
+		this.id = id;
 		this.ccName = ccName;
 		this.ccPath = ccPath;
 		this.ccLang = ccLang;

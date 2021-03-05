@@ -466,13 +466,13 @@ public class FabricService {
 		try {
 
 			// 체인코드 설치
-			fabricClient.installChaincode(peerDto, "test-cc", installCcDto.getCcVersion());
-			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
+			fabricClient.installChaincode(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
+//			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
 
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
 
 			// 설치한 체인코드 정보 조회
-			CcInfoDto ccInfoDto = chaincodeService.findCcInfoByCcName(installCcDto.getCcName());
+			CcInfoDto ccInfoDto = chaincodeService.findCcInfoById(installCcDto.getId());
 
 			// 체인코드를 설치한 컨테이너 정보 조회
 			ConInfoDto conInfoDto = containerService.findConInfoByConName(peerDto.getConName());
@@ -518,7 +518,7 @@ public class FabricService {
 					.findChannelInfoByChannelName(instantiateCcDto.getChannelName());
 
 			// 인스턴스화를 진행할 체인코드 정보 조회
-			CcInfoDto ccInfoDto = chaincodeService.findCcInfoByCcName(instantiateCcDto.getCcName());
+			CcInfoDto ccInfoDto = chaincodeService.findCcInfoById(instantiateCcDto.getId());
 
 			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoDto);
 

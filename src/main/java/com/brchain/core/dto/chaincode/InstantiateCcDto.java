@@ -9,5 +9,6 @@ public class InstantiateCcDto {
 	private String ccLang; // 체인코드 언어
 	private String ccName; // 체인코드 이름
 	private String ccVersion; // 체인코드 버전
+	private Long id;
 
 }

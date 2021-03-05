@@ -922,78 +922,64 @@ public class FabricClient {
 	 * ########################################################################
 	 */
 
+	/**
+	 * 체인코드 설치 함수
+	 * 
+	 * @param peerDto   설치할 피어정보
+	 * @param ccName    체인코드 이름
+	 * @param ccVersion 체인코드 버전
+	 * 
+	 * @throws Exception
+	 */
+
 	public void installChaincode(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
-
-		String chaincodeName = "test-cc";
-
-		String packageID = "";
 
 		// 클라이언트 생성
 		HFClient client = createClient(peerDto);
 
-//		Channel channel = client.newChannel(channelName);
-		// 설치할 피어 정보 생성
+//				// 설치할 피어 정보 생성
 		List<Peer> peers = new ArrayList<Peer>();
 		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
 		peers.add(peer);
 
-
 		// 체인코드 설치 함수 시작
-		packageID = installChaincodeWithLifecycle(client, peers, ccName,ccVersion);
+		installChaincodeWithLifecycle(client, peers, ccName, ccVersion);
 
 		// 체인코드 설치 확인 함수 시작
-		verifyChaincodeInstalled(client, peers);
+//		verifyChaincodeInstalled(client, peers);
 
-		// 체인코드 승인 함수 시작
-//			approveChaincodeWithLifecycle(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
-
-//		}
-
-		Thread.sleep(10000);
-
-//		// 체인코드 승인 확인 함수 시작
-//		verifyChaincodeApproved(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
-//
-//		// 체인코드 커밋 함수 시작
-//		commitChaincodeWithLifecycle(client, channel, chaincodeName, packageID, chaincodeVersion, sequence);
 	}
 
 	/**
 	 * 체인코드 패키지 함수
 	 * 
-	 * @param client           HFClient 클라이언트
-	 * @param peers            패브릭 채널
-	 * @param chaincodeName    체인코드 이름
-	 * @param chaincodeVersion 체인코드 버전
+	 * @param ccName    체인코드 이름
+	 * @param ccVersion 체인코드 버전
 	 * 
-	 * @return 패키지한 체인코드
+	 * @return
 	 * 
 	 * @throws Exception
 	 */
 
-	public String packageChaincodeWithLifecycle(String chaincodeName, String chaincodeVersion)
-			throws Exception {
+	public String packageChaincodeWithLifecycle(String ccName, String ccVersion) throws Exception {
 
-		System.out.println("[packageChaincodeWithLifecycle()] Start Package Chaincode With LifeCycle");
+		logger.info("[체인코드 라이프 사이클 패키징] 시작");
 
 		Path metadataSourcePath = null;
 
 		// lifecycleChaincode 패키징
 		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromSource(
-				chaincodeName + "_" + chaincodeVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"),
+				ccName + "_" + ccVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"),
 				TransactionRequest.Type.GO_LANG, "test-cc/go/", metadataSourcePath);
-		String ccPath = System.getProperty("user.dir") + "/chaincode/package/" + chaincodeName + "_v" + chaincodeVersion
-				+ ".tar";
+		String ccPath = System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar";
 
 		lifecycleChaincodePackage.toFile(Paths.get(ccPath), StandardOpenOption.CREATE);
 
-		System.out.println("[packageChaincodeWithLifecycle()] getLabel() : " + lifecycleChaincodePackage.getLabel());
-		System.out.println("[packageChaincodeWithLifecycle()] getPath() : " + lifecycleChaincodePackage.getPath());
-		System.out.println("[packageChaincodeWithLifecycle()] getType() : " + lifecycleChaincodePackage.getType());
+		logger.info("[체인코드 라이프 사이클 패키징] getLabel() : " + lifecycleChaincodePackage.getLabel());
+		logger.info("[체인코드 라이프 사이클 패키징] getPath() : " + lifecycleChaincodePackage.getPath());
+		logger.info("[체인코드 라이프 사이클 패키징] getType() : " + lifecycleChaincodePackage.getType());
 
-		System.out.println("[packageChaincodeWithLifecycle()] Finish Package Chaincode With LifeCycle");
-		System.out.println("");
-		System.out.println("");
+		logger.info("[체인코드 라이프 사이클 패키징] 종료");
 
 		return ccPath;
 
@@ -1002,24 +988,22 @@ public class FabricClient {
 	/**
 	 * 체인코드 설치 함수
 	 * 
-	 * @param client                    HFClient 클라이언트
-	 * @param channel                   패브릭 채널
-	 * @param lifecycleChaincodePackage 체인코드 패키지 파일
-	 * 
-	 * @return 설치한 체인코드 패키지 아이디
+	 * @param client    HFClient 클라이언트
+	 * @param peers     설치할 피어
+	 * @param ccName    체인코드 이름
+	 * @param ccVersion 체인코드 버전
 	 * 
 	 * @throws Exception
 	 */
 
-	private String installChaincodeWithLifecycle(HFClient client, List<Peer> peers,String ccName,String ccVersion
-			) throws Exception {
+	private void installChaincodeWithLifecycle(HFClient client, List<Peer> peers, String ccName, String ccVersion)
+			throws Exception {
 
-		System.out.println("[installChaincodeWithLifecycle()] Start Install Chaincode With LifeCycle In "
-				+ client.getUserContext().getName());
+		logger.info("[체인코드 라이프 사이클 설치] 시작 : " + peers.get(0).getName());
 
-		LifecycleChaincodePackage lifecycleChaincodePackage =LifecycleChaincodePackage.fromFile(new File(System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion
-				+ ".tar"));
-		
+		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromFile(
+				new File(System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar"));
+
 		// lifecycleChaincode 설치 리퀘스트 생성
 		LifecycleInstallChaincodeRequest installProposalRequest = client.newLifecycleInstallChaincodeRequest();
 		installProposalRequest.setLifecycleChaincodePackage(lifecycleChaincodePackage);
@@ -1028,26 +1012,21 @@ public class FabricClient {
 		Collection<LifecycleInstallChaincodeProposalResponse> responses = client
 				.sendLifecycleInstallChaincodeRequest(installProposalRequest, peers);
 
-		String packageID = null;
-
 		// 설치 완료후 체인코드 패키지 ID 파싱
 		for (LifecycleInstallChaincodeProposalResponse response : responses) {
 			if (response.getStatus() == ProposalResponse.Status.SUCCESS) {
-				System.out.println("[installChaincodeWithLifecycle()] Successful install proposal response Txid: "
+
+				logger.info("[체인코드 라이프 사이클 설치] Successful install proposal response Txid : "
 						+ response.getTransactionID() + " from peer " + response.getPeer().getName());
 
-				if (packageID == null) {
-					packageID = response.getPackageId();
-					System.out.println("[installChaincodeWithLifecycle()] package ID : " + packageID);
-				}
+				logger.info("[체인코드 라이프 사이클 설치] package ID : " + response.getPackageId());
+
 			}
 
 		}
 
-		System.out.println("[installChaincodeWithLifecycle()] Finish Install Chaincode With LifeCycle");
-		System.out.println("");
-		System.out.println("");
-		return packageID;
+		logger.info("[체인코드 라이프 사이클 설치] 종료");
+
 	}
 
 	/**
@@ -1059,35 +1038,35 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	private void verifyChaincodeInstalled(HFClient client, List<Peer> peers) throws Exception {
-
-		System.out.println("[verifyChaincodeInstalled()] Start Verify Chaincode Installed");
-
-		// 체인코드 설치확인 리퀘스트 피어로 전송
-		Collection<LifecycleQueryInstalledChaincodesProposalResponse> results = client
-				.sendLifecycleQueryInstalledChaincodes(client.newLifecycleQueryInstalledChaincodesRequest(), peers);
-
-		// 설치된 체인코드 확인
-		for (LifecycleQueryInstalledChaincodesProposalResponse peerResults : results) {
-
-			String peerName = peerResults.getPeer().getName();
-
-			for (LifecycleQueryInstalledChaincodesResult lifecycleQueryInstalledChaincodesResult : peerResults
-					.getLifecycleQueryInstalledChaincodesResult()) {
-
-				System.out.println("[verifyChaincodeInstalled()] Peer : " + peerName);
-				System.out.println("[verifyChaincodeInstalled()] getLabel : "
-						+ lifecycleQueryInstalledChaincodesResult.getLabel());
-				System.out.println("[verifyChaincodeInstalled()] getPackageId() : "
-						+ lifecycleQueryInstalledChaincodesResult.getPackageId());
-
-			}
-		}
-
-		System.out.println("[verifyChaincodeInstalled()] Finish Verify Chaincode Installed");
-		System.out.println("");
-		System.out.println("");
-	}
+//	private void verifyChaincodeInstalled(HFClient client, List<Peer> peers) throws Exception {
+//
+//		System.out.println("[verifyChaincodeInstalled()] Start Verify Chaincode Installed");
+//
+//		// 체인코드 설치확인 리퀘스트 피어로 전송
+//		Collection<LifecycleQueryInstalledChaincodesProposalResponse> results = client
+//				.sendLifecycleQueryInstalledChaincodes(client.newLifecycleQueryInstalledChaincodesRequest(), peers);
+//
+//		// 설치된 체인코드 확인
+//		for (LifecycleQueryInstalledChaincodesProposalResponse peerResults : results) {
+//
+//			String peerName = peerResults.getPeer().getName();
+//
+//			for (LifecycleQueryInstalledChaincodesResult lifecycleQueryInstalledChaincodesResult : peerResults
+//					.getLifecycleQueryInstalledChaincodesResult()) {
+//
+//				System.out.println("[verifyChaincodeInstalled()] Peer : " + peerName);
+//				System.out.println("[verifyChaincodeInstalled()] getLabel : "
+//						+ lifecycleQueryInstalledChaincodesResult.getLabel());
+//				System.out.println("[verifyChaincodeInstalled()] getPackageId() : "
+//						+ lifecycleQueryInstalledChaincodesResult.getPackageId());
+//
+//			}
+//		}
+//
+//		System.out.println("[verifyChaincodeInstalled()] Finish Verify Chaincode Installed");
+//		System.out.println("");
+//		System.out.println("");
+//	}
 
 	/**
 	 * 체인코드 현재 시퀀스 조회 함수

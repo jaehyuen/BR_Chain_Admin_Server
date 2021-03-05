@@ -440,7 +440,7 @@ public class FabricService {
 	}
 
 	/**
-	 * 체인코드 설치 서비스 (1.4.x 버전)
+	 * 체인코드 설치 서비스
 	 * 
 	 * @param installCcDto 체인코드 설치 관련 DTO
 	 * 
@@ -467,7 +467,6 @@ public class FabricService {
 
 			// 체인코드 설치
 			fabricClient.installChaincode(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
-//			fabricClient.installChaincodeToPeer(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
 
 			CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
 
@@ -947,6 +946,7 @@ public class FabricService {
 			util.unZip(System.getProperty("user.dir") + "/chaincode/src/",
 					ccFile.getOriginalFilename() + "_v" + ccVersion,
 					System.getProperty("user.dir") + "/chaincode/src/");
+			
 			String ccPath = fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
 
 			// 디비에 저장(CCINFO)

@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.brchain.account.dto.AuthResponse;
+import com.brchain.account.dto.AuthDto;
 import com.brchain.account.dto.LoginDto;
 import com.brchain.account.dto.RefreshTokenRequest;
 import com.brchain.account.dto.UserDto;
@@ -59,43 +59,52 @@ public class AuthService {
 
 			userRepository.save(userEntity);
 		} catch (Exception e) {
-			
+
 			logger.error(e.getMessage());
 			e.printStackTrace();
 			return util.setResult("9999", false, e.getMessage(), null);
-			
+
 		}
 		return util.setResult("0000", true, "Success Register", "");
 	}
 
-	public AuthResponse login(LoginDto loginDto) {
-		
-		Authentication authenticate = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getPassword()));
-		
-		SecurityContextHolder.getContext().setAuthentication(authenticate);
-		
-		String token = jwtProvider.generateToken(authenticate);
-		
-		return AuthResponse.builder().authenticationToken(token)
-				.refreshToken(refreshTokenService.generateRefreshToken().getToken())
-				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-				.username(loginDto.getUserId()).build();
+	public ResultDto login(LoginDto loginDto) {
+
+		AuthDto authDto = null;
+		try {
+
+			Authentication authenticate = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getPassword()));
+
+			SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+			String token = jwtProvider.generateToken(authenticate);
+			authDto = AuthDto.builder().token(token).refreshToken(refreshTokenService.generateRefreshToken().getToken())
+					.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+					.userId(loginDto.getUserId()).build();
+
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			return util.setResult("9999", false, e.getMessage(), null);
+		}
+
+		return util.setResult("0000", true, "Success Login", authDto);
 	}
 
-	public AuthResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+	public AuthDto refreshToken(RefreshTokenRequest refreshTokenRequest) {
 		refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
 		String token = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
-		return AuthResponse.builder().authenticationToken(token).refreshToken(refreshTokenRequest.getRefreshToken())
+		return AuthDto.builder().token(token).refreshToken(refreshTokenRequest.getRefreshToken())
 				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-				.username(refreshTokenRequest.getUsername()).build();
+				.userId(refreshTokenRequest.getUsername()).build();
 	}
 
 	@Transactional(readOnly = true)
 	public UserEntity getCurrentUser() {
 		org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) SecurityContextHolder
 				.getContext().getAuthentication().getPrincipal();
-		return userRepository.findByUserName(principal.getUsername())
+		return userRepository.findByUserId(principal.getUsername())
 				.orElseThrow(() -> new EntityNotFoundException("User name not found - " + principal.getUsername()));
 	}
 

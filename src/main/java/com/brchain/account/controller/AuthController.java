@@ -1,18 +1,6 @@
 package com.brchain.account.controller;
 
-import com.brchain.account.dto.AuthResponse;
-import com.brchain.account.dto.LoginDto;
-import com.brchain.account.dto.RefreshTokenRequest;
-import com.brchain.account.dto.UserDto;
-import com.brchain.account.service.AuthService;
-import com.brchain.account.service.RefreshTokenService;
-import com.brchain.common.dto.ResultDto;
-import com.brchain.core.service.ContainerService;
-import com.brchain.core.service.DockerService;
-import com.brchain.core.service.FabricService;
-
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +9,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import com.brchain.account.dto.AuthDto;
+import com.brchain.account.dto.LoginDto;
+import com.brchain.account.dto.RefreshTokenRequest;
+import com.brchain.account.dto.UserDto;
+import com.brchain.account.service.AuthService;
+import com.brchain.account.service.RefreshTokenService;
+import com.brchain.common.dto.ResultDto;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,12 +34,13 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public AuthResponse login(@RequestBody LoginDto loginDto) {
-		return authService.login(loginDto);
+	public ResponseEntity<ResultDto> login(@RequestBody LoginDto loginDto) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginDto));
 	}
 
 	@PostMapping("/refresh")
-	public AuthResponse refreshTokens(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+	public AuthDto refreshTokens(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
 		return authService.refreshToken(refreshTokenRequest);
 	}
 

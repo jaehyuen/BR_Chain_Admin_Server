@@ -1,6 +1,6 @@
 package com.brchain.account.service;
 
-import com.brchain.account.entity.User;
+import com.brchain.account.entity.UserEntity;
 import com.brchain.account.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,12 +23,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        User user = userOptional
+        Optional<UserEntity> userOptional = userRepository.findByUserName(username);
+        UserEntity user = userOptional
                 .orElseThrow(() -> new EntityNotFoundException("No user Found with username: " + username));
 
         return new org.springframework.security
-                .core.userdetails.User(user.getUsername(), user.getPassword(),
+                .core.userdetails.User(user.getUserName(), user.getPassword(),
                 user.isActive(), true, true,
                 true, getAuthorities("USER"));
     }

@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.brchain.core.dto.ResultDto;
+
 import com.brchain.core.dto.channel.CreateChannelDto;
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.service.ContainerService;
 import com.brchain.core.service.DockerService;

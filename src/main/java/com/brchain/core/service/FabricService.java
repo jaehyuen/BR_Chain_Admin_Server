@@ -30,12 +30,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.BlockDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
-import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.TransactionDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.chaincode.CcInfoDto;

@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.dto.ResultDto;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.exceptions.DockerException;

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.brchain.core.dto.ResultDto;
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.chaincode.CcInfoDto;
 import com.brchain.core.dto.chaincode.CcInfoPeerDto;

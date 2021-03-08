@@ -17,11 +17,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.BlockDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.PolicyDto;
-import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.TransactionDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.chaincode.CcInfoDto;

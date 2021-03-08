@@ -1,4 +1,4 @@
-package com.brchain.core.dto;
+package com.brchain.common.dto;
 
 import lombok.Data;
 import lombok.ToString;

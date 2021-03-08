@@ -6,8 +6,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
-import com.brchain.core.dto.ResultDto;
 import com.brchain.core.dto.channel.ChannelHandleDto;
 import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.dto.channel.ChannelInfoPeerDto;

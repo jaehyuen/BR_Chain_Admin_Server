@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.brchain.core.dto.ResultDto;
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.channel.CreateChannelDto;
 import com.brchain.core.service.ChannelService;
 import com.brchain.core.service.FabricService;

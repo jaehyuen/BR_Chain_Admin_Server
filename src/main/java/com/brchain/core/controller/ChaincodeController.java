@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.brchain.core.dto.ResultDto;
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.chaincode.InstallCcDto;
 import com.brchain.core.dto.chaincode.InstantiateCcDto;
 import com.brchain.core.service.ChaincodeService;

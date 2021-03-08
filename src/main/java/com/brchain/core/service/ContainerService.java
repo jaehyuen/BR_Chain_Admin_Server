@@ -8,9 +8,9 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
-import com.brchain.core.dto.ResultDto;
 import com.brchain.core.entity.ConInfoEntity;
 import com.brchain.core.repository.ConInfoRepository;
 import com.brchain.core.util.Util;

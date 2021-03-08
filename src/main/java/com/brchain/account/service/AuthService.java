@@ -3,7 +3,7 @@ package com.brchain.account.service;
 import com.brchain.account.dto.AuthResponse;
 import com.brchain.account.dto.LoginRequest;
 import com.brchain.account.dto.RefreshTokenRequest;
-import com.brchain.account.dto.RegisterRequest;
+import com.brchain.account.dto.RegisterDto;
 import com.brchain.account.entity.User;
 import com.brchain.account.repository.UserRepository;
 import com.brchain.common.security.JwtProvider;
@@ -31,7 +31,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
-    public void register(RegisterRequest registerRequest) {
+    public void register(RegisterDto registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setEmail(registerRequest.getEmail());

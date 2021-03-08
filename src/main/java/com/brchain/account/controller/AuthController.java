@@ -3,7 +3,7 @@ package com.brchain.account.controller;
 import com.brchain.account.dto.AuthResponse;
 import com.brchain.account.dto.LoginRequest;
 import com.brchain.account.dto.RefreshTokenRequest;
-import com.brchain.account.dto.RegisterRequest;
+import com.brchain.account.dto.RegisterDto;
 import com.brchain.account.service.AuthService;
 import com.brchain.account.service.RefreshTokenService;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> signup(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> signup(@RequestBody RegisterDto registerRequest) {
         authService.register(registerRequest);
         return new ResponseEntity<>("User Registration Successful", HttpStatus.OK);
     }

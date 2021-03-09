@@ -38,24 +38,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		System.out.println("in jwt token check"+request.getRequestURI());
-		String jwt = getJwtFromRequest(request);
+		String uri = request.getRequestURI();
 
-		if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
+		if (!uri.startsWith("/api/auth") || uri.startsWith("/in")) {
 
-			System.out.println("have token : " + jwt);
-			String username = jwtProvider.getUsernameFromJwt(jwt);
+			String jwt = getJwtFromRequest(request);
 
-			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
-					null, userDetails.getAuthorities());
-			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+			if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
 
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-		} else {
-			System.out.println("토큰이 없거나 만료됨");
+				String username = jwtProvider.getUsernameFromJwt(jwt);
+
+				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+						userDetails, null, userDetails.getAuthorities());
+				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			} else {
+
+				response.sendError(401);
+			}
 		}
 		filterChain.doFilter(request, response);
+
 	}
 
 	private String getJwtFromRequest(HttpServletRequest request) {

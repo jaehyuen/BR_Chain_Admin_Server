@@ -41,5 +41,6 @@ public class UserEntity extends BaseEntity {
 	@Column(name = "EMAIL")
 	private String email;
 
+	@Column(name = "ACTIVE")
 	private boolean active;
 }

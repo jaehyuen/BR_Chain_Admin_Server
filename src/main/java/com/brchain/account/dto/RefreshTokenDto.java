@@ -9,8 +9,8 @@ import javax.validation.constraints.NotBlank;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
-    @NotBlank
+public class RefreshTokenDto {
+    
     private String refreshToken;
-    private String username;
+    private String userId;
 }

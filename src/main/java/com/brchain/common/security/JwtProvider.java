@@ -24,14 +24,15 @@ import org.springframework.stereotype.Service;
 import com.brchain.common.exception.BRChainBaseException;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureException;
 
 @Service
 public class JwtProvider {
 
 	private KeyStore keyStore;
-    private final Long jwtExpirationInMillis = (long) (1000 * 500);
+	private final Long jwtExpirationInMillis = (long) (1000 * 50); //테스트
 //	private final Long jwtExpirationInMillis = (long) (1000);
 
 	@PostConstruct
@@ -52,8 +53,8 @@ public class JwtProvider {
 				.compact();
 	}
 
-	public String generateTokenWithUserName(String username) {
-		return Jwts.builder().setSubject(username).setIssuedAt(from(Instant.now())).signWith(getPrivateKey())
+	public String generateTokenWithUserName(String userName) {
+		return Jwts.builder().setSubject(userName).setIssuedAt(from(Instant.now())).signWith(getPrivateKey())
 				.setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis))).compact();
 	}
 
@@ -66,13 +67,15 @@ public class JwtProvider {
 	}
 
 	public boolean validateToken(String jwt) {
-		
+
 		try {
 			parser().setSigningKey(getPublickey()).parseClaimsJws(jwt);
 			return true;
 		} catch (Exception e) {
+
 			return false;
 		}
+
 	}
 
 	private PublicKey getPublickey() {

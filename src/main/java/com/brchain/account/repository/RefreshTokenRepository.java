@@ -1,12 +1,13 @@
 package com.brchain.account.repository;
 
-import com.brchain.account.entity.RefreshToken;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
 
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-    Optional<RefreshToken> findByToken(String token);
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.brchain.account.entity.RefreshTokenEntity;
+
+public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
+    Optional<RefreshTokenEntity> findByToken(String token);
 
     void deleteByToken(String token);
 }

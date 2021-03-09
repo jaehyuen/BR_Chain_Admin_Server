@@ -1,13 +1,16 @@
 package com.brchain.account.service;
 
-import com.brchain.account.entity.RefreshToken;
-import com.brchain.account.repository.RefreshTokenRepository;
-import lombok.AllArgsConstructor;
+import java.util.UUID;
+
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
-import java.util.UUID;
+import com.brchain.account.entity.RefreshTokenEntity;
+import com.brchain.account.repository.RefreshTokenRepository;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -16,11 +19,11 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public RefreshToken generateRefreshToken() {
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(UUID.randomUUID().toString());
+    public RefreshTokenEntity generateRefreshToken() {
+    	RefreshTokenEntity refreshTokenEntity = new RefreshTokenEntity();
+    	refreshTokenEntity.setToken(UUID.randomUUID().toString());
 
-        return refreshTokenRepository.save(refreshToken);
+        return refreshTokenRepository.save(refreshTokenEntity);
     }
 
     public void validateRefreshToken(String token) {

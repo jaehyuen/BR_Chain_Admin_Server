@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.brchain.account.service.UserDetailsServiceImpl;
 import com.brchain.common.security.JwtAuthenticationFilter;
 
-
 import lombok.RequiredArgsConstructor;
 
 @EnableWebSecurity
@@ -34,12 +33,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	public void configure(HttpSecurity httpSecurity) throws Exception {
-		httpSecurity.cors().and().csrf().disable().authorizeRequests()
-		.antMatchers("/api/auth/**").permitAll()
-				.antMatchers("/api/core/**").permitAll()
-				.antMatchers("/api/core/chaincode/**").permitAll()
-				.antMatchers("/**").permitAll().
-				antMatchers("/v2/api-docs", "/configuration/ui",
+		httpSecurity.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/auth/**").permitAll()
+				.antMatchers("/api/core/**").permitAll().antMatchers("/api/core/chaincode/**").permitAll()
+				.antMatchers("/**").permitAll().antMatchers("/v2/api-docs", "/configuration/ui",
 						"/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**")
 				.permitAll().anyRequest().authenticated();
 		httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

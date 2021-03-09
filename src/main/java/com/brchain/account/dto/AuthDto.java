@@ -12,7 +12,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class AuthDto {
-    private String token;
+    private String accessToken;
     private String refreshToken;
     private Instant expiresAt;
     private String userId;

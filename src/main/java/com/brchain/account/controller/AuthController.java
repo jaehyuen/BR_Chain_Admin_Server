@@ -9,9 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.brchain.account.dto.AuthDto;
 import com.brchain.account.dto.LoginDto;
-import com.brchain.account.dto.RefreshTokenRequest;
+import com.brchain.account.dto.RefreshTokenDto;
 import com.brchain.account.dto.UserDto;
 import com.brchain.account.service.AuthService;
 import com.brchain.account.service.RefreshTokenService;
@@ -40,13 +39,15 @@ public class AuthController {
 	}
 
 	@PostMapping("/refresh")
-	public AuthDto refreshTokens(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-		return authService.refreshToken(refreshTokenRequest);
+	public ResponseEntity<ResultDto> refreshTokens(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
+		
+		return ResponseEntity.status(HttpStatus.OK).body(authService.refreshToken(refreshTokenDto));
+		
 	}
 
 	@PostMapping("/logout")
-	public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-		refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+	public ResponseEntity<String> logout(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
+		refreshTokenService.deleteRefreshToken(refreshTokenDto.getRefreshToken());
 		return ResponseEntity.status(HttpStatus.OK).body("Refresh Token Deleted Successfully!!");
 	}
 }

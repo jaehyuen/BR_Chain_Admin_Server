@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.account.dto.AuthDto;
 import com.brchain.account.dto.LoginDto;
-import com.brchain.account.dto.RefreshTokenRequest;
+import com.brchain.account.dto.RefreshTokenDto;
 import com.brchain.account.dto.UserDto;
 import com.brchain.account.entity.UserEntity;
 import com.brchain.account.repository.UserRepository;
@@ -70,34 +70,32 @@ public class AuthService {
 
 	public ResultDto login(LoginDto loginDto) {
 
-		AuthDto authDto = null;
-		try {
+		Authentication authenticate = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getPassword()));
 
-			Authentication authenticate = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getPassword()));
+		SecurityContextHolder.getContext().setAuthentication(authenticate);
 
-			SecurityContextHolder.getContext().setAuthentication(authenticate);
-
-			String token = jwtProvider.generateToken(authenticate);
-			authDto = AuthDto.builder().token(token).refreshToken(refreshTokenService.generateRefreshToken().getToken())
-					.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-					.userId(loginDto.getUserId()).build();
-
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
-		}
+		String token = jwtProvider.generateToken(authenticate);
+		
+		AuthDto authDto = AuthDto.builder().accessToken(token)
+				.refreshToken(refreshTokenService.generateRefreshToken().getToken())
+				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
+				.userId(loginDto.getUserId()).build();
 
 		return util.setResult("0000", true, "Success Login", authDto);
 	}
 
-	public AuthDto refreshToken(RefreshTokenRequest refreshTokenRequest) {
-		refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
-		String token = jwtProvider.generateTokenWithUserName(refreshTokenRequest.getUsername());
-		return AuthDto.builder().token(token).refreshToken(refreshTokenRequest.getRefreshToken())
+	public ResultDto refreshToken(RefreshTokenDto refreshTokenDto) {
+		
+		refreshTokenService.validateRefreshToken(refreshTokenDto.getRefreshToken());
+		
+		String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUserId());
+		
+		AuthDto authDto = AuthDto.builder().accessToken(token).refreshToken(refreshTokenDto.getRefreshToken())
 				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-				.userId(refreshTokenRequest.getUsername()).build();
+				.userId(refreshTokenDto.getUserId()).build();
+
+		return util.setResult("0000", true, "Success Refresh Token", authDto);
 	}
 
 	@Transactional(readOnly = true)

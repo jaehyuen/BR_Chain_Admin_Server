@@ -34,12 +34,12 @@ public class UserEntity extends BaseEntity {
 	@Column(name = "USER_ID", unique=true)
 	private String userId;
 	
-	@Column(name = "PASSWORD")
-	private String password;
+	@Column(name = "USER_PASSWORD")
+	private String userPassword;
 
 	@Email
-	@Column(name = "EMAIL")
-	private String email;
+	@Column(name = "USER_EMAIL")
+	private String userEmail;
 
 	@Column(name = "ACTIVE")
 	private boolean active;

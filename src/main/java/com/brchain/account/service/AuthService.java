@@ -51,8 +51,8 @@ public class AuthService {
 
 			userEntity.setUserName(userDto.getUserName());
 			userEntity.setUserId(userDto.getUserId());
-			userEntity.setEmail(userDto.getEmail());
-			userEntity.setPassword(passwordEncoder.encode(userDto.getPassword()));
+			userEntity.setUserEmail(userDto.getUserEmail());
+			userEntity.setUserPassword(passwordEncoder.encode(userDto.getUserPassword()));
 			userEntity.setActive(false);
 
 			logger.info("this is userEntity : " + userEntity);
@@ -71,7 +71,7 @@ public class AuthService {
 	public ResultDto login(LoginDto loginDto) {
 
 		Authentication authenticate = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getPassword()));
+				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
 
 		SecurityContextHolder.getContext().setAuthentication(authenticate);
 

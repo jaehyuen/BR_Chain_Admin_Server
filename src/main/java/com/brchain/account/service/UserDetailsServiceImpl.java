@@ -28,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new EntityNotFoundException("No user Found with userId: " + userId));
 
         return new org.springframework.security
-                .core.userdetails.User(user.getUserId(), user.getPassword(),
+                .core.userdetails.User(user.getUserId(), user.getUserPassword(),
                 user.isActive(), true, true,
                 true, getAuthorities("USER"));
     }

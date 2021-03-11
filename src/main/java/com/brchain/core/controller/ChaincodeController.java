@@ -42,7 +42,7 @@ public class ChaincodeController {
 	}
 	
 	
-	@GetMapping("/channel/list")
+	@GetMapping("/list/channel")
 	public ResponseEntity<ResultDto> getChaincodeListChannel(@RequestParam(value = "channelName", required = true) String channelName) {
 
 			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListActive(channelName));

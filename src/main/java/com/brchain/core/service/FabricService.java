@@ -667,7 +667,7 @@ public class FabricService {
 			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
-		return util.setResult("0000", true, "Success Instantiate chaincode", null);
+		return util.setResult("0000", true, "Success Register Block EventListener", null);
 	}
 
 	/**

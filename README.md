@@ -16,31 +16,31 @@ Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있
 
 ## index /api
 - /auth
-    - [`POST /register`](#`POST-/api/auth/register`)
-    - [`POST /login`](#`POST-/api/auth/login`)
-    - [`POST /refresh`](#`POST-/api/auth/refresh`)
-    - [`POST /logout`](#`POST-/api/auth/logout`)
+    - [`POST /register`](#`POST-apiauthregister`)
+    - [`POST /login`](#`POST-apiauthlogin`)
+    - [`POST /refresh`](#`POST-apiauthrefresh`)
+    - [`POST /logout`](#`POST-apiauthlogout`)
 - /core
-    - [`GET /containers`](#`GET-/api/core/containers`)
-    - [`GET /orgs`](#`GET-/api/core/orgs`)
-    - [`GET /members`](#`GET-/api/core/members`)
-    - [`GET /remove`](#`GET-/api/core/remove`)
-    - [`GET /check/port`](#`GET-/api/core/check/port`)
-    - [`POST /create/org`](#`POST-/api/core/create/org`)
+    - [`GET /containers`](#`GET-apicorecontainers`)
+    - [`GET /orgs`](#`GET-apicoreorgs`)
+    - [`GET /members`](#`GET-apicoremembers`)
+    - [`GET /remove`](#`GET-apicoreremove`)
+    - [`GET /check/port`](#`GET-apicorecheckport`)
+    - [`POST /create/org`](#`POST-apicorecreateorg`)
     - /channel
-        - [`GET /list`](#`GET-/api/core/channel/list`)
-        - [`GET /list/peer`](#`GET-/api/core/channel/list/peer`)
-        - [`POST /create`](#`POST-/api/core/channel/create`)
-        - [`GET /register`](#`GET-/api/core/channel/register`)
-        - [`GET /unregister`](#`GET-/api/core/channel/unregister`)
-        - [`GET /anchor`](#`GET-/api/core/channel/anchor`)
+        - [`GET /list`](#`GET-apicorechannellist`)
+        - [`GET /list/peer`](#`GET-apicorechannellistpeer`)
+        - [`POST /create`](#`POST-apicorechannelcreate`)
+        - [`GET /register`](#`GET-apicorechannelregister`)
+        - [`GET /unregister`](#`GET-apicorechannelunregister`)
+        - [`GET /anchor`](#`GET-apicorechannelanchor`)
     - /chaincode
-        - [`GET /list`](#`GET-/api/core/chaincode/list`)
-        - [`GET /list/channel`](#`GET-/core/auth/chaincode/list/channel`)
-        - [`GET /active`](#`GET-/api/core/chaincode/active`)
-        - [`POST /install`](#`POST-/api/core/chaincode/install`)
-        - [`POST /upload`](#`POST-/api/core/chaincode/upload`)
-        - [`POST /active`](#`POST-/api/core/chaincode/active`)
+        - [`GET /list`](#`GET-apicorechaincodelist`)
+        - [`GET /list/channel`](#`GET-coreauthchaincodelistchannel`)
+        - [`GET /active`](#`GET-apicorechaincodeactive`)
+        - [`POST /install`](#`POST-apicorechaincodeinstall`)
+        - [`POST /upload`](#`POST-apicorechaincodeupload`)
+        - [`POST /active`](#`POST-apicorechaincodeactive`)
         
 
 

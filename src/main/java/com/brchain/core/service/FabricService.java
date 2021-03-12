@@ -35,6 +35,7 @@ import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.dto.BlockDto;
 import com.brchain.core.dto.ConInfoDto;
+import com.brchain.core.dto.CreateOrgConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
 import com.brchain.core.dto.TransactionDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
@@ -87,7 +88,7 @@ public class FabricService {
 	 * 
 	 */
 
-	public ResultDto createOrg(CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
+	public ResultDto createOrg(ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
 
 		logger.info("[조직생성] 시작");
 
@@ -96,44 +97,50 @@ public class FabricService {
 			String gossipBootAddress = "";
 			JSONObject conJson = new JSONObject();
 			JSONObject returnJson = new JSONObject();
+			CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr = null;
 
 			// 컨테이너 생성시 필요한 변수 선언
-			for (ConInfoDto dto : conInfoDtoArr) {
+			for (CreateOrgConInfoDto createOrgConInfoDto : createOrgConInfoDtoArr) {
 
-				if (dto.getConType().equals("orderer")) {
+				if (createOrgConInfoDto.getConType().equals("orderer")) {
 
-					ordererPorts = ordererPorts + dto.getConPort() + " ";
+					ordererPorts = ordererPorts + createOrgConInfoDto.getConPort() + " ";
 
 				}
 
-				if (dto.getConType().equals("peer")) {
+				if (createOrgConInfoDto.getConType().equals("peer")) {
 
-					gossipBootAddress = gossipBootAddress + dto.getConType() + dto.getConNum() + ".org"
-							+ dto.getOrgName() + ".com:" + dto.getConPort() + " ";
+					gossipBootAddress = gossipBootAddress + createOrgConInfoDto.getConType()
+							+ createOrgConInfoDto.getConNum() + ".org" + createOrgConInfoDto.getOrgName() + ".com:"
+							+ createOrgConInfoDto.getConPort() + " ";
 				}
+				conInfoDtoArr.add(ConInfoDto.builder().conType(createOrgConInfoDto.getConType())
+						.conPort(createOrgConInfoDto.getConPort()).orgName(createOrgConInfoDto.getOrgName())
+						.orgType(createOrgConInfoDto.getOrgType()).conNum(createOrgConInfoDto.getConNum())
+						.conCnt(createOrgConInfoDto.getConCnt()).build());
 			}
 
 			int i = 0;
 
-			for (ConInfoDto dto : conInfoDtoArr) {
+			for (ConInfoDto conInfoDto : conInfoDtoArr) {
 
-				if (dto.getConType().equals("ca")) {
+				if (conInfoDto.getConType().equals("ca")) {
 
 					// 컨테이너 생성 함수 호출
-					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
+					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType() + " 컨테이너 생성");
 //					containerService.saveConInfo(dockerService.createContainer(dto));
-					returnJson = dockerService.createContainer(dto);
+					returnJson = dockerService.createContainer(conInfoDto);
 					conJson.put(returnJson.get("container_name"), returnJson);
 
 					// setup 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
 					ConInfoDto setupContainer = new ConInfoDto();
-					setupContainer.setOrgName(dto.getOrgName());
-					setupContainer.setOrgType(dto.getOrgType());
-					setupContainer.setConPort(dto.getConPort());
-					setupContainer.setConCnt(dto.getConCnt());
-					setupContainer.setConType("setup_" + dto.getOrgType());
+					setupContainer.setOrgName(conInfoDto.getOrgName());
+					setupContainer.setOrgType(conInfoDto.getOrgType());
+					setupContainer.setConPort(conInfoDto.getConPort());
+					setupContainer.setConCnt(conInfoDto.getConCnt());
+					setupContainer.setConType("setup_" + conInfoDto.getOrgType());
 
-					if (dto.getOrgType().equals("orderer")) {
+					if (conInfoDto.getOrgType().equals("orderer")) {
 
 						setupContainer.setOrdererPorts(ordererPorts);
 						setupContainer.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
@@ -147,36 +154,32 @@ public class FabricService {
 					logger.info(setupContainer.toString());
 					returnJson = dockerService.createContainer(setupContainer);
 					conJson.put(returnJson.get("container_name"), returnJson);
-//					dockerService.createContainer(setupContainer);
 					Thread.sleep(5000);
 
 					conInfoDtoArr.add(i + 1, setupContainer);
 
-				} else if (dto.getConType().equals("peer")) {
+				} else if (conInfoDto.getConType().equals("peer")) {
 
 					// 컨테이너 생성 함수 호출
-					dto.setGossipBootAddr(gossipBootAddress);
-					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType()
-							+ dto.getConNum() + " 컨테이너 생성");
-					logger.info(dto.toString());
-//					containerService.saveConInfo(dockerService.createContainer(dto));
-					returnJson = dockerService.createContainer(dto);
+					conInfoDto.setGossipBootAddr(gossipBootAddress);
+					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType()
+							+ conInfoDto.getConNum() + " 컨테이너 생성");
+					logger.info(conInfoDto.toString());
+					returnJson = dockerService.createContainer(conInfoDto);
 					conJson.put(returnJson.get("container_name"), returnJson);
 
 					// couchdb 컨테이너 정보 생성 및 컨테이너 생성 함수 호출
-					if (dto.isCouchdbYn()) {
+					if (conInfoDto.isCouchdbYn()) {
 
 						ConInfoDto couchdbContainer = new ConInfoDto();
-						couchdbContainer.setOrgName(dto.getOrgName());
-						couchdbContainer.setOrgType(dto.getOrgType());
-						couchdbContainer.setConNum(dto.getConNum());
+						couchdbContainer.setOrgName(conInfoDto.getOrgName());
+						couchdbContainer.setOrgType(conInfoDto.getOrgType());
+						couchdbContainer.setConNum(conInfoDto.getConNum());
 						couchdbContainer.setConType("couchdb");
 
 						logger.info("[조직생성] 도커 컨테이너 생성 -> " + couchdbContainer.getOrgName() + " 조직의 "
 								+ couchdbContainer.getConType() + couchdbContainer.getConNum() + " 컨테이너 생성");
 
-//						containerService.saveConInfo(dockerService.createContainer(couchdbContainer));
-//						dockerService.createContainer(couchdbContainer);
 						returnJson = dockerService.createContainer(couchdbContainer);
 						conJson.put(returnJson.get("container_name"), returnJson);
 
@@ -185,13 +188,11 @@ public class FabricService {
 				} else {
 
 					// 컨테이너 생성 함수 호출
-					logger.info("[조직생성] 도커 컨테이너 생성 -> " + dto.getOrgName() + " 조직의 " + dto.getConType() + " 컨테이너 생성");
-//					dto.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
-					dto.setConsoOrgs(containerService.findConInfoByConType("ca", "peer"));
-					logger.info(dto.toString());
+					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType() + " 컨테이너 생성");
+					conInfoDto.setConsoOrgs(containerService.findConInfoByConType("ca", "peer"));
+					logger.info(conInfoDto.toString());
 
-//					containerService.saveConInfo(dockerService.createContainer(dto));
-					returnJson = dockerService.createContainer(dto);
+					returnJson = dockerService.createContainer(conInfoDto);
 					conJson.put(returnJson.get("container_name"), returnJson);
 
 				}
@@ -946,7 +947,7 @@ public class FabricService {
 			util.unZip(System.getProperty("user.dir") + "/chaincode/src/",
 					ccFile.getOriginalFilename() + "_v" + ccVersion,
 					System.getProperty("user.dir") + "/chaincode/src/");
-			
+
 			String ccPath = fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
 
 			// 디비에 저장(CCINFO)

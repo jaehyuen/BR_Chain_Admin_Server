@@ -116,29 +116,23 @@ public class ContainerService {
 
 	public ResultDto getOrgList(String orgType) {
 
-		ArrayList<ConInfoEntity> conInfoEntity;
+		ArrayList<ConInfoEntity> conInfoEntityList;
 
 		if (orgType.equals("")) {
 
-			conInfoEntity = conInfoRepository.findByConType("ca");
+			conInfoEntityList = conInfoRepository.findByConType("ca");
 
 		} else {
 
-			conInfoEntity = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
+			conInfoEntityList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
 
 		}
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		for (ConInfoEntity entity : conInfoEntity) {
+		for (ConInfoEntity conInfoEntity : conInfoEntityList) {
 
-			JSONObject resultJson = new JSONObject();
-
-			resultJson.put("orgName", entity.getOrgName());
-			resultJson.put("orgType", entity.getOrgType());
-			resultJson.put("conCnt", entity.getConCnt());
-
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(util.toDto(conInfoEntity));
 
 		}
 
@@ -155,26 +149,19 @@ public class ContainerService {
 
 	public ResultDto getMemberList(String orgName) {
 
-		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByOrgName(orgName);
+		ArrayList<ConInfoEntity> conInfoEntityList = conInfoRepository.findByOrgName(orgName);
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		for (ConInfoEntity entity : conInfoEntity) {
+		for (ConInfoEntity conInfoEntity : conInfoEntityList) {
 
-			if (entity.getConType().contains("ca") || entity.getConType().contains("setup")
-					|| entity.getConType().contains("couchdb")) {
+			if (conInfoEntity.getConType().contains("ca") || conInfoEntity.getConType().contains("setup")
+					|| conInfoEntity.getConType().contains("couchdb")) {
 
 				continue;
 			}
-			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("orgName", entity.getOrgName());
-			resultJson.put("conType", entity.getConType());
-			resultJson.put("conNum", entity.getConNum());
-			resultJson.put("conName", entity.getConName());
-			resultJson.put("conPort", entity.getConPort());
-
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(conInfoEntity);
 
 		}
 
@@ -288,6 +275,5 @@ public class ContainerService {
 		return resultDto;
 
 	}
-
 
 }

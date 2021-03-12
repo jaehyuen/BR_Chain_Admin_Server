@@ -1,6 +1,6 @@
 package com.brchain.core.controller;
 
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brchain.common.dto.ResultDto;
-import com.brchain.core.dto.ConInfoDto;
+import com.brchain.core.dto.CreateOrgConInfoDto;
 import com.brchain.core.service.ContainerService;
 import com.brchain.core.service.DockerService;
 import com.brchain.core.service.FabricService;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 
@@ -45,7 +46,8 @@ public class CoreController {
 	@ApiOperation(value = "조직 타입에 따를 컨데이너 정보 조회", notes = "조직 타입에 따른 컨테이너 정보를 조회하는 API", authorizations = {
 			@Authorization(value = "Authorization") })
 	@GetMapping("/org/list")
-	public ResponseEntity<ResultDto> getOrgList(@RequestParam(value = "type") String orgType) {
+	public ResponseEntity<ResultDto> getOrgList(
+			@ApiParam(value = "조직 타입(peer, orderer, ca)", required = true) @RequestParam(value = "type") String orgType) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.getOrgList(orgType));
 
@@ -54,26 +56,29 @@ public class CoreController {
 	@ApiOperation(value = "조직 생성", notes = "HyperLedger Fabric 조직을 생성하는 API", authorizations = {
 			@Authorization(value = "Authorization") })
 	@PostMapping("/org/create")
-	public ResponseEntity<ResultDto> createContainer(@RequestBody CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
+	public ResponseEntity<ResultDto> createContainer(
+			@ApiParam(value = "조직 생성 관련 컨테이너 DTO 리스트", required = true) @RequestBody ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createOrg(conInfoDtoArr));
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createOrg(createOrgConInfoDtoArr));
 
 	}
 
-	@ApiOperation(value = "조직 맴버 정보 조회", notes = "HyperLedger Fabric 조직이름에 따른 컨테이너 정보를 조회하는 API", authorizations = {
+	@ApiOperation(value = "조직 맴버 정보 조회", notes = "HyperLedger Fabric 조직 이름에 따른 컨테이너 정보를 조회하는 API", authorizations = {
 			@Authorization(value = "Authorization") })
 	@GetMapping("/member/list")
-	public ResponseEntity<ResultDto> getMemberList(@RequestParam(value = "orgName") String orgName) {
+	public ResponseEntity<ResultDto> getMemberList(
+			@ApiParam(value = "조회할 HyperLedger Fabric 조직명", required = true) @RequestParam(value = "orgName") String orgName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.getMemberList(orgName));
 
 	}
 
-	@ApiOperation(value = "조직 삭제", notes = "gow", authorizations = {
+	@ApiOperation(value = "컨테이너 삭제", notes = "컨테이너 ID 또는 조직명으로 컨테이너 중지 및 삭제하는 API", authorizations = {
 			@Authorization(value = "Authorization") })
 	@GetMapping("/remove")
-	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId", required = false) String conId,
-			@RequestParam(value = "orgName", required = false) String orgName) {
+	public ResponseEntity<ResultDto> removeContainer(
+			@ApiParam(value = "삭제할 컨테이너 ID", required = false) @RequestParam(value = "conId", required = false) String conId,
+			@ApiParam(value = "삭제할 조직명", required = false) @RequestParam(value = "orgName", required = false) String orgName) {
 
 		if (conId != null && conId.equals("")) {
 
@@ -92,7 +97,8 @@ public class CoreController {
 	@ApiOperation(value = "포트 체크", notes = "사용중인 포트인지 체크하는 API", authorizations = {
 			@Authorization(value = "Authorization") })
 	@GetMapping("/check/port")
-	public ResponseEntity<ResultDto> portCheck(@RequestParam(value = "port") String port) {
+	public ResponseEntity<ResultDto> portCheck(
+			@ApiParam(value = "확인할 포트 번호", required = false) @RequestParam(value = "port") String port) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.canUseConPort(port));
 

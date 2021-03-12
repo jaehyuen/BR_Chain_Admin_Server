@@ -108,7 +108,6 @@ public class ChaincodeService {
 
 	}
 
-
 	/**
 	 * 체인코드 정보 (피어) 저장 서비스
 	 * 
@@ -135,18 +134,18 @@ public class ChaincodeService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
+		ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository
 				.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
-		for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
+		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("ccName", ccInfoPeer.getCcInfoEntity().getCcName());
-			resultJson.put("ccVersion", ccInfoPeer.getCcVersion());
-			resultJson.put("ccLang", ccInfoPeer.getCcInfoEntity().getCcLang());
+//			resultJson.put("ccName", ccInfoPeerEntity.getCcInfoEntity().getCcName());
+//			resultJson.put("ccVersion", ccInfoPeerEntity.getCcVersion());
+//			resultJson.put("ccLang", ccInfoPeerEntity.getCcInfoEntity().getCcLang());
 
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(util.toDto(ccInfoPeerEntity));
 		}
 
 		return util.setResult("0000", true, "Success get chaincode info", resultJsonArr);
@@ -166,19 +165,19 @@ public class ChaincodeService {
 		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
 				.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
 
-		for (ChannelInfoPeerDto channelInfoPeer : channelInfoPeerDtoArr) {
+		for (ChannelInfoPeerDto channelInfoPeerDto : channelInfoPeerDtoArr) {
 
-			ArrayList<CcInfoPeerEntity> ccInfoPeerArr = ccInfoPeerRepository
-					.findByConInfoEntity(util.toEntity(channelInfoPeer.getConInfoDto()));
-			for (CcInfoPeerEntity ccInfoPeer : ccInfoPeerArr) {
+			ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository
+					.findByConInfoEntity(util.toEntity(channelInfoPeerDto.getConInfoDto()));
+			for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 
 				JSONObject ccInfoChannelJson = new JSONObject();
 
-				ccInfoChannelJson.put("ccName", ccInfoPeer.getCcInfoEntity().getCcName());
-				ccInfoChannelJson.put("ccVersion", ccInfoPeer.getCcVersion());
-				ccInfoChannelJson.put("ccLang", ccInfoPeer.getCcInfoEntity().getCcLang());
+//				ccInfoChannelJson.put("ccName", ccInfoPeerEntity.getCcInfoEntity().getCcName());
+//				ccInfoChannelJson.put("ccVersion", ccInfoPeerEntity.getCcVersion());
+//				ccInfoChannelJson.put("ccLang", ccInfoPeerEntity.getCcInfoEntity().getCcLang());
 
-				jsonArr.add(ccInfoChannelJson);
+				jsonArr.add(util.toDto(ccInfoPeerEntity));
 
 			}
 
@@ -213,18 +212,18 @@ public class ChaincodeService {
 	public ResultDto getCcListActive(String channelName) {
 		JSONArray jsonArr = new JSONArray();
 
-		ArrayList<CcInfoChannelEntity> ccInfoChannelArr = ccInfoChannelRepository
+		ArrayList<CcInfoChannelEntity> ccInfoChannelEntityArr = ccInfoChannelRepository
 				.findByChannelInfoEntity(util.toEntity(channelService.findChannelInfoByChannelName(channelName)));
 
-		for (CcInfoChannelEntity ccInfoChannel : ccInfoChannelArr) {
+		for (CcInfoChannelEntity ccInfoChannelEntity : ccInfoChannelEntityArr) {
 
 			JSONObject ccInfoChannelJson = new JSONObject();
 
-			ccInfoChannelJson.put("ccName", ccInfoChannel.getCcInfoEntity().getCcName());
-			ccInfoChannelJson.put("ccVersion", ccInfoChannel.getCcVersion());
-			ccInfoChannelJson.put("ccLang", ccInfoChannel.getCcInfoEntity().getCcLang());
+//			ccInfoChannelJson.put("ccName", ccInfoChannelEntity.getCcInfoEntity().getCcName());
+//			ccInfoChannelJson.put("ccVersion", ccInfoChannelEntity.getCcVersion());
+//			ccInfoChannelJson.put("ccLang", ccInfoChannelEntity.getCcInfoEntity().getCcLang());
 
-			jsonArr.add(ccInfoChannelJson);
+			jsonArr.add(util.toDto(ccInfoChannelEntity));
 
 		}
 

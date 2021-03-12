@@ -161,7 +161,7 @@ public class ContainerService {
 				continue;
 			}
 
-			resultJsonArr.add(conInfoEntity);
+			resultJsonArr.add(util.toDto(conInfoEntity));
 
 		}
 

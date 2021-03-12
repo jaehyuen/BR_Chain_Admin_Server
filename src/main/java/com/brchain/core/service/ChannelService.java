@@ -76,14 +76,14 @@ public class ChannelService {
 
 		for (ChannelInfoEntity channelInfoEntity : channelInfoArr) {
 
-			JSONObject resultJson = new JSONObject();
+//			JSONObject resultJson = new JSONObject();
+//
+//			resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
+//			resultJson.put("channelTx", channelInfoEntity.getChannelTx());
+//			resultJson.put("channelName", channelInfoEntity.getChannelName());
+//			resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
 
-			resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
-			resultJson.put("channelTx", channelInfoEntity.getChannelTx());
-			resultJson.put("channelName", channelInfoEntity.getChannelName());
-			resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
-
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(util.toDto(channelInfoEntity));
 		}
 
 		return util.setResult("0000", true, "Success get channel info list", resultJsonArr);
@@ -102,27 +102,27 @@ public class ChannelService {
 		JSONObject resultJson = new JSONObject();
 
 		ChannelInfoEntity channelInfoEntity = channelInfoRepository.findById(channelName).get();
+//
+//		resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
+//		resultJson.put("channelTx", channelInfoEntity.getChannelTx());
+//		resultJson.put("channelName", channelInfoEntity.getChannelName());
+//		resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
+//
+//		resultJson.put("appAdminPolicyType", channelInfoEntity.getAppAdminPolicyType());
+//		resultJson.put("appAdminPolicyValue", channelInfoEntity.getAppAdminPolicyValue());
+//
+//		resultJson.put("channelAdminPolicyType", channelInfoEntity.getChannelAdminPolicyType());
+//		resultJson.put("channelAdminPolicyValue", channelInfoEntity.getChannelAdminPolicyValue());
+//
+//		resultJson.put("ordererAdminPolicyType", channelInfoEntity.getOrdererAdminPolicyType());
+//		resultJson.put("ordererAdminPolicyValue", channelInfoEntity.getOrdererAdminPolicyValue());
+//
+//		resultJson.put("batchTimeout", channelInfoEntity.getBatchTimeout());
+//		resultJson.put("batchSizeAbsolMax", channelInfoEntity.getBatchSizeAbsolMax());
+//		resultJson.put("batchSizeMaxMsg", channelInfoEntity.getBatchSizeMaxMsg());
+//		resultJson.put("batchSizePreferMax", channelInfoEntity.getBatchSizePreferMax());
 
-		resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
-		resultJson.put("channelTx", channelInfoEntity.getChannelTx());
-		resultJson.put("channelName", channelInfoEntity.getChannelName());
-		resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
-
-		resultJson.put("appAdminPolicyType", channelInfoEntity.getAppAdminPolicyType());
-		resultJson.put("appAdminPolicyValue", channelInfoEntity.getAppAdminPolicyValue());
-
-		resultJson.put("channelAdminPolicyType", channelInfoEntity.getChannelAdminPolicyType());
-		resultJson.put("channelAdminPolicyValue", channelInfoEntity.getChannelAdminPolicyValue());
-
-		resultJson.put("ordererAdminPolicyType", channelInfoEntity.getOrdererAdminPolicyType());
-		resultJson.put("ordererAdminPolicyValue", channelInfoEntity.getOrdererAdminPolicyValue());
-
-		resultJson.put("batchTimeout", channelInfoEntity.getBatchTimeout());
-		resultJson.put("batchSizeAbsolMax", channelInfoEntity.getBatchSizeAbsolMax());
-		resultJson.put("batchSizeMaxMsg", channelInfoEntity.getBatchSizeMaxMsg());
-		resultJson.put("batchSizePreferMax", channelInfoEntity.getBatchSizePreferMax());
-
-		return util.setResult("0000", true, "Success get channel info", resultJson);
+		return util.setResult("0000", true, "Success get channel info", util.toDto(channelInfoEntity));
 
 	}
 
@@ -136,7 +136,7 @@ public class ChannelService {
 
 	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) {
 
-		return util.doDto(channelInfoPeerRepository.save(util.toEntity(channelInfoPeerDto)));
+		return util.toDto(channelInfoPeerRepository.save(util.toEntity(channelInfoPeerDto)));
 
 	}
 
@@ -159,10 +159,10 @@ public class ChannelService {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("channelName", channelInfoPeer.getChannelInfoEntity().getChannelName());
-			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
+//			resultJson.put("channelName", channelInfoPeer.getChannelInfoEntity().getChannelName());
+//			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
 
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(util.toDto(channelInfoPeer));
 		}
 
 		return util.setResult("0000", true, "Success get channel info", resultJsonArr);
@@ -188,10 +188,10 @@ public class ChannelService {
 
 			JSONObject resultJson = new JSONObject();
 
-			resultJson.put("conName", channelInfoPeer.getConInfoEntity().getConName());
-			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
+//			resultJson.put("conName", channelInfoPeer.getConInfoEntity().getConName());
+//			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
 
-			resultJsonArr.add(resultJson);
+			resultJsonArr.add(util.toDto(channelInfoPeer));
 		}
 
 		return util.setResult("0000", true, "Success get channel info by channel name", resultJsonArr);
@@ -213,7 +213,7 @@ public class ChannelService {
 		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
 
 		for (ChannelInfoPeerEntity channelInfoPeerEntity : channelInfoPeerEntityArr) {
-			channelInfoPeerDtoArr.add(util.doDto(channelInfoPeerEntity));
+			channelInfoPeerDtoArr.add(util.toDto(channelInfoPeerEntity));
 		}
 
 		return channelInfoPeerDtoArr;
@@ -237,7 +237,7 @@ public class ChannelService {
 		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
 
 		for (ChannelInfoPeerEntity channelInfoPeerEntity : channelInfoPeerEntityArr) {
-			channelInfoPeerDtoArr.add(util.doDto(channelInfoPeerEntity));
+			channelInfoPeerDtoArr.add(util.toDto(channelInfoPeerEntity));
 		}
 
 		return channelInfoPeerDtoArr;

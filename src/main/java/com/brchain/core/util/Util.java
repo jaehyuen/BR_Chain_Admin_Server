@@ -912,7 +912,7 @@ public class Util {
 
 	public ConInfoDto toDto(ConInfoEntity conInfoEntity) {
 		return ConInfoDto.builder().conName(conInfoEntity.getConName()).conId(conInfoEntity.getConId())
-				.conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum())
+				.conCnt(conInfoEntity.getConCnt()).conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum())
 				.conPort(conInfoEntity.getConPort()).orgName(conInfoEntity.getOrgName())
 				.orgType(conInfoEntity.getOrgType()).consoOrgs(conInfoEntity.getConsoOrgs())
 				.couchdbYn(conInfoEntity.isCouchdbYn()).gossipBootAddr(conInfoEntity.getGossipBootAddr())
@@ -958,7 +958,7 @@ public class Util {
 				.createdAt(channelInfoEntity.getCreatedAt()).build();
 	}
 
-	public ChannelInfoPeerDto doDto(ChannelInfoPeerEntity channelInfoPeerEntity) {
+	public ChannelInfoPeerDto toDto(ChannelInfoPeerEntity channelInfoPeerEntity) {
 		return ChannelInfoPeerDto.builder().id(channelInfoPeerEntity.getId())
 				.anchorYn(channelInfoPeerEntity.isAnchorYn())
 				.conInfoDto(toDto(channelInfoPeerEntity.getConInfoEntity()))

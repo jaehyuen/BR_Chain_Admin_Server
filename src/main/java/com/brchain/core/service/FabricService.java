@@ -97,7 +97,7 @@ public class FabricService {
 			String gossipBootAddress = "";
 			JSONObject conJson = new JSONObject();
 			JSONObject returnJson = new JSONObject();
-			CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr = null;
+			CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr = new CopyOnWriteArrayList<ConInfoDto>();
 
 			// 컨테이너 생성시 필요한 변수 선언
 			for (CreateOrgConInfoDto createOrgConInfoDto : createOrgConInfoDtoArr) {
@@ -127,7 +127,8 @@ public class FabricService {
 				if (conInfoDto.getConType().equals("ca")) {
 
 					// 컨테이너 생성 함수 호출
-					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType() + " 컨테이너 생성");
+					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType()
+							+ " 컨테이너 생성");
 //					containerService.saveConInfo(dockerService.createContainer(dto));
 					returnJson = dockerService.createContainer(conInfoDto);
 					conJson.put(returnJson.get("container_name"), returnJson);
@@ -188,7 +189,8 @@ public class FabricService {
 				} else {
 
 					// 컨테이너 생성 함수 호출
-					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType() + " 컨테이너 생성");
+					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType()
+							+ " 컨테이너 생성");
 					conInfoDto.setConsoOrgs(containerService.findConInfoByConType("ca", "peer"));
 					logger.info(conInfoDto.toString());
 
@@ -668,7 +670,7 @@ public class FabricService {
 			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
-		return util.setResult("0000", true, "Success Register Block EventListener", null);
+		return util.setResult("0000", true, "Success register block event listener", null);
 	}
 
 	/**
@@ -715,7 +717,7 @@ public class FabricService {
 			return util.setResult("9999", false, e.getMessage(), null);
 		}
 
-		return util.setResult("0000", true, "Success Unregister Block EventListener", null);
+		return util.setResult("0000", true, "Success unregister block event listener", null);
 	}
 
 	/**

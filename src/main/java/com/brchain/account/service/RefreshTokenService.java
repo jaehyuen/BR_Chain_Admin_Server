@@ -36,6 +36,6 @@ public class RefreshTokenService {
 
 	public ResultDto deleteRefreshToken(String token) {
 		refreshTokenRepository.deleteByToken(token);
-		return util.setResult("0000", true, "Success Logout User", "");
+		return util.setResult("0000", true, "Success logout user", null);
 	}
 }

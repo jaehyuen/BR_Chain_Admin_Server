@@ -15,10 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.brchain.account.dto.AuthDto;
 import com.brchain.account.dto.LoginDto;
 import com.brchain.account.dto.RefreshTokenDto;
-import com.brchain.account.dto.UserDto;
+import com.brchain.account.dto.RegisterDto;
+import com.brchain.account.dto.TokenDto;
 import com.brchain.account.entity.UserEntity;
 import com.brchain.account.repository.UserRepository;
 import com.brchain.common.dto.ResultDto;
@@ -41,18 +41,18 @@ public class AuthService {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public ResultDto register(UserDto userDto) {
+	public ResultDto register(RegisterDto registerDto) {
 
 		try {
 
-			logger.info("this is userDto : " + userDto);
+			logger.info("this is registerDto : " + registerDto);
 
 			UserEntity userEntity = new UserEntity();
 
-			userEntity.setUserName(userDto.getUserName());
-			userEntity.setUserId(userDto.getUserId());
-			userEntity.setUserEmail(userDto.getUserEmail());
-			userEntity.setUserPassword(passwordEncoder.encode(userDto.getUserPassword()));
+			userEntity.setUserName(registerDto.getUserName());
+			userEntity.setUserId(registerDto.getUserId());
+			userEntity.setUserEmail(registerDto.getUserEmail());
+			userEntity.setUserPassword(passwordEncoder.encode(registerDto.getUserPassword()));
 			userEntity.setActive(false);
 
 			logger.info("this is userEntity : " + userEntity);
@@ -65,37 +65,37 @@ public class AuthService {
 			return util.setResult("9999", false, e.getMessage(), null);
 
 		}
-		return util.setResult("0000", true, "Success Register", "");
+		return util.setResult("0000", true, "Success register", null);
 	}
 
 	public ResultDto login(LoginDto loginDto) {
 
-		Authentication authenticate = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
+		Authentication authenticate = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
 
 		SecurityContextHolder.getContext().setAuthentication(authenticate);
 
 		String token = jwtProvider.generateToken(authenticate);
-		
-		AuthDto authDto = AuthDto.builder().accessToken(token)
+
+		TokenDto tokenDto = TokenDto.builder().accessToken(token)
 				.refreshToken(refreshTokenService.generateRefreshToken().getToken())
 				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
 				.userId(loginDto.getUserId()).build();
 
-		return util.setResult("0000", true, "Success Login", authDto);
+		return util.setResult("0000", true, "Success login", tokenDto);
 	}
 
 	public ResultDto refreshToken(RefreshTokenDto refreshTokenDto) {
-		
+
 		refreshTokenService.validateRefreshToken(refreshTokenDto.getRefreshToken());
-		
+
 		String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUserId());
-		
-		AuthDto authDto = AuthDto.builder().accessToken(token).refreshToken(refreshTokenDto.getRefreshToken())
+
+		TokenDto tokenDto = TokenDto.builder().accessToken(token).refreshToken(refreshTokenDto.getRefreshToken())
 				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
 				.userId(refreshTokenDto.getUserId()).build();
 
-		return util.setResult("0000", true, "Success Refresh Token", authDto);
+		return util.setResult("0000", true, "Success refresh token", tokenDto);
 	}
 
 	@Transactional(readOnly = true)

@@ -50,7 +50,9 @@ public class CoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.getOrgList(orgType));
 
 	}
-	
+
+	@ApiOperation(value = "조직 생성", notes = "HyperLedger Fabric 조직을 생성하는 API", authorizations = {
+			@Authorization(value = "Authorization") })
 	@PostMapping("/org/create")
 	public ResponseEntity<ResultDto> createContainer(@RequestBody CopyOnWriteArrayList<ConInfoDto> conInfoDtoArr) {
 
@@ -58,8 +60,8 @@ public class CoreController {
 
 	}
 
-
-
+	@ApiOperation(value = "조직 맴버 정보 조회", notes = "HyperLedger Fabric 조직이름에 따른 컨테이너 정보를 조회하는 API", authorizations = {
+			@Authorization(value = "Authorization") })
 	@GetMapping("/member/list")
 	public ResponseEntity<ResultDto> getMemberList(@RequestParam(value = "orgName") String orgName) {
 
@@ -67,6 +69,8 @@ public class CoreController {
 
 	}
 
+	@ApiOperation(value = "조직 삭제", notes = "gow", authorizations = {
+			@Authorization(value = "Authorization") })
 	@GetMapping("/remove")
 	public ResponseEntity<ResultDto> removeContainer(@RequestParam(value = "conId", required = false) String conId,
 			@RequestParam(value = "orgName", required = false) String orgName) {
@@ -85,6 +89,8 @@ public class CoreController {
 
 	}
 
+	@ApiOperation(value = "포트 체크", notes = "사용중인 포트인지 체크하는 API", authorizations = {
+			@Authorization(value = "Authorization") })
 	@GetMapping("/check/port")
 	public ResponseEntity<ResultDto> portCheck(@RequestParam(value = "port") String port) {
 

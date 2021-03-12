@@ -1,19 +1,13 @@
 package com.brchain.account.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserDto {
+@EqualsAndHashCode(callSuper = false)
+public class UserDto extends RegisterDto{
 
 	private Long id;
-	private String userName;
-	private String userId;
-	private String userPassword;
-	private String userEmail;
 	private boolean active;
 
 }

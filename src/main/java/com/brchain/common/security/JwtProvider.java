@@ -30,7 +30,7 @@ import io.jsonwebtoken.Jwts;
 public class JwtProvider {
 
 	private KeyStore keyStore;
-	private final Long jwtExpirationInMillis = (long) (1000 * 50); //테스트
+	private final Long jwtExpirationInMillis = (long) (1000 * 3600); //테스트
 //	private final Long jwtExpirationInMillis = (long) (1000);
 
 	@PostConstruct

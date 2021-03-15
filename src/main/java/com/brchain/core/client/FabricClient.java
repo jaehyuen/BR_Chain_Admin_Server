@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -267,6 +268,7 @@ public class FabricClient {
 		Properties props = new Properties();
 		props.put("pemFile", "crypto-config/ca-certs/ca.org" + ordererDto.getOrgName() + ".com-cert.pem");
 		props.put("hostnameOverride", ordererDto.getConName());
+	
 
 		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 

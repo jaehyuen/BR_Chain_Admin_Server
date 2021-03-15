@@ -316,7 +316,7 @@ public class FabricService {
 			}
 
 			fabricClient.createWallet(ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())));
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 			// 로컬 개발시 채널생성 setup 컨테이너 기동하면서 생성된 채널트렌젝션 다운로드
 			if (environment.getActiveProfiles()[0].equals("local")) {
 

@@ -104,11 +104,6 @@ public class CoreController {
 
 	}
 
-//	@GetMapping("/test/config")
-//	public ResponseEntity<ResultDto> configTest(@RequestParam(value = "channelName") String channelName) {
-//
-//		return ResponseEntity.status(HttpStatus.OK).body(fabricService.configTest(channelName));
-//
-//	}
+
 
 }

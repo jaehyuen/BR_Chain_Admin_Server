@@ -62,6 +62,21 @@ public class ChannelService {
 		return util.toDto(channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
 	}
 
+	
+	public List<ChannelInfoDto> findChannelInfoList() {
+		List<ChannelInfoDto> channelInfoDtoList = new ArrayList<ChannelInfoDto>();
+
+		List<ChannelInfoEntity> channelInfoArr = channelInfoRepository.findAll();
+
+		for (ChannelInfoEntity channelInfoEntity : channelInfoArr) {
+
+			channelInfoDtoList.add(util.toDto(channelInfoEntity));
+
+		}
+		return channelInfoDtoList;
+
+	}
+
 	/**
 	 * 채널 리스트 조회 서비스
 	 * 
@@ -75,13 +90,6 @@ public class ChannelService {
 		List<ChannelInfoEntity> channelInfoArr = channelInfoRepository.findAll();
 
 		for (ChannelInfoEntity channelInfoEntity : channelInfoArr) {
-
-//			JSONObject resultJson = new JSONObject();
-//
-//			resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
-//			resultJson.put("channelTx", channelInfoEntity.getChannelTx());
-//			resultJson.put("channelName", channelInfoEntity.getChannelName());
-//			resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
 
 			resultJsonArr.add(util.toDto(channelInfoEntity));
 		}

@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.xml.bind.DatatypeConverter;
 
 import org.hyperledger.fabric.gateway.Gateway;
@@ -57,8 +57,6 @@ import org.hyperledger.fabric.sdk.LifecycleCommitChaincodeDefinitionRequest;
 import org.hyperledger.fabric.sdk.LifecycleInstallChaincodeProposalResponse;
 import org.hyperledger.fabric.sdk.LifecycleInstallChaincodeRequest;
 import org.hyperledger.fabric.sdk.LifecycleQueryChaincodeDefinitionProposalResponse;
-import org.hyperledger.fabric.sdk.LifecycleQueryInstalledChaincodesProposalResponse;
-import org.hyperledger.fabric.sdk.LifecycleQueryInstalledChaincodesProposalResponse.LifecycleQueryInstalledChaincodesResult;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.ProposalResponse;
@@ -95,6 +93,8 @@ public class FabricClient {
 	private final Environment environment;
 	private final SshClient sshClient;
 
+	private final Util util;
+
 	@Value("${brchain.sourcedir}")
 	private String sourceDir;
 
@@ -105,7 +105,47 @@ public class FabricClient {
 	private String dataDir;
 
 	private ArrayList<Channel> channelListener = new ArrayList<Channel>();
+
+	private Map<String, Channel> testChannelMap = new HashMap<String, Channel>();
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	public Channel testInitChannel(ArrayList<FabricMemberDto> peerDtoArr, ArrayList<FabricMemberDto> ordererDtoArr,
+			String channelName) throws Exception {
+
+		// 클라이언트 생성
+		HFClient client = createClient(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())));
+
+		// 채널 등록
+		Channel channel = client.newChannel(channelName);
+
+		Properties props;
+		Peer peer;
+
+		// 피어 설정
+		for (FabricMemberDto peerDto : peerDtoArr) {
+			client = createClient(peerDto);
+			props = createFabricProperties(peerDto);
+			peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
+			channel.addPeer(peer);
+		}
+
+		// 오더 설정
+		for (FabricMemberDto ordererDto : ordererDtoArr) {
+			client = createClient(ordererDto);
+			props = createFabricProperties(ordererDto);
+
+			Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
+			channel.addOrderer(orderer);
+		}
+
+		channel.initialize();
+		
+		testChannelMap.put(channelName,channel);
+		return channel;
+
+
+
+	}
 
 	/**
 	 * 패브릭 네트워크 연결 함수 (테스트중)
@@ -268,7 +308,6 @@ public class FabricClient {
 		Properties props = new Properties();
 		props.put("pemFile", "crypto-config/ca-certs/ca.org" + ordererDto.getOrgName() + ".com-cert.pem");
 		props.put("hostnameOverride", ordererDto.getConName());
-	
 
 		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 
@@ -558,13 +597,18 @@ public class FabricClient {
 		// json 변경
 		String command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName
 				+ ".pb --type common.Config > " + sourceDir + "/" + path + fileName + ".json";
-		sshClient.execCommand(command);
 
-		Thread.sleep(1000);
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			sshClient.execCommand(command);
+			Thread.sleep(1000);
 
-		// 변경된 파일 다운로드
-		sshClient.downloadFile(path, fileName + ".json");
-		channel.shutdown(true);
+			// 변경된 파일 다운로드
+			sshClient.downloadFile(path, fileName + ".json");
+			channel.shutdown(true);
+		} else {
+			util.execute(command);
+		}
+
 		Thread.sleep(1000);
 		return (JSONObject) jsonParser
 				.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
@@ -624,25 +668,43 @@ public class FabricClient {
 		// proto encode
 		String command = "configtxlator proto_encode --input " + sourceDir + "/" + path + fileName + ".json"
 				+ " --type common.Config --output " + sourceDir + "/" + path + fileName + ".pb";
-		sshClient.execCommand(command);
+
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			sshClient.execCommand(command);
+		} else {
+			util.execute(command);
+		}
 
 		// 업데이트 계산
 		command = "configtxlator compute_update --channel_id " + channelName + " --original " + sourceDir + "/" + path
 				+ channelName + "_config.pb --updated " + sourceDir + "/" + path + fileName + ".pb --output "
 				+ sourceDir + "/" + path + channelName + "_config_update.pb";
-		sshClient.execCommand(command);
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			sshClient.execCommand(command);
+		} else {
+			util.execute(command);
+		}
 
 		// proto decode
 		fileName = channelName + "_config_update";
 		command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName
 				+ ".pb --type common.ConfigUpdate > " + sourceDir + "/" + path + fileName + ".json";
-		sshClient.execCommand(command);
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			sshClient.execCommand(command);
+		} else {
+			util.execute(command);
+		}
 
 		Thread.sleep(1000);
 
 		// 변경된 파일 다운로드
-		sshClient.downloadFile(path, fileName + ".json");
-		sshClient.downloadFile(path, fileName + ".pb");
+
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			sshClient.downloadFile(path, fileName + ".json");
+			sshClient.downloadFile(path, fileName + ".pb");
+		} else {
+			util.execute(command);
+		}
 
 		return new File(System.getProperty("user.dir") + "/" + path + fileName + ".pb");
 

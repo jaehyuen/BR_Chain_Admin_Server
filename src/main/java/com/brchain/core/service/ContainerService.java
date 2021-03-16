@@ -276,4 +276,9 @@ public class ContainerService {
 
 	}
 
+	public ArrayList<String> findOrgsInChannel(String channelName) {
+
+		return conInfoRepository.findOrgsByChannelName(channelName);
+	}
+
 }

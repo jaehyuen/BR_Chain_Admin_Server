@@ -32,14 +32,22 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class AuthService {
 
-	private final PasswordEncoder passwordEncoder;
-	private final UserRepository userRepository;
+	private final PasswordEncoder       passwordEncoder;
+	private final UserRepository        userRepository;
 	private final AuthenticationManager authenticationManager;
-	private final JwtProvider jwtProvider;
-	private final RefreshTokenService refreshTokenService;
-	private final Util util;
+	private final JwtProvider           jwtProvider;
+	private final RefreshTokenService   refreshTokenService;
+	private final Util                  util;
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private Logger                      logger = LoggerFactory.getLogger(this.getClass());
+
+	/**
+	 * 회원가입 서비스
+	 * 
+	 * @param registerDto 회원가입 관련 정보 DTO
+	 * 
+	 * @return 회원가입 결과 DTO
+	 */
 
 	public ResultDto register(RegisterDto registerDto) {
 
@@ -47,17 +55,20 @@ public class AuthService {
 
 			logger.info("this is registerDto : " + registerDto);
 
+			// 유저 정보 엔티티 생성
 			UserEntity userEntity = new UserEntity();
 
 			userEntity.setUserName(registerDto.getUserName());
 			userEntity.setUserId(registerDto.getUserId());
 			userEntity.setUserEmail(registerDto.getUserEmail());
 			userEntity.setUserPassword(passwordEncoder.encode(registerDto.getUserPassword()));
-			userEntity.setActive(false);
+			userEntity.setActive(true);
 
 			logger.info("this is userEntity : " + userEntity);
 
+			// 유저 정보 엔티티 저장
 			userRepository.save(userEntity);
+
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
@@ -68,46 +79,78 @@ public class AuthService {
 		return util.setResult("0000", true, "Success register", null);
 	}
 
+	/**
+	 * 로그인 서비스
+	 * 
+	 * @param loginDto 로그인 정보 DTO
+	 * 
+	 * @return 로그인 결과 DTO
+	 */
+
 	public ResultDto login(LoginDto loginDto) {
 
-		Authentication authenticate = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
+		// 로그인 시작 (로그인 실패시 401리턴)
+		Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
 
-		SecurityContextHolder.getContext().setAuthentication(authenticate);
+		SecurityContextHolder.getContext()
+			.setAuthentication(authenticate);
 
-		String token = jwtProvider.generateToken(authenticate);
+		// 정상 로그인시 JWT 토큰 발급
+		String   token    = jwtProvider.generateToken(authenticate);
 
-		TokenDto tokenDto = TokenDto.builder().accessToken(token)
-				.refreshToken(refreshTokenService.generateRefreshToken().getToken())
-				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-				.userId(loginDto.getUserId()).build();
+		// 리턴값 생성
+		TokenDto tokenDto = TokenDto.builder()
+			.accessToken(token)
+			.refreshToken(refreshTokenService.generateRefreshToken()
+				.getToken())
+			.expiresAt(Instant.now()
+				.plusMillis(jwtProvider.getJwtExpirationInMillis()))
+			.userId(loginDto.getUserId())
+			.build();
 
 		return util.setResult("0000", true, "Success login", tokenDto);
 	}
 
+	/**
+	 * JWT 토큰 재발급 서비스
+	 * 
+	 * @param refreshTokenDto 토큰 재발급 관련 DTO
+	 * 
+	 * @return 토근 재발급 결과 DTO
+	 */
+
 	public ResultDto refreshToken(RefreshTokenDto refreshTokenDto) {
 
+		// 리프레쉬 토큰 유효성 검사
 		refreshTokenService.validateRefreshToken(refreshTokenDto.getRefreshToken());
 
-		String token = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUserId());
+		// JWT 토큰 재발급
+		String   token    = jwtProvider.generateTokenWithUserName(refreshTokenDto.getUserId());
 
-		TokenDto tokenDto = TokenDto.builder().accessToken(token).refreshToken(refreshTokenDto.getRefreshToken())
-				.expiresAt(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-				.userId(refreshTokenDto.getUserId()).build();
+		// 리턴값 생성
+		TokenDto tokenDto = TokenDto.builder()
+			.accessToken(token)
+			.refreshToken(refreshTokenDto.getRefreshToken())
+			.expiresAt(Instant.now()
+				.plusMillis(jwtProvider.getJwtExpirationInMillis()))
+			.userId(refreshTokenDto.getUserId())
+			.build();
 
 		return util.setResult("0000", true, "Success refresh token", tokenDto);
 	}
 
 	@Transactional(readOnly = true)
 	public UserEntity getCurrentUser() {
-		org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) SecurityContextHolder
-				.getContext().getAuthentication().getPrincipal();
+		org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+			.getAuthentication()
+			.getPrincipal();
 		return userRepository.findByUserId(principal.getUsername())
-				.orElseThrow(() -> new EntityNotFoundException("User name not found - " + principal.getUsername()));
+			.orElseThrow(() -> new EntityNotFoundException("User name not found - " + principal.getUsername()));
 	}
 
 	public boolean isLoggedIn() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = SecurityContextHolder.getContext()
+			.getAuthentication();
 		return !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated();
 	}
 }

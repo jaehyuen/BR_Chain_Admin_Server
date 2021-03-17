@@ -18,22 +18,25 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private final UserRepository userRepository;
+	private final UserRepository userRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String userId) {
-        Optional<UserEntity> userOptional = userRepository.findByUserId(userId);
-        UserEntity user = userOptional
-                .orElseThrow(() -> new EntityNotFoundException("No user Found with userId: " + userId));
+	/**
+	 * UserDetailsService의 함수를 오버라이드 받은 사용자 정보 로드 서비스
+	 * 
+	 * @param userId 사용자 아이디
+	 * 
+	 * @return 사용자 정보
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public UserDetails loadUserByUsername(String userId) {
+		Optional<UserEntity> userOptional = userRepository.findByUserId(userId);
+		UserEntity           user         = userOptional.orElseThrow(() -> new EntityNotFoundException("No user Found with userId: " + userId));
 
-        return new org.springframework.security
-                .core.userdetails.User(user.getUserId(), user.getUserPassword(),
-                user.isActive(), true, true,
-                true, getAuthorities("USER"));
-    }
+		return new org.springframework.security.core.userdetails.User(user.getUserId(), user.getUserPassword(), user.isActive(), true, true, true, getAuthorities("USER"));
+	}
 
-    private Collection<? extends GrantedAuthority> getAuthorities(String role) {
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
-    }
+	private Collection<? extends GrantedAuthority> getAuthorities(String role) {
+		return Collections.singletonList(new SimpleGrantedAuthority(role));
+	}
 }

@@ -94,7 +94,6 @@ public class BlockService {
 			saveBLock(blockDto);
 		}
 
-		Iterable<EnvelopeInfo> a = block.getEnvelopeInfos();
 		// 블록 내 트렌젝션 순회
 		for (EnvelopeInfo envelopeInfo : block.getEnvelopeInfos()) {
 			transactionService.inspectTransaction(envelopeInfo, channelInfoDto, blockDto);

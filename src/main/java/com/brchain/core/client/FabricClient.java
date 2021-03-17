@@ -109,8 +109,8 @@ public class FabricClient {
 	private Map<String, Channel> testChannelMap = new HashMap<String, Channel>();
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public Channel testInitChannel(ArrayList<FabricMemberDto> peerDtoArr, ArrayList<FabricMemberDto> ordererDtoArr,
-			String channelName) throws Exception {
+	public Channel testInitChannel(List<FabricMemberDto> peerDtoArr, List<FabricMemberDto> ordererDtoArr,
+			String channelName,int startCnt) throws Exception {
 
 		// 클라이언트 생성
 		HFClient client = createClient(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())));
@@ -120,13 +120,21 @@ public class FabricClient {
 
 		Properties props;
 		Peer peer;
+		Orderer orderer;
 
 		// 피어 설정
 		for (FabricMemberDto peerDto : peerDtoArr) {
+			
 			client = createClient(peerDto);
 			props = createFabricProperties(peerDto);
 			peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
-			channel.addPeer(peer);
+			
+			// 이벤트 리슨 시작 위치 설정
+			Channel.PeerOptions opt = Channel.PeerOptions.createPeerOptions();
+
+			opt.startEvents(startCnt);
+			
+			channel.addPeer(peer,opt);
 		}
 
 		// 오더 설정
@@ -134,16 +142,14 @@ public class FabricClient {
 			client = createClient(ordererDto);
 			props = createFabricProperties(ordererDto);
 
-			Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
+			 orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 			channel.addOrderer(orderer);
 		}
 
 		channel.initialize();
-		
-		testChannelMap.put(channelName,channel);
+
+		testChannelMap.put(channelName, channel);
 		return channel;
-
-
 
 	}
 
@@ -927,6 +933,16 @@ public class FabricClient {
 
 		// 이벤트 리슨용 채널 생성
 		Channel channel = initChannel(peerDto, ordererDto, channelName, startCnt);
+
+		// 블록 이벤트 리스너 등록
+		return channel.registerBlockListener(listener);
+
+	}
+
+	public String testRegisterEventListener(String channelName, BlockListener listener) throws Exception {
+
+		// 이벤트 리슨용 채널 생성
+		Channel channel = testChannelMap.get(channelName);
 
 		// 블록 이벤트 리스너 등록
 		return channel.registerBlockListener(listener);

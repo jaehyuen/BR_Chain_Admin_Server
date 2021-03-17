@@ -6,26 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.codec.binary.Hex;
-import org.hyperledger.fabric.protos.common.Common.Block;
-import org.hyperledger.fabric.protos.common.Common.BlockData;
-import org.hyperledger.fabric.protos.common.Common.ChannelHeader;
-import org.hyperledger.fabric.protos.common.Common.Payload;
 import org.hyperledger.fabric.sdk.BlockEvent;
-import org.hyperledger.fabric.sdk.BlockInfo;
-import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
-import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeType;
-import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo;
-import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo;
 import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.HFClient;
@@ -45,11 +32,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
-import com.brchain.core.dto.BlockDto;
 import com.brchain.core.dto.ConInfoDto;
 import com.brchain.core.dto.CreateOrgConInfoDto;
 import com.brchain.core.dto.FabricMemberDto;
-import com.brchain.core.dto.TransactionDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
 import com.brchain.core.dto.chaincode.CcInfoDto;
 import com.brchain.core.dto.chaincode.CcInfoPeerDto;
@@ -60,9 +45,7 @@ import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.dto.channel.CreateChannelDto;
 import com.brchain.core.util.Util;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Timestamp;
 
 import lombok.RequiredArgsConstructor;
 
@@ -91,22 +74,29 @@ public class FabricService {
 	@PostConstruct
 	private void init() throws Exception {
 
-		List<ChannelInfoDto> channelInfoDtoList = channelService.findChannelInfoList();
+		List<ChannelInfoDto> channelInfoDtoList = new ArrayList<ChannelInfoDto>();
+		List<FabricMemberDto> peerDtoArr        = new ArrayList<FabricMemberDto>();
+		List<FabricMemberDto> ordererDtoArr     = new ArrayList<FabricMemberDto>();
+		List<String> orgs                       = new ArrayList<String>();
+		
+		Channel channel;
 
+		
+		channelInfoDtoList.addAll(channelService.findChannelInfoList());
+		
 		for (ChannelInfoDto channelInfoDto : channelInfoDtoList) {
 
-			System.out.println(channelInfoDto.getChannelName() + " <<<<< channel name");
 
-			ArrayList<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
-			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
-					channelInfoDto.getOrderingOrg());
+			orgs.addAll(containerService.findOrgsInChannel(channelInfoDto.getChannelName()));
 
-			ArrayList<String> orgs = containerService.findOrgsInChannel(channelInfoDto.getChannelName());
 			for (String org : orgs) {
 				peerDtoArr.addAll(containerService.createMemberDtoArr("peer", org));
 			}
 
-			Channel channel = fabricClient.testInitChannel(peerDtoArr, ordererDtoArr, channelInfoDto.getChannelName());
+			containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
+
+			channel = fabricClient.testInitChannel(peerDtoArr, ordererDtoArr, channelInfoDto.getChannelName(),
+					channelInfoDto.getChannelBlock() == 0 ? 0 : channelInfoDto.getChannelBlock() - 1);
 
 			for (int i = channelInfoDto.getChannelBlock(); i < channel.queryBlockchainInfo().getHeight(); i++) {
 
@@ -117,6 +107,9 @@ public class FabricService {
 				channelService.saveChannelInfo(channelInfoDto);
 
 			}
+
+			fabricClient.testRegisterEventListener(channelInfoDto.getChannelName(),
+					createBlockListener(channelInfoDto.getChannelName()));
 		}
 
 	}
@@ -426,6 +419,10 @@ public class FabricService {
 			logger.info("[채널가입] 종료");
 
 			logger.info("[채널생성] 종료");
+
+			fabricClient.testInitChannel(peerDtoArr, ordererDtoArr, createChannelDto.getChannelName(), 0);
+			fabricClient.testRegisterEventListener(createChannelDto.getChannelName(),
+					createBlockListener(channelInfoDto.getChannelName()));
 
 		} catch (Exception e) {
 
@@ -848,76 +845,15 @@ public class FabricService {
 			@Override
 			public void received(BlockEvent blockEvent) {
 
-				// 채널 정보 조
+				// 채널 정보 조회
 				ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
-				BlockDto blockDto;
-
 				try {
-
-					// 이벤트로 받은 blockDataHash이 있는지 조회
-					blockDto = blockService.findBlockByBlockDataHash(Hex.encodeHexString(blockEvent.getDataHash()));
-
-				} catch (IllegalArgumentException e) {
-
-					// 조회가 안되면 리슨받은 블록 정보 저장
-					blockDto = new BlockDto();
-					blockDto.setBlockDataHash(Hex.encodeHexString(blockEvent.getDataHash()));
-					blockDto.setBlockNum((int) blockEvent.getBlockNumber());
-					blockDto.setPrevDataHash(Hex.encodeHexString(blockEvent.getPreviousHash()));
-					blockDto.setTxCount(blockEvent.getTransactionCount());
-					blockDto.setChannelInfoDto(channelInfoDto);
-
-					blockService.saveBLock(blockDto);
+					blockService.inspectBlock(blockEvent, channelInfoDto);
+				} catch (InvalidProtocolBufferException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 
-				// 블록 내 트렌젝션 순회
-				for (EnvelopeInfo envelopeInfo : blockEvent.getEnvelopeInfos()) {
-
-					try {
-						// 이벤트로 받은 txID가 있는지 조회
-						transactionService.findBlockByTxId(envelopeInfo.getTransactionID());
-
-					} catch (IllegalArgumentException e) {
-
-						// 조회가 안되면 트렌젝션 정보 저장
-						TransactionDto transactionDto = new TransactionDto();
-						transactionDto.setTxId(envelopeInfo.getTransactionID());
-						transactionDto.setCreatorId(envelopeInfo.getCreator().getMspid());
-						transactionDto.setTxType(envelopeInfo.getType().toString());
-						transactionDto.setTimestamp(envelopeInfo.getTimestamp());
-						transactionDto.setBlockDto(blockDto);
-						transactionDto.setChannelInfoDto(channelInfoDto);
-
-						if (envelopeInfo.getType() == EnvelopeType.TRANSACTION_ENVELOPE) {
-							TransactionEnvelopeInfo transactionEnvelopeInfo = (TransactionEnvelopeInfo) envelopeInfo;
-
-							for (TransactionActionInfo transactionActionInfo : transactionEnvelopeInfo
-									.getTransactionActionInfos()) {
-
-								transactionDto.setCcName(transactionActionInfo.getChaincodeIDName());
-								transactionDto.setCcVersion(transactionActionInfo.getChaincodeIDVersion());
-
-								JSONObject argsJson = new JSONObject();
-
-								for (int i = 1; i < transactionActionInfo.getChaincodeInputArgsCount(); i++) {
-
-									argsJson.put("arg" + i, new String(transactionActionInfo.getChaincodeInputArgs(i)));
-
-								}
-
-								transactionDto.setCcArgs(argsJson.toString());
-
-							}
-							transactionService.saveTransaction(transactionDto);
-						}
-					}
-
-				}
-
-				// 채널정보 조회
-				System.out.println("channel Block : " + blockService.countBychannelBlock(channelInfoDto)
-						+ " channel Tx : " + transactionService.countBychannelTransaction(channelInfoDto)
-						+ " current BLock : " + blockEvent.getBlockNumber());
 				channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
 				channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
 				channelService.saveChannelInfo(channelInfoDto);

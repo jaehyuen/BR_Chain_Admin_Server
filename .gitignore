@@ -3,6 +3,11 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/chaincode/
+/wallet/
+/crypto-config/
+/compose-files/
+/channel-artifacts/
 
 ### STS ###
 .apt_generated
@@ -34,7 +39,5 @@ build/
 /.DS_Store
 /config.properties
 
-./chaincode
-./wallet
-./crypto-config
-./compose-file
+
+

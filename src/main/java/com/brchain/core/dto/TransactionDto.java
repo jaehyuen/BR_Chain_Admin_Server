@@ -17,7 +17,8 @@ import lombok.ToString;
 @AllArgsConstructor
 public class TransactionDto {
 
-	private String txID; // 트렌젝션 아이디
+	private long id;
+	private String txId; // 트렌젝션 아이디
 	private String creatorId; // 트렌젝션 생성자 아이디
 	private String txType;// 트렌젝션 타입
 	private Date timestamp;// 트렌젝션 타임스테프

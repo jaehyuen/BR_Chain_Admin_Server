@@ -1,6 +1,7 @@
 package com.brchain.core.entity;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -36,6 +37,9 @@ public class BlockEntity extends BaseEntity {
 	@Column(name = "TX_COUNT", nullable = false)
 	private int txCount;
 
+	@Column(name = "TIMESTAMP", nullable = false)
+	private Date timestamp;
+
 	@Column(name = "PREV_DATA_HASH", nullable = false)
 	private String prevDataHash;
 
@@ -44,11 +48,12 @@ public class BlockEntity extends BaseEntity {
 	private ChannelInfoEntity channelInfoEntity;
 
 	@Builder
-	public BlockEntity(String blockDataHash, int blockNum, int txCount, String prevDataHash,
+	public BlockEntity(String blockDataHash, int blockNum, int txCount, Date timestamp, String prevDataHash,
 			ChannelInfoEntity channelInfoEntity, LocalDateTime createdAt) {
 		this.blockDataHash = blockDataHash;
 		this.blockNum = blockNum;
 		this.txCount = txCount;
+		this.timestamp = timestamp;
 		this.prevDataHash = prevDataHash;
 		this.channelInfoEntity = channelInfoEntity;
 		super.setCreatedAt(createdAt);

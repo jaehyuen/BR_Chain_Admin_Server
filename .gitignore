@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+/.DS_Store
+/config.properties
+
+./chaincode
+./wallet
+./crypto-config
+./compose-file

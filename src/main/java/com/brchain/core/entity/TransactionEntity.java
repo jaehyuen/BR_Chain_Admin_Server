@@ -7,6 +7,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -31,13 +33,17 @@ import lombok.NoArgsConstructor;
 public class TransactionEntity extends BaseEntity {
 
 	@Id
-	@Column(name = "TX_ID", nullable = false)
-	private String txID;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID", nullable = false)
+	private Long id;
 
-	@Column(name = "CREATOR_ID", nullable = false)
+	@Column(name = "TX_ID", nullable = true)
+	private String txId;
+
+	@Column(name = "CREATOR_ID", nullable = true)
 	private String creatorId;
 
-	@Column(name = "TX_TYPE", nullable = false)
+	@Column(name = "TX_TYPE", nullable = true)
 	private String txType;
 
 	@Column(name = "TIMESTAMP", nullable = false)
@@ -61,9 +67,11 @@ public class TransactionEntity extends BaseEntity {
 	private ChannelInfoEntity channelInfoEntity;
 
 	@Builder
-	public TransactionEntity(String txID, String creatorId, String txType, Date timestamp, String ccName,
-			String ccVersion,String ccArgs,BlockEntity blockEntity, ChannelInfoEntity channelInfoEntity, LocalDateTime createdAt) {
-		this.txID = txID;
+	public TransactionEntity(Long id, String txId, String creatorId, String txType, Date timestamp, String ccName,
+			String ccVersion, String ccArgs, BlockEntity blockEntity, ChannelInfoEntity channelInfoEntity,
+			LocalDateTime createdAt) {
+		this.id = id;
+		this.txId = txId;
 		this.creatorId = creatorId;
 		this.txType = txType;
 		this.timestamp = timestamp;

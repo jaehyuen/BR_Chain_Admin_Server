@@ -953,7 +953,7 @@ public class Util {
 //			return transactionEntityBuilder.createdAt(transactionDto.getCreatedAt()).build();
 //		}
 
-		return TransactionEntity.builder().txID(transactionDto.getTxID()).creatorId(transactionDto.getCreatorId())
+		return TransactionEntity.builder().id(transactionDto.getId()).txId(transactionDto.getTxId()).creatorId(transactionDto.getCreatorId())
 				.txType(transactionDto.getTxType()).timestamp(transactionDto.getTimestamp())
 				.ccName(transactionDto.getCcName()).ccVersion(transactionDto.getCcVersion())
 				.ccArgs(transactionDto.getCcArgs()).blockEntity(toEntity(transactionDto.getBlockDto()))
@@ -974,7 +974,7 @@ public class Util {
 //		}
 
 		return BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash()).blockNum(blockDto.getBlockNum())
-				.txCount(blockDto.getTxCount()).prevDataHash(blockDto.getPrevDataHash())
+				.txCount(blockDto.getTxCount()).timestamp(blockDto.getTimestamp()).prevDataHash(blockDto.getPrevDataHash())
 				.channelInfoEntity(toEntity(blockDto.getChannelInfoDto())).createdAt(blockDto.getCreatedAt()).build();
 
 	}
@@ -1051,8 +1051,8 @@ public class Util {
 	}
 
 	public TransactionDto toDto(TransactionEntity transactionEntity) {
-		return TransactionDto.builder().txID(transactionEntity.getTxID()).creatorId(transactionEntity.getCreatorId())
-				.txID(transactionEntity.getTxType()).timestamp(transactionEntity.getTimestamp())
+		return TransactionDto.builder().id(transactionEntity.getId()).txId(transactionEntity.getTxId()).creatorId(transactionEntity.getCreatorId())
+				.txType(transactionEntity.getTxType()).timestamp(transactionEntity.getTimestamp())
 				.ccName(transactionEntity.getCcName()).ccVersion(transactionEntity.getCcVersion())
 				.ccArgs(transactionEntity.getCcArgs()).blockDto(toDto(transactionEntity.getBlockEntity()))
 				.channelInfoDto(toDto(transactionEntity.getChannelInfoEntity()))
@@ -1061,7 +1061,7 @@ public class Util {
 
 	public BlockDto toDto(BlockEntity blockEntity) {
 		return BlockDto.builder().blockDataHash(blockEntity.getBlockDataHash()).blockNum(blockEntity.getBlockNum())
-				.txCount(blockEntity.getTxCount()).prevDataHash(blockEntity.getPrevDataHash())
+				.txCount(blockEntity.getTxCount()).timestamp(blockEntity.getTimestamp()).prevDataHash(blockEntity.getPrevDataHash())
 				.channelInfoDto(toDto(blockEntity.getChannelInfoEntity())).createdAt(blockEntity.getCreatedAt())
 				.build();
 

@@ -1,12 +1,22 @@
 package com.brchain.core.service;
 
+import org.apache.commons.codec.binary.Hex;
+import org.hyperledger.fabric.protos.common.Common.Block;
+import org.hyperledger.fabric.protos.common.Common.BlockData;
+import org.hyperledger.fabric.protos.common.Common.Payload;
+import org.hyperledger.fabric.sdk.BlockInfo;
+import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.springframework.stereotype.Service;
 
 import com.brchain.core.dto.BlockDto;
+import com.brchain.core.dto.TransactionDto;
 import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.repository.BlockRepository;
 import com.brchain.core.util.Util;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import javassist.bytecode.ByteArray;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -15,6 +25,8 @@ public class BlockService {
 
 	// jpa 레파지토리
 	private final BlockRepository blockRepository;
+
+	private final TransactionService transactionService;
 
 	private final Util util;
 
@@ -56,6 +68,38 @@ public class BlockService {
 	public int countBychannelBlock(ChannelInfoDto channelInfoDto) {
 
 		return blockRepository.countByChannelInfoEntity(util.toEntity(channelInfoDto));
+
+	}
+
+	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) throws InvalidProtocolBufferException {
+
+		BlockDto blockDto;
+		int txCnt = block.getBlock().getData().getDataCount();
+		try {
+
+			// 이벤트로 받은 blockDataHash이 있는지 조회
+			blockDto = findBlockByBlockDataHash(Hex.encodeHexString(block.getDataHash()));
+
+		} catch (IllegalArgumentException e) {
+
+			// 조회가 안되면 리슨받은 블록 정보 저장
+			blockDto = new BlockDto();
+			blockDto.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
+			blockDto.setBlockNum((int) block.getBlockNumber());
+			blockDto.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
+			blockDto.setTimestamp(block.getEnvelopeInfo(0).getTimestamp());
+			blockDto.setTxCount(block.getBlock().getData().getDataCount());
+			blockDto.setChannelInfoDto(channelInfoDto);
+
+			saveBLock(blockDto);
+		}
+
+		Iterable<EnvelopeInfo> a = block.getEnvelopeInfos();
+		// 블록 내 트렌젝션 순회
+		for (EnvelopeInfo envelopeInfo : block.getEnvelopeInfos()) {
+			transactionService.inspectTransaction(envelopeInfo, channelInfoDto, blockDto);
+
+		}
 
 	}
 

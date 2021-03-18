@@ -1,12 +1,8 @@
 package com.brchain.core.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.json.simple.JSONArray;
@@ -14,7 +10,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.dto.chaincode.CcInfoChannelDto;
@@ -25,8 +20,6 @@ import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.entity.chaincode.CcInfoChannelEntity;
 import com.brchain.core.entity.chaincode.CcInfoEntity;
 import com.brchain.core.entity.chaincode.CcInfoPeerEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
-import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
 import com.brchain.core.repository.chaincode.CcInfoChannelRepository;
 import com.brchain.core.repository.chaincode.CcInfoPeerRepository;
 import com.brchain.core.repository.chaincode.CcInfoRepository;
@@ -40,17 +33,17 @@ import lombok.RequiredArgsConstructor;
 public class ChaincodeService {
 
 	// jpa 레파지토리
-	private final CcInfoRepository ccInfoRepository;
-	private final CcInfoPeerRepository ccInfoPeerRepository;
+	private final CcInfoRepository        ccInfoRepository;
+	private final CcInfoPeerRepository    ccInfoPeerRepository;
 	private final CcInfoChannelRepository ccInfoChannelRepository;
 
 	// 서비스
-	private final ContainerService containerService;
-	private final ChannelService channelService;
+	private final ContainerService        containerService;
+	private final ChannelService          channelService;
 
-	private final Util util;
+	private final Util                    util;
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private Logger                        logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 체인코드 정보 저장 서비스
@@ -76,7 +69,8 @@ public class ChaincodeService {
 
 	public CcInfoDto findCcInfoById(Long id) {
 
-		return util.toDto(ccInfoRepository.findById(id).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(ccInfoRepository.findById(id)
+			.orElseThrow(IllegalArgumentException::new));
 
 	}
 
@@ -88,9 +82,9 @@ public class ChaincodeService {
 
 	public ResultDto getCcList() {
 
-		JSONArray resultJsonArr = new JSONArray();
+		JSONArray          resultJsonArr = new JSONArray();
 
-		List<CcInfoEntity> ccInfoArr = ccInfoRepository.findAll();
+		List<CcInfoEntity> ccInfoArr     = ccInfoRepository.findAll();
 
 //		for (CcInfoEntity ccInfo : ccInfoArr) {
 //
@@ -132,10 +126,9 @@ public class ChaincodeService {
 	@Transactional
 	public ResultDto getCcListPeer(String conName) {
 
-		JSONArray resultJsonArr = new JSONArray();
+		JSONArray                   resultJsonArr       = new JSONArray();
 
-		ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository
-				.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
+		ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
 		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 
@@ -160,22 +153,16 @@ public class ChaincodeService {
 	 */
 
 	public ResultDto getCcListToActiveInChannel(String channelName) {
-		JSONArray jsonArr = new JSONArray();
+		JSONArray                     jsonArr               = new JSONArray();
 
-		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService
-				.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
+		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
 
 		for (ChannelInfoPeerDto channelInfoPeerDto : channelInfoPeerDtoArr) {
 
-			ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository
-					.findByConInfoEntity(util.toEntity(channelInfoPeerDto.getConInfoDto()));
+			ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(channelInfoPeerDto.getConInfoDto()));
 			for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 
 				JSONObject ccInfoChannelJson = new JSONObject();
-
-//				ccInfoChannelJson.put("ccName", ccInfoPeerEntity.getCcInfoEntity().getCcName());
-//				ccInfoChannelJson.put("ccVersion", ccInfoPeerEntity.getCcVersion());
-//				ccInfoChannelJson.put("ccLang", ccInfoPeerEntity.getCcInfoEntity().getCcLang());
 
 				jsonArr.add(util.toDto(ccInfoPeerEntity));
 
@@ -210,10 +197,9 @@ public class ChaincodeService {
 	 */
 
 	public ResultDto getCcListActive(String channelName) {
-		JSONArray jsonArr = new JSONArray();
+		JSONArray                      jsonArr                = new JSONArray();
 
-		ArrayList<CcInfoChannelEntity> ccInfoChannelEntityArr = ccInfoChannelRepository
-				.findByChannelInfoEntity(util.toEntity(channelService.findChannelInfoByChannelName(channelName)));
+		ArrayList<CcInfoChannelEntity> ccInfoChannelEntityArr = ccInfoChannelRepository.findByChannelInfoEntity(util.toEntity(channelService.findChannelInfoByChannelName(channelName)));
 
 		for (CcInfoChannelEntity ccInfoChannelEntity : ccInfoChannelEntityArr) {
 
@@ -240,13 +226,21 @@ public class ChaincodeService {
 	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
-	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoDto channelInfoDto,
-			CcInfoDto ccInfoDto) {
+	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoDto channelInfoDto, CcInfoDto ccInfoDto) {
 
-		return util.toDto(ccInfoChannelRepository
-				.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto))
-				.orElseThrow(IllegalArgumentException::new));
+		return util.toDto(ccInfoChannelRepository.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto))
+			.orElseThrow(IllegalArgumentException::new));
 
+	}
+
+	public List<CcInfoPeerDto> findByccInfoId(Long id) {
+		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByccInfoId(id);
+		List<CcInfoPeerDto>    ccInfoPeerDtoList   = new ArrayList<CcInfoPeerDto>();
+		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
+			ccInfoPeerDtoList.add(util.toDto(ccInfoPeerEntity));
+		}
+
+		return ccInfoPeerDtoList;
 	}
 
 //	public void test() {

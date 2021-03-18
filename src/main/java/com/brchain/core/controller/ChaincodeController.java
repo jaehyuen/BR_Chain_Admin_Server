@@ -1,6 +1,7 @@
 package com.brchain.core.controller;
 
 import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.core.dto.chaincode.ActiveCcDto;
 import com.brchain.core.dto.chaincode.InstallCcDto;
-import com.brchain.core.dto.chaincode.InstantiateCcDto;
 import com.brchain.core.service.ChaincodeService;
 import com.brchain.core.service.FabricService;
 
@@ -54,7 +55,7 @@ public class ChaincodeController {
 	}
 
 	@ApiOperation(value = "Hyperledger Fabric 채널에 활성 가능한 체인코드 조회", notes = "Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API")
-	@GetMapping("/active")
+	@GetMapping("/list/toactive")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
 			@ApiParam(value = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
 
@@ -79,21 +80,19 @@ public class ChaincodeController {
 			@ApiParam(value = "체인코드 이름", required = true) @RequestParam("ccName") String ccName,
 			@ApiParam(value = "체인코드 설명", required = true) @RequestParam("ccDesc") String ccDesc,
 			@ApiParam(value = "체인코드 언어", required = true) @RequestParam("ccLang") String ccLang,
-			@ApiParam(value = "체인코드 버", required = true) @RequestParam("ccVersion") String ccVersion)
+			@ApiParam(value = "체인코드 버전", required = true) @RequestParam("ccVersion") String ccVersion)
 			throws IOException {
 
-		return ResponseEntity.status(HttpStatus.OK)
-				.body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang, ccVersion));
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang, ccVersion));
 
 	}
 
 	@ApiOperation(value = "Hyperledger Fabric 체인코드 활성화", notes = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API")
 	@PostMapping("/active")
-	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
-			@ApiParam(value = "체인코드 활성화 관련 DTO", required = true) @RequestBody InstantiateCcDto instantiateCcDto)
-			throws Exception {
-
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.instantiateChaincode(instantiateCcDto));
+	public ResponseEntity<String> getChaincodeListToActiveInChannel(
+			@ApiParam(value = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)throws Exception {
+			fabricService.activeChaincode(activeCcDto);
+		return ResponseEntity.status(HttpStatus.OK).body("");
 
 	}
 }

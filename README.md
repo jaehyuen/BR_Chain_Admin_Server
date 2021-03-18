@@ -21,19 +21,19 @@ Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있
     - [`POST /refresh`](#POST-apiauthrefresh)
     - [`POST /logout`](#POST-apiauthlogout)
 - /core
-    - [`GET /containers`](#GET-apicorecontainers)
-    - [`GET /orgs`](#GET-apicoreorgs)
-    - [`GET /members`](#GET-apicoremembers)
+    - [`GET /container/list`](#GET-apicorecontainerlist)
+    - [`GET /org/list`](#GET-apicoreorglist)
+    - [`POST /org/create`](#POST-apicoreorgcreate)
+    - [`GET /member/list`](#GET-apicorememberlist)
     - [`GET /remove`](#GET-apicoreremove)
     - [`GET /check/port`](#GET-apicorecheckport)
-    - [`POST /create/org`](#POST-apicorecreateorg)
     - /channel
         - [`GET /list`](#GET-apicorechannellist)
         - [`GET /list/peer`](#GET-apicorechannellistpeer)
         - [`POST /create`](#POST-apicorechannelcreate)
-        - [`GET /register`](#GET-apicorechannelregister)
-        - [`GET /unregister`](#GET-apicorechannelunregister)
-        - [`GET /anchor`](#GET-apicorechannelanchor)
+        - [`GET /event/register`](#GET-apicorechanneleventregister)
+        - [`GET /event/unregister`](#GET-apicorechanneleventunregister)
+        - [`GET /update/anchor`](#GET-apicorechannelupdateanchor)
     - /chaincode
         - [`GET /list`](#GET-apicorechaincodelist)
         - [`GET /list/channel`](#GET-coreauthchaincodelistchannel)
@@ -45,7 +45,7 @@ Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있
 
 
 ## `POST /api/auth/register`
-
+회원가입 API
 ### request
 
 ```json
@@ -66,8 +66,8 @@ request body
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Register",
-    "resultData": "",
+    "resultMessage": "Success register",
+    "resultData": null,
     "resultFlag": true
 }
 ```
@@ -83,7 +83,7 @@ request body
 ```
 
 ## `POST /api/auth/login`
-
+로그인 API
 ### request
 
 ```json
@@ -102,7 +102,7 @@ request body
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Login",
+    "resultMessage": "Success login",
     "resultData": {
         "accessToken": "access token value",
         "refreshToken": "refresh token value",
@@ -124,7 +124,7 @@ request body
 ```
 
 ## `POST /api/auth/refresh`
-
+JWT 토큰 제발급 API
 ### request
 
 ```json
@@ -143,7 +143,7 @@ request body
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Refresh Token",
+    "resultMessage": "Success refresh token",
     "resultData": {
         "accessToken": "access token value",
         "refreshToken": "refresh token value",
@@ -165,14 +165,13 @@ request body
 ```
 
 ## `POST /api/auth/logout`
-
+로그아웃 API
 ### request
 
 ```json
 request body
 
 {
-    "userId": "testid",
     "refreshToken": "f85bbfc5-75f1-4b0b-8777-b887e7b9af2e"
 }
 ```
@@ -184,8 +183,8 @@ request body
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Logout User",
-    "resultData": "",
+    "resultMessage": "Success logout user",
+    "resultData": null,
     "resultFlag": true
 }
 ```
@@ -200,7 +199,8 @@ request body
 }
 ```
 
-## `GET /api/core/containers`
+## `GET /api/core/container/list`
+모든 도커 컨테이너 정보를 조회하는 API
 
 ### response
 
@@ -233,7 +233,8 @@ request body
 }
 ```
 
-## `GET /api/core/orgs`
+## `GET /api/core/org/list`
+조직 타입에 따른 컨테이너 정보를 조회하는 API
 
 ### request
 
@@ -275,88 +276,8 @@ request params
     "resultFlag": false
 }
 ```
-
-## `GET /api/core/members`
-
-### request
-
-```json
-request params
-
-{
-    "orgName": "testOrg"
-}
-```
-
-### response
-
-- on success
-
-```json
-{
-    "resultCode": "0000",
-    "resultMessage": "Success get testOrg member info list",
-    "resultData": [
-        {
-            "orgName": "testOrg",
-            "orgType": "peer",
-            "conNum": "1",
-            "conName": "peer1.orgtestOrg.com",
-            "conPort": 1111
-
-        }
-    ],
-    "resultFlag": true
-}
-```
-- on failure
-
-```json
-{
-    "resultCode": "9999",
-    "resultMessage": "error messages",
-    "resultData": null,
-    "resultFlag": false
-}
-```
-
-## `GET /api/core/remove`
-
-### request
-
-```json
-request params
-{
-    "conId": "122dqwd12q1wd12...." or null,
-    "orgName": "testOrg" or null
-}
-```
-
-### response
-
-- on success
-
-```json
-{
-    "resultCode": "0000",
-    "resultMessage": "Success remove container",
-    "resultData": null,
-    "resultFlag": true
-}
-```
-- on failure
-
-```json
-{
-    "resultCode": "9999",
-    "resultMessage": "error messages",
-    "resultData": null,
-    "resultFlag": false
-}
-```
-
-## `POST /api/core/create/org`
-
+## `POST /api/core/org/create`
+HyperLedger Fabric 조직을 생성하는 API
 ### request
 
 ```json
@@ -403,8 +324,121 @@ request body
 }
 ```
 
-## `GET /api/core/channel/list`
+## `GET /api/core/member/list`
+HyperLedger Fabric 조직이름에 따른 컨테이너 정보를 조회하는 API
+### request
 
+```json
+request params
+
+{
+    "orgName": "testOrg"
+}
+```
+
+### response
+
+- on success
+
+```json
+{
+    "resultCode": "0000",
+    "resultMessage": "Success get testOrg member info list",
+    "resultData": [
+        {
+            "orgName": "testOrg",
+            "orgType": "peer",
+            "conNum": "1",
+            "conName": "peer1.orgtestOrg.com",
+            "conPort": 1111
+
+        }
+    ],
+    "resultFlag": true
+}
+```
+- on failure
+
+```json
+{
+    "resultCode": "9999",
+    "resultMessage": "error messages",
+    "resultData": null,
+    "resultFlag": false
+}
+```
+
+## `GET /api/core/remove`
+컨테이너 ID 또는 조직명으로 컨테이너 중지 및 삭제하는 API
+### request
+
+```json
+request params
+{
+    "conId": "122dqwd12q1wd12...." or null,
+    "orgName": "testOrg" or null
+}
+```
+
+### response
+
+- on success
+
+```json
+{
+    "resultCode": "0000",
+    "resultMessage": "Success remove container",
+    "resultData": null,
+    "resultFlag": true
+}
+```
+- on failure
+
+```json
+{
+    "resultCode": "9999",
+    "resultMessage": "error messages",
+    "resultData": null,
+    "resultFlag": false
+}
+```
+
+## `GET /api/core/check/port`
+사용중인 포트인지 체크하는 API
+### request
+
+```json
+request params
+{
+    "port": "1111"
+}
+```
+
+### response
+
+- on success
+
+```json
+{
+    "resultCode": "0000",
+    "resultMessage": "사용가능",
+    "resultData": null,
+    "resultFlag": true
+}
+```
+- on failure
+
+```json
+{
+    "resultCode": "9999",
+    "resultMessage": "사용불가",
+    "resultData": null,
+    "resultFlag": false
+}
+```
+
+## `GET /api/core/channel/list`
+Hyperledger Fabric 채널 조회하는 API
 ### request
 
 ```json
@@ -454,7 +488,7 @@ request params
         "channelBlock": 1,
         "channelTx": 1,
         "channelName": "test-channel",
-        "orderingOrg": "testOrdere"
+        "orderingOrg": "testOrderer"
     },
     {
         "channelBlock": 1,
@@ -479,7 +513,7 @@ request params
 ```
 
 ## `GET /api/core/channel/list/peer`
-
+컨테이너 이름 및 채널명으로 Hyperledger Fabric 채널에 가입된 컨테이너를 조회하는 API
 ### request
 
 ```json
@@ -533,7 +567,7 @@ request params
 ```
 
 ## `POST /api/core/channel/create`
-
+HyperLedger Fabric 채널을 생성하고 가입하는 API
 ### request
 
 ```json
@@ -570,8 +604,8 @@ request body
 }
 ```
 
-## `GET /api/core/channel/register`
-
+## `GET /api/core/channel/event/register`
+Hyperledger Fabric 채널 이벤트 리스너 등록하는 API
 ### request
 
 ```json
@@ -589,7 +623,7 @@ request params
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Register Block EventListener",
+    "resultMessage": "Success register block event listener",
     "resultData": null,
     "resultFlag": true
 }
@@ -606,8 +640,8 @@ request params
 }
 ```
 
-## `GET /api/core/channel/unregister`
-
+## `GET /api/core/channel/event/unregister`
+Hyperledger Fabric 채널 이벤트 리스너 삭제하는 API
 ### request
 
 ```json
@@ -625,7 +659,7 @@ request params
 ```json
 {
     "resultCode": "0000",
-    "resultMessage": "Success Unregister Block EventListener",
+    "resultMessage": "Success unregister block event listener",
     "resultData": null,
     "resultFlag": true
 }
@@ -642,8 +676,8 @@ request params
 }
 ```
 
-## `GET /api/core/channel/unregister`
-
+## `GET /api/core/channel/update/anchor`
+Success update anchor
 ### request
 
 ```json
@@ -680,7 +714,7 @@ request params
 ```
 
 ## `GET /api/core/chaincode/list`
-
+Hyperledger Fabric 체인코드를 조회하는 API (분리예정)
 ### request
 
 ```json
@@ -742,7 +776,7 @@ request params
 ```
 
 ## `GET /api/core/chaincode/list/channel`
-
+Hyperledger Fabric 채널에 활성화된 체인코드를 조회하는 API
 ### request
 
 ```json
@@ -784,7 +818,7 @@ request params
 ```
 
 ## `GET /api/core/chaincode/active`
-
+Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API
 ### request
 
 ```json
@@ -826,7 +860,7 @@ request params
 ```
 
 ## `POST /api/core/chaincode/install`
-
+Hyperledger Fabric 체인코드를 피어에 설치하는 API
 ### request
 
 ```json

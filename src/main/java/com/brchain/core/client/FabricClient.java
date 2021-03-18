@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 
-import javax.annotation.PostConstruct;
 import javax.xml.bind.DatatypeConverter;
 
 import org.hyperledger.fabric.gateway.Gateway;
@@ -39,6 +39,7 @@ import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
 import org.hyperledger.fabric.gateway.X509Identity;
+import org.hyperledger.fabric.sdk.BlockEvent;
 import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.ChaincodeCollectionConfiguration;
 import org.hyperledger.fabric.sdk.ChaincodeID;
@@ -90,59 +91,60 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FabricClient {
 
-	private final Environment environment;
-	private final SshClient sshClient;
+	private final Environment    environment;
+	private final SshClient      sshClient;
 
-	private final Util util;
+	private final Util           util;
 
 	@Value("${brchain.sourcedir}")
-	private String sourceDir;
+	private String               sourceDir;
 
 	@Value("${brchain.logdir}")
-	private String logDir;
+	private String               logDir;
 
 	@Value("${brchain.datadir}")
-	private String dataDir;
+	private String               dataDir;
 
-	private ArrayList<Channel> channelListener = new ArrayList<Channel>();
+	private ArrayList<Channel>   channelListener = new ArrayList<Channel>();
 
-	private Map<String, Channel> testChannelMap = new HashMap<String, Channel>();
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private Map<String, Channel> testChannelMap  = new HashMap<String, Channel>();
+	private Map<String, Network> testNetworkMap  = new HashMap<String, Network>();
 
-	public Channel testInitChannel(List<FabricMemberDto> peerDtoArr, List<FabricMemberDto> ordererDtoArr,
-			String channelName,int startCnt) throws Exception {
+	private Logger               logger          = LoggerFactory.getLogger(this.getClass());
+
+	public Channel testInitChannel(List<FabricMemberDto> peerDtoArr, List<FabricMemberDto> ordererDtoArr, String channelName, int startCnt) throws Exception {
 
 		// 클라이언트 생성
-		HFClient client = createClient(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())));
+		HFClient   client  = createClient(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())));
 
 		// 채널 등록
-		Channel channel = client.newChannel(channelName);
+		Channel    channel = client.newChannel(channelName);
 
 		Properties props;
-		Peer peer;
-		Orderer orderer;
+		Peer       peer;
+		Orderer    orderer;
 
 		// 피어 설정
 		for (FabricMemberDto peerDto : peerDtoArr) {
-			
+
 			client = createClient(peerDto);
-			props = createFabricProperties(peerDto);
-			peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
-			
+			props  = createFabricProperties(peerDto);
+			peer   = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
+
 			// 이벤트 리슨 시작 위치 설정
 			Channel.PeerOptions opt = Channel.PeerOptions.createPeerOptions();
 
 			opt.startEvents(startCnt);
-			
-			channel.addPeer(peer,opt);
+
+			channel.addPeer(peer, opt);
 		}
 
 		// 오더 설정
 		for (FabricMemberDto ordererDto : ordererDtoArr) {
-			client = createClient(ordererDto);
-			props = createFabricProperties(ordererDto);
+			client  = createClient(ordererDto);
+			props   = createFabricProperties(ordererDto);
 
-			 orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
+			orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 			channel.addOrderer(orderer);
 		}
 
@@ -165,32 +167,24 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public Network connect(String channelName, String orgName, JSONObject connectionJson) throws Exception {
+	public Network connectNetwork(String channelName, String orgName, JSONObject connectionJson) throws Exception {
 
-		ArrayList<FabricMemberDto> ordererArrDto = new ArrayList<FabricMemberDto>();
-		ArrayList<FabricMemberDto> peerArrDto = new ArrayList<FabricMemberDto>();
-
-		logger.info("[ordererArrVo]" + ordererArrDto);
-		logger.info("[peerArrVo]" + peerArrDto);
-
-//				createFabrcSetting("cert-channel", ordererArrDto, peerArrDto).toString().replace("\\", "").getBytes());
-		InputStream is = new ByteArrayInputStream(connectionJson.toString().replace("\\", "").getBytes());
+		InputStream     is         = new ByteArrayInputStream(connectionJson.toString().replace("\\", "").getBytes());
 		// 파라미터 설정
 
-		Path walletPath = Paths.get("wallet");
-
-		Wallet wallet = Wallets.newFileSystemWallet(walletPath); // 2.2
-
-//		Wallet wallet = Wallet.createFileSystemWallet(walletPath); 1.4
-
-		Gateway.Builder builder = Gateway.createBuilder();
+		Path            walletPath = Paths.get("wallet");
+		Wallet          wallet     = Wallets.newFileSystemWallet(walletPath);                                         // 2.2
+		Gateway.Builder builder    = Gateway.createBuilder();
 
 		builder.identity(wallet, orgName).networkConfig(is).discovery(false);
-		Gateway gateway = builder.connect();
 
+		Gateway gateway = builder.connect();
 		Network network = gateway.getNetwork(channelName);
 
 		logger.info("[FabricHelper] Connection Success!");
+
+		testChannelMap.put(channelName, network.getChannel());
+		testNetworkMap.put(channelName, network);
 
 		return network;
 	}
@@ -205,18 +199,18 @@ public class FabricClient {
 
 	public void createWallet(FabricMemberDto memberDto) throws Exception {
 
-		String certPemFile = "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + "brord.com-cert.pem";
-		PrivateKey key = null;
-		String certificate = null;
-		InputStream isKey = null;
-		BufferedReader brKey = null;
-		String path = null;
+		String         certPemFile = "crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + "brord.com-cert.pem";
+		PrivateKey     key         = null;
+		String         certificate = null;
+		InputStream    isKey       = null;
+		BufferedReader brKey       = null;
+		String         path        = null;
+		Properties     props       = new Properties();
 
-		Properties props = new Properties();
 		props.put("pemFile", certPemFile);
 
 		// ca client생성
-		HFCAClient caClient = HFCAClient.createNewInstance(memberDto.getCaUrl(), props);
+		HFCAClient  caClient    = HFCAClient.createNewInstance(memberDto.getCaUrl(), props);
 		CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
 		caClient.setCryptoSuite(cryptoSuite);
 
@@ -237,18 +231,12 @@ public class FabricClient {
 		// 인증서 설정
 		if (memberDto.getOrgType().equals("peer")) {
 
-			path = "crypto-config/peerOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org"
-					+ memberDto.getOrgName() + ".com/msp/keystore/server.key";
-			certificate = new String(
-					Files.readAllBytes(Paths.get("crypto-config/peerOrganizations/org" + memberDto.getOrgName()
-							+ ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
+			path        = "crypto-config/peerOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/keystore/server.key";
+			certificate = new String(Files.readAllBytes(Paths.get("crypto-config/peerOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
 		} else {
 
-			path = "crypto-config/ordererOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org"
-					+ memberDto.getOrgName() + ".com/msp/keystore/server.key";
-			certificate = new String(
-					Files.readAllBytes(Paths.get("crypto-config/ordererOrganizations/org" + memberDto.getOrgName()
-							+ ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
+			path        = "crypto-config/ordererOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/keystore/server.key";
+			certificate = new String(Files.readAllBytes(Paths.get("crypto-config/ordererOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
 		}
 
 		try {
@@ -263,9 +251,9 @@ public class FabricClient {
 				}
 			}
 
-			byte[] encoded = DatatypeConverter.parseBase64Binary(keyBuilder.toString());
+			byte[]              encoded = DatatypeConverter.parseBase64Binary(keyBuilder.toString());
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-			KeyFactory kf = KeyFactory.getInstance("EC");
+			KeyFactory          kf      = KeyFactory.getInstance("EC");
 			key = kf.generatePrivate(keySpec);
 
 		} finally {
@@ -280,7 +268,7 @@ public class FabricClient {
 		// 인증서를 wallet형식으로 변환
 //		Identity user = Identity.createIdentity(memberDto.getOrgMspId(), enrollment.getCert(), enrollment.getKey()); //1.4
 
-		Identity user = Identities.newX509Identity(memberDto.getOrgMspId(), enrollment); // 2.2
+		Identity       user       = Identities.newX509Identity(memberDto.getOrgMspId(), enrollment); // 2.2
 
 		wallet.put(memberDto.getOrgName(), user);
 
@@ -298,20 +286,21 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public HFClient createChannel(ArrayList<FabricMemberDto> peerDtoArr, FabricMemberDto ordererDto, String channelName)
-			throws Exception {
+	public HFClient createChannel(ArrayList<FabricMemberDto> peerDtoArr, FabricMemberDto ordererDto, String channelName) throws Exception {
 
-		FabricMemberDto peerDto = peerDtoArr.get((int) (Math.random() * peerDtoArr.size()));
+		FabricMemberDto peerDto     = peerDtoArr.get((int) (Math.random() * peerDtoArr.size()));
+
 		// 가저온 인증서 정보로 user 생성
-		BrchainUser userContext = createContext(peerDto);
+		BrchainUser     userContext = createContext(peerDto);
 
 		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		HFClient        client      = createClient(peerDto);
+		Properties      props       = new Properties();
 
 		logger.info("[채널생성] 클라이언트 생성완료");
 
 		// 채널 생성요청할 오더러 점보 생성
-		Properties props = new Properties();
+
 		props.put("pemFile", "crypto-config/ca-certs/ca.org" + ordererDto.getOrgName() + ".com-cert.pem");
 		props.put("hostnameOverride", ordererDto.getConName());
 
@@ -320,12 +309,8 @@ public class FabricClient {
 		logger.info("[채널생성] 오더러설정 완료");
 
 		// 채널 생성
-		Channel channel = client.newChannel(channelName, orderer,
-				new ChannelConfiguration(new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
-				client.getChannelConfigurationSignature(
-						new ChannelConfiguration(
-								new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
-						userContext));
+		Channel channel = client.newChannel(channelName, orderer, new ChannelConfiguration(new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")),
+				client.getChannelConfigurationSignature(new ChannelConfiguration(new File("channel-artifacts/" + channelName + "/" + channelName + ".tx")), userContext));
 
 		channel.shutdown(true);
 
@@ -353,20 +338,18 @@ public class FabricClient {
 	 */
 
 	public void joinChannel(HFClient client, FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
-			throws InvalidArgumentException, ProposalException, CryptoException, ClassNotFoundException,
-			IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException,
-			TransactionException, IOException {
+			throws InvalidArgumentException, ProposalException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, TransactionException, IOException {
 
 		// 오더러 정보 생성
 		Properties ordererProps = createFabricProperties(ordererDto);
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+		Orderer    orderer      = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
 
 		// 피어 정보 생성
-		Properties peerProps = createFabricProperties(peerDto);
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
+		Properties peerProps    = createFabricProperties(peerDto);
+		Peer       peer         = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
 
 		// 채널 정보 생성
-		Channel channel = client.newChannel(channelName);
+		Channel    channel      = client.newChannel(channelName);
 
 		channel.addOrderer(orderer);
 		channel.initialize();
@@ -393,14 +376,13 @@ public class FabricClient {
 
 		// wallet에서 피어의 인증서 정보를 가져옴
 		// Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet")); //1.4
-		Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
+		Wallet       wallet   = Wallets.newFileSystemWallet(Paths.get("wallet"));
 		X509Identity identity = (X509Identity) wallet.get(memberDto.getOrgName());
 
-		StringWriter sw = new StringWriter();
+		StringWriter sw       = new StringWriter();
 		try {
 			sw.write("-----BEGIN CERTIFICATE-----\n");
-			sw.write(DatatypeConverter.printBase64Binary(identity.getCertificate().getEncoded()).replaceAll("(.{64})",
-					"$1\n"));
+			sw.write(DatatypeConverter.printBase64Binary(identity.getCertificate().getEncoded()).replaceAll("(.{64})", "$1\n"));
 			sw.write("\n-----END CERTIFICATE-----\n");
 		} catch (CertificateEncodingException e) {
 			e.printStackTrace();
@@ -430,14 +412,12 @@ public class FabricClient {
 	 * @throws InvocationTargetException
 	 */
 
-	public HFClient createClient(FabricMemberDto memberDto)
-			throws IOException, CryptoException, InvalidArgumentException, ClassNotFoundException,
-			IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+	public HFClient createClient(FabricMemberDto memberDto) throws IOException, CryptoException, InvalidArgumentException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
 		CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
 
 		// 클라이언트 생성
-		HFClient client = HFClient.createNewInstance();
+		HFClient    client      = HFClient.createNewInstance();
 		client.setCryptoSuite(cryptoSuite);
 
 		// UserConText 생성
@@ -470,14 +450,12 @@ public class FabricClient {
 	 * 
 	 */
 	public Channel initChannel(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, int startCnt)
-			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
-			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
-			TransactionException {
+			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, TransactionException {
 
 		// 성공 여부 플래그?
-		boolean flag = true;
+		boolean flag  = true;
 		// 인덱스정보?
-		int index = 0;
+		int     index = 0;
 
 		// 채널 리스트에 채널이있는지 조회
 		if (!channelListener.isEmpty()) {
@@ -485,7 +463,7 @@ public class FabricClient {
 				Channel channel = channelListener.get(i);
 				if ((channel.getName().equals(channelName))) {
 					System.out.println("channel arr에 존재 : " + channelName);
-					flag = false;
+					flag  = false;
 					index = i;
 				}
 			}
@@ -503,17 +481,17 @@ public class FabricClient {
 			channel = client.newChannel(channelName);
 
 			// 피어 설정
-			Properties props = createFabricProperties(peerDto);
-			Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
+			Properties          props = createFabricProperties(peerDto);
+			Peer                peer  = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), props);
 
 			// 이벤트 리슨 시작 위치 설정
-			Channel.PeerOptions opt = Channel.PeerOptions.createPeerOptions();
+			Channel.PeerOptions opt   = Channel.PeerOptions.createPeerOptions();
 
 			opt.startEvents(startCnt);
 			channel.addPeer(peer, opt);
 
 			client = createClient(ordererDto);
-			props = createFabricProperties(ordererDto);
+			props  = createFabricProperties(ordererDto);
 
 			Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
 			channel.addOrderer(orderer);
@@ -544,17 +522,17 @@ public class FabricClient {
 
 		JSONParser jsonParser = new JSONParser();
 
-		HFClient client = createClient(memberDto);
+		HFClient   client     = createClient(memberDto);
 
 		// 채널 생성요청할 맴버 정보 생성
-		Properties props = createFabricProperties(memberDto);
+		Properties props      = createFabricProperties(memberDto);
 
-		Orderer orderer = client.newOrderer(memberDto.getConName(), memberDto.getConUrl(), props);
-		Peer peer = client.newPeer(memberDto.getConName(), memberDto.getConUrl(), props);
+		Orderer    orderer    = client.newOrderer(memberDto.getConName(), memberDto.getConUrl(), props);
+		Peer       peer       = client.newPeer(memberDto.getConName(), memberDto.getConUrl(), props);
 
-		Channel channel = client.newChannel(channelName);
+		Channel    channel    = client.newChannel(channelName);
 
-		byte[] configBlock;
+		byte[]     configBlock;
 
 		// 설정 파일 가져오기(Byte Array)
 		if (memberDto.getOrgType().equals("peer")) {
@@ -568,7 +546,7 @@ public class FabricClient {
 		}
 
 		// 설정 파일 가져오기(Byte Array) to File
-		String path = "channel-artifacts/" + memberDto.getOrgName() + "/";
+		String path     = "channel-artifacts/" + memberDto.getOrgName() + "/";
 		String fileName = channelName + "_config";
 
 		try {
@@ -601,8 +579,7 @@ public class FabricClient {
 		Thread.sleep(1000);
 
 		// json 변경
-		String command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName
-				+ ".pb --type common.Config > " + sourceDir + "/" + path + fileName + ".json";
+		String command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName + ".pb --type common.Config > " + sourceDir + "/" + path + fileName + ".json";
 
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.execCommand(command);
@@ -616,8 +593,7 @@ public class FabricClient {
 		}
 
 		Thread.sleep(1000);
-		return (JSONObject) jsonParser
-				.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
+		return (JSONObject) jsonParser.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
 
 	}
 
@@ -635,14 +611,13 @@ public class FabricClient {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public File createUpdateFile(FabricMemberDto memberDto, String channelName, JSONObject config,
-			JSONObject modifiedConfig) throws Exception {
+	public File createUpdateFile(FabricMemberDto memberDto, String channelName, JSONObject config, JSONObject modifiedConfig) throws Exception {
 
-		Util util = new Util();
+		Util       util       = new Util();
 		JSONParser jsonParser = new JSONParser();
 
-		String path = "channel-artifacts/" + memberDto.getOrgName() + "/";
-		String fileName = channelName + "_modified_config";
+		String     path       = "channel-artifacts/" + memberDto.getOrgName() + "/";
+		String     fileName   = channelName + "_modified_config";
 
 		try {
 
@@ -672,8 +647,7 @@ public class FabricClient {
 		}
 
 		// proto encode
-		String command = "configtxlator proto_encode --input " + sourceDir + "/" + path + fileName + ".json"
-				+ " --type common.Config --output " + sourceDir + "/" + path + fileName + ".pb";
+		String command = "configtxlator proto_encode --input " + sourceDir + "/" + path + fileName + ".json" + " --type common.Config --output " + sourceDir + "/" + path + fileName + ".pb";
 
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.execCommand(command);
@@ -682,9 +656,7 @@ public class FabricClient {
 		}
 
 		// 업데이트 계산
-		command = "configtxlator compute_update --channel_id " + channelName + " --original " + sourceDir + "/" + path
-				+ channelName + "_config.pb --updated " + sourceDir + "/" + path + fileName + ".pb --output "
-				+ sourceDir + "/" + path + channelName + "_config_update.pb";
+		command = "configtxlator compute_update --channel_id " + channelName + " --original " + sourceDir + "/" + path + channelName + "_config.pb --updated " + sourceDir + "/" + path + fileName + ".pb --output " + sourceDir + "/" + path + channelName + "_config_update.pb";
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.execCommand(command);
 		} else {
@@ -693,8 +665,7 @@ public class FabricClient {
 
 		// proto decode
 		fileName = channelName + "_config_update";
-		command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName
-				+ ".pb --type common.ConfigUpdate > " + sourceDir + "/" + path + fileName + ".json";
+		command  = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName + ".pb --type common.ConfigUpdate > " + sourceDir + "/" + path + fileName + ".json";
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.execCommand(command);
 		} else {
@@ -735,26 +706,24 @@ public class FabricClient {
 	 */
 
 	public void setUpdate(FabricMemberDto memberDto, FabricMemberDto ordererDto, String channelName, File updateFile)
-			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException,
-			InstantiationException, NoSuchMethodException, InvocationTargetException, IOException,
-			TransactionException {
+			throws InvalidArgumentException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, TransactionException {
 
-		HFClient client = createClient(ordererDto);
+		HFClient   client  = createClient(ordererDto);
 
 		// 채널 설정 변경 요청할 정보 생성
-		Properties props = createFabricProperties(ordererDto);
+		Properties props   = createFabricProperties(ordererDto);
 
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
-		Channel channel = client.newChannel(channelName).initialize();
+		Orderer    orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), props);
+		Channel    channel = client.newChannel(channelName).initialize();
 
 		channel.addOrderer(orderer);
 
 		// 업데이트 설정 생성
 		UpdateChannelConfiguration updateChannelConfiguration = new UpdateChannelConfiguration(updateFile);
-		BrchainUser user = createContext(memberDto);
+		BrchainUser                user                       = createContext(memberDto);
 
 		// 업데이트 승인
-		byte[] signers = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
+		byte[]                     signers                    = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
 		user = createContext(ordererDto);
 
 		// 업데이트 리퀘스트 전송
@@ -776,13 +745,12 @@ public class FabricClient {
 	public void installChaincodeToPeer(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
 
 		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		HFClient               client                 = createClient(peerDto);
 
 		// 체인코드 ID 생성
-		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
-				.setPath(ccName + "/");
+		ChaincodeID.Builder    chaincodeIDBuilder     = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion).setPath(ccName + "/");
 
-		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
+		ChaincodeID            chaincodeID            = chaincodeIDBuilder.build();
 
 		// 체인코드 설치 request 생성
 		InstallProposalRequest installProposalRequest = client.newInstallProposalRequest();
@@ -794,7 +762,7 @@ public class FabricClient {
 
 		// 설치할 피어 정보 생성
 		List<Peer> peers = new ArrayList<Peer>();
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
+		Peer       peer  = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
 		peers.add(peer);
 
 		logger.info("[체인코드 설치] 트렌젝션 생성 및 전송");
@@ -839,34 +807,32 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public void instantiateChaincode(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
-			String ccName, String ccVersion, String ccLang, boolean upgrade) throws Exception {
+	public void instantiateChaincode(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, String ccName, String ccVersion, String ccLang, boolean upgrade) throws Exception {
 
 		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		HFClient   client       = createClient(peerDto);
 
 		// 오더러 정보 생성
 		Properties ordererProps = createFabricProperties(ordererDto);
-		Orderer orderer = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+		Orderer    orderer      = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
 
 		// 피어 정보 생성
-		Properties peerProps = createFabricProperties(peerDto);
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
+		Properties peerProps    = createFabricProperties(peerDto);
+		Peer       peer         = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), peerProps);
 
 		// 채널 정보 생성
-		Channel channel = client.newChannel(channelName);
+		Channel    channel      = client.newChannel(channelName);
 		channel.addPeer(peer);
 
 		channel.addOrderer(orderer);
 		channel.initialize();
 
 		// 체인코드 ID 생성
-		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion)
-				.setPath(ccName + "/");
+		ChaincodeID.Builder chaincodeIDBuilder = ChaincodeID.newBuilder().setName(ccName).setVersion(ccVersion).setPath(ccName + "/");
 
-		ChaincodeID chaincodeID = chaincodeIDBuilder.build();
+		ChaincodeID         chaincodeID        = chaincodeIDBuilder.build();
 
-		Map<String, byte[]> tm = new HashMap<>();
+		Map<String, byte[]> tm                 = new HashMap<>();
 		tm.put("HyperLedgerFabric", "InstantiateProposalRequest:JavaSDK".getBytes(UTF_8));
 		tm.put("method", "InstantiateProposalRequest".getBytes(UTF_8));
 
@@ -928,8 +894,7 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
-			BlockListener listener, int startCnt) throws Exception {
+	public String registerEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, BlockListener listener, int startCnt) throws Exception {
 
 		// 이벤트 리슨용 채널 생성
 		Channel channel = initChannel(peerDto, ordererDto, channelName, startCnt);
@@ -939,13 +904,15 @@ public class FabricClient {
 
 	}
 
-	public String testRegisterEventListener(String channelName, BlockListener listener) throws Exception {
+	public void testRegisterEventListener(String channelName, Consumer<BlockEvent> listener) throws Exception {
 
 		// 이벤트 리슨용 채널 생성
 		Channel channel = testChannelMap.get(channelName);
+		Network network = testNetworkMap.get(channelName);
 
 		// 블록 이벤트 리스너 등록
-		return channel.registerBlockListener(listener);
+		network.addBlockListener(listener);
+//		return channel.registerBlockListener(listener);
 
 	}
 
@@ -960,8 +927,7 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public void unregisterEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName,
-			String handle) throws Exception {
+	public void unregisterEventListener(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName, String handle) throws Exception {
 
 		// 이벤트 리슨용 채널 생성
 		Channel channel = initChannel(peerDto, ordererDto, channelName, 0);
@@ -975,9 +941,8 @@ public class FabricClient {
 
 	}
 
-	public void setAnchorConfig(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName)
-			throws Exception {
-		Util util = new Util();
+	public void setAnchorConfig(FabricMemberDto peerDto, FabricMemberDto ordererDto, String channelName) throws Exception {
+		Util       util        = new Util();
 
 		// 채널 설정 조회
 		JSONObject genesisJson = getChannelConfig(peerDto, channelName);
@@ -1015,11 +980,11 @@ public class FabricClient {
 	public void installChaincode(FabricMemberDto peerDto, String ccName, String ccVersion) throws Exception {
 
 		// 클라이언트 생성
-		HFClient client = createClient(peerDto);
+		HFClient   client = createClient(peerDto);
 
 //				// 설치할 피어 정보 생성
-		List<Peer> peers = new ArrayList<Peer>();
-		Peer peer = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
+		List<Peer> peers  = new ArrayList<Peer>();
+		Peer       peer   = client.newPeer(peerDto.getConName(), peerDto.getConUrl(), createFabricProperties(peerDto));
 		peers.add(peer);
 
 		// 체인코드 설치 함수 시작
@@ -1045,13 +1010,11 @@ public class FabricClient {
 
 		logger.info("[체인코드 라이프 사이클 패키징] 시작");
 
-		Path metadataSourcePath = null;
+		Path                      metadataSourcePath        = null;
 
 		// lifecycleChaincode 패키징
-		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromSource(
-				ccName + "_" + ccVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"),
-				TransactionRequest.Type.GO_LANG, "test-cc/go/", metadataSourcePath);
-		String ccPath = System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar";
+		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromSource(ccName + "_" + ccVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"), TransactionRequest.Type.GO_LANG, "test-cc/go/", metadataSourcePath);
+		String                    ccPath                    = System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar";
 
 		lifecycleChaincodePackage.toFile(Paths.get(ccPath), StandardOpenOption.CREATE);
 
@@ -1076,28 +1039,24 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	private void installChaincodeWithLifecycle(HFClient client, List<Peer> peers, String ccName, String ccVersion)
-			throws Exception {
+	private void installChaincodeWithLifecycle(HFClient client, List<Peer> peers, String ccName, String ccVersion) throws Exception {
 
 		logger.info("[체인코드 라이프 사이클 설치] 시작 : " + peers.get(0).getName());
 
-		LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromFile(
-				new File(System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar"));
+		LifecycleChaincodePackage        lifecycleChaincodePackage = LifecycleChaincodePackage.fromFile(new File(System.getProperty("user.dir") + "/chaincode/package/" + ccName + "_v" + ccVersion + ".tar"));
 
 		// lifecycleChaincode 설치 리퀘스트 생성
-		LifecycleInstallChaincodeRequest installProposalRequest = client.newLifecycleInstallChaincodeRequest();
+		LifecycleInstallChaincodeRequest installProposalRequest    = client.newLifecycleInstallChaincodeRequest();
 		installProposalRequest.setLifecycleChaincodePackage(lifecycleChaincodePackage);
 
 		// lifecycleChaincode 설치 리퀘스트 피어로 전송
-		Collection<LifecycleInstallChaincodeProposalResponse> responses = client
-				.sendLifecycleInstallChaincodeRequest(installProposalRequest, peers);
+		Collection<LifecycleInstallChaincodeProposalResponse> responses = client.sendLifecycleInstallChaincodeRequest(installProposalRequest, peers);
 
 		// 설치 완료후 체인코드 패키지 ID 파싱
 		for (LifecycleInstallChaincodeProposalResponse response : responses) {
 			if (response.getStatus() == ProposalResponse.Status.SUCCESS) {
 
-				logger.info("[체인코드 라이프 사이클 설치] Successful install proposal response Txid : "
-						+ response.getTransactionID() + " from peer " + response.getPeer().getName());
+				logger.info("[체인코드 라이프 사이클 설치] Successful install proposal response Txid : " + response.getTransactionID() + " from peer " + response.getPeer().getName());
 
 				logger.info("[체인코드 라이프 사이클 설치] package ID : " + response.getPackageId());
 
@@ -1171,14 +1130,11 @@ public class FabricClient {
 		try {
 
 			// 체인코드 시퀀스 확인 리퀘스트 생성
-			QueryLifecycleQueryChaincodeDefinitionRequest queryLifecycleQueryChaincodeDefinitionRequest = client
-					.newQueryLifecycleQueryChaincodeDefinitionRequest();
+			QueryLifecycleQueryChaincodeDefinitionRequest queryLifecycleQueryChaincodeDefinitionRequest = client.newQueryLifecycleQueryChaincodeDefinitionRequest();
 			queryLifecycleQueryChaincodeDefinitionRequest.setChaincodeName(chaincodeName);
 
 			// 생성한 리퀘스트 전송
-			Collection<LifecycleQueryChaincodeDefinitionProposalResponse> firstQueryDefininitions = channel
-					.lifecycleQueryChaincodeDefinition(queryLifecycleQueryChaincodeDefinitionRequest,
-							channel.getPeers());
+			Collection<LifecycleQueryChaincodeDefinitionProposalResponse> firstQueryDefininitions = channel.lifecycleQueryChaincodeDefinition(queryLifecycleQueryChaincodeDefinitionRequest, channel.getPeers());
 
 			for (LifecycleQueryChaincodeDefinitionProposalResponse firstDefinition : firstQueryDefininitions) {
 
@@ -1226,19 +1182,15 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	private void approveChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID,
-			String chaincodeVersion, long sequence) throws Exception {
+	private void approveChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID, String chaincodeVersion, long sequence) throws Exception {
 
-		System.out.println("[approveChaincodeWithLifecycle()] Start Approve Chaincode With LifeCycle In "
-				+ client.getUserContext().getName());
+		System.out.println("[approveChaincodeWithLifecycle()] Start Approve Chaincode With LifeCycle In " + client.getUserContext().getName());
 
 		// 체인코드 PDC 설정파일 설정
-		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
-				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+		ChaincodeCollectionConfiguration                   collectionConfig                                   = ChaincodeCollectionConfiguration.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
 
 		// 체인코드 승인 리퀘스트 생성
-		LifecycleApproveChaincodeDefinitionForMyOrgRequest lifecycleApproveChaincodeDefinitionForMyOrgRequest = client
-				.newLifecycleApproveChaincodeDefinitionForMyOrgRequest();
+		LifecycleApproveChaincodeDefinitionForMyOrgRequest lifecycleApproveChaincodeDefinitionForMyOrgRequest = client.newLifecycleApproveChaincodeDefinitionForMyOrgRequest();
 
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setSequence(sequence);
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeName(chaincodeName);
@@ -1248,9 +1200,7 @@ public class FabricClient {
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeCollectionConfiguration(collectionConfig);
 
 		// 생성한 리퀘스트 전송
-		Collection<LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse> lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse = channel
-				.sendLifecycleApproveChaincodeDefinitionForMyOrgProposal(
-						lifecycleApproveChaincodeDefinitionForMyOrgRequest, channel.getPeers());
+		Collection<LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse> lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse = channel.sendLifecycleApproveChaincodeDefinitionForMyOrgProposal(lifecycleApproveChaincodeDefinitionForMyOrgRequest, channel.getPeers());
 
 		for (LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse response : lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse) {
 
@@ -1280,18 +1230,15 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	public void verifyChaincodeApproved(HFClient client, Channel channel, String chaincodeName, String packageID,
-			String chaincodeVersion, long sequence) throws Exception {
+	public void verifyChaincodeApproved(HFClient client, Channel channel, String chaincodeName, String packageID, String chaincodeVersion, long sequence) throws Exception {
 
 		System.out.println("[verifyChaincodeApproved()] Start Verify Chaincode Approved");
 
 		// 체인코드 PDC 설정파일 설정
-		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
-				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+		ChaincodeCollectionConfiguration     collectionConfig                     = ChaincodeCollectionConfiguration.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
 
 		// 체인코드 승인 확인 리퀘스트 생성
-		LifecycleCheckCommitReadinessRequest lifecycleCheckCommitReadinessRequest = client
-				.newLifecycleSimulateCommitChaincodeDefinitionRequest();
+		LifecycleCheckCommitReadinessRequest lifecycleCheckCommitReadinessRequest = client.newLifecycleSimulateCommitChaincodeDefinitionRequest();
 
 		lifecycleCheckCommitReadinessRequest.setSequence(sequence);
 		lifecycleCheckCommitReadinessRequest.setChaincodeName(chaincodeName);
@@ -1300,8 +1247,7 @@ public class FabricClient {
 		lifecycleCheckCommitReadinessRequest.setChaincodeCollectionConfiguration(collectionConfig);
 
 		// 생성한 리퀘스트 전송
-		Collection<LifecycleCheckCommitReadinessProposalResponse> lifecycleSimulateCommitChaincodeDefinitionProposalResponse = channel
-				.sendLifecycleCheckCommitReadinessRequest(lifecycleCheckCommitReadinessRequest, channel.getPeers());
+		Collection<LifecycleCheckCommitReadinessProposalResponse> lifecycleSimulateCommitChaincodeDefinitionProposalResponse = channel.sendLifecycleCheckCommitReadinessRequest(lifecycleCheckCommitReadinessRequest, channel.getPeers());
 
 		for (LifecycleCheckCommitReadinessProposalResponse response : lifecycleSimulateCommitChaincodeDefinitionProposalResponse) {
 
@@ -1327,18 +1273,15 @@ public class FabricClient {
 	 * @throws Exception
 	 */
 
-	private void commitChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID,
-			String chaincodeVersion, long sequence) throws Exception {
+	private void commitChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID, String chaincodeVersion, long sequence) throws Exception {
 
 		System.out.println("[commitChaincodeWithLifecycle()] Start Commit Chaincode With LifeCycle");
 
 		// 체인코드 PDC 설정파일 설정
-		ChaincodeCollectionConfiguration collectionConfig = ChaincodeCollectionConfiguration
-				.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+		ChaincodeCollectionConfiguration          collectionConfig                          = ChaincodeCollectionConfiguration.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
 
 		// 체인코드 커밋 리퀘스트 생성
-		LifecycleCommitChaincodeDefinitionRequest lifecycleCommitChaincodeDefinitionRequest = client
-				.newLifecycleCommitChaincodeDefinitionRequest();
+		LifecycleCommitChaincodeDefinitionRequest lifecycleCommitChaincodeDefinitionRequest = client.newLifecycleCommitChaincodeDefinitionRequest();
 
 		lifecycleCommitChaincodeDefinitionRequest.setSequence(sequence);
 		lifecycleCommitChaincodeDefinitionRequest.setChaincodeName(chaincodeName);
@@ -1347,9 +1290,7 @@ public class FabricClient {
 		lifecycleCommitChaincodeDefinitionRequest.setChaincodeCollectionConfiguration(collectionConfig);
 
 		// 생성한 리퀘스트 전송
-		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> lifecycleCommitChaincodeDefinitionProposalResponses = channel
-				.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest,
-						channel.getPeers());
+		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> lifecycleCommitChaincodeDefinitionProposalResponses = channel.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest, channel.getPeers());
 
 		for (LifecycleCommitChaincodeDefinitionProposalResponse response : lifecycleCommitChaincodeDefinitionProposalResponses) {
 

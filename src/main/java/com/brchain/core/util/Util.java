@@ -63,36 +63,30 @@ public class Util {
 	 */
 
 	@SuppressWarnings({ "unchecked" })
-	public JSONObject createFabrcSetting(String channelName, ArrayList<FabricMemberDto> ordererArrDto,
-			ArrayList<FabricMemberDto> peerArrDto) {
+	public JSONObject createFabrcSetting(String channelName, List<FabricMemberDto> ordererDtoArr,
+			List<FabricMemberDto> peerDtoArr, List<String> orgs) {
 
-		JSONObject fabricJson = new JSONObject();
+		JSONObject fabricJson        = new JSONObject();
 
-		JSONObject clientJson = new JSONObject();
+		JSONObject clientJson        = new JSONObject();
 
-		JSONObject orgJson1 = new JSONObject();
-		JSONObject orgJson2 = new JSONObject();
+		JSONObject orgJson1          = new JSONObject();
 
-		JSONObject channelJson1 = new JSONObject();
-		JSONObject channelJson2 = new JSONObject();
+		JSONObject channelJson1      = new JSONObject();
+		JSONObject channelJson2      = new JSONObject();
 
-		JSONObject peerJson = new JSONObject();
-		JSONObject peerMemberJson = new JSONObject();
+		JSONObject peerJson          = new JSONObject();
+		JSONObject peerMemberJson    = new JSONObject();
 		JSONObject ordererMemberJson = new JSONObject();
 
-		JSONObject caJson1 = new JSONObject();
-		JSONObject caJson2 = new JSONObject();
+		JSONObject caJson1           = new JSONObject();
 
 		ArrayList<String> ordererArr = new ArrayList<String>();
-		ArrayList<String> peerArr = new ArrayList<String>();
-		ArrayList<String> caArr = new ArrayList<String>();
 
-		caArr.add("ca.org" + peerArrDto.get(0).getOrgName() + ".com");
-
-		clientJson.put("organization", peerArrDto.get(0).getOrgName());
+		clientJson.put("organization", peerDtoArr.get(0).getOrgName());
 
 		// 오더러 관련 변수 생성
-		for (FabricMemberDto dto : ordererArrDto) {
+		for (FabricMemberDto dto : ordererDtoArr) {
 			ordererArr.add(dto.getConName());
 			ordererMemberJson.put(dto.getConName(),
 					createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
@@ -100,25 +94,45 @@ public class Util {
 		}
 
 		// 피어 관련 변수 생성
-		for (FabricMemberDto dto : peerArrDto) {
-			peerJson.put(dto.getConName(), new JSONObject());
-			peerArr.add(dto.getConName());
-			peerMemberJson.put(dto.getConName(), createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
+
+		for (String org : orgs) {
+			
+			JSONObject orgJson2  = new JSONObject();
+			List<String> peerArr = new ArrayList<String>();
+			
+			for (FabricMemberDto dto : peerDtoArr) {
+
+				if (org.equals(dto.getOrgName())) {
+					
+					JSONObject caJson2 = new JSONObject();
+					List<String> caArr = new ArrayList<String>();
+
+					caArr.add("ca.org" + dto.getOrgName() + ".com");
+
+					peerJson.put(dto.getConName(), new JSONObject());
+					peerArr.add(dto.getConName());
+					peerMemberJson.put(dto.getConName(),
+							createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
+
+					orgJson2.put("mspid", dto.getOrgMspId());
+					orgJson2.put("certificateAuthorities", caArr);
+
+					orgJson2.put("peers", peerArr);
+					orgJson1.put(dto.getOrgName(), orgJson2);
+
+					caJson2.put("caName", "ca.org" + dto.getOrgName() + ".com");
+					caJson2.put("url", dto.getCaUrl());
+					caJson1.put("ca.org" + dto.getOrgName() + ".com", caJson2);
+
+				}
+
+			}
 
 		}
 
 		channelJson2.put("peers", peerJson);
 		channelJson2.put("orderers", ordererArr);
 		channelJson1.put(channelName, channelJson2);
-
-		orgJson2.put("mspid", peerArrDto.get(0).getOrgMspId());
-		orgJson2.put("certificateAuthorities", caArr);
-		orgJson2.put("peers", peerArr);
-		orgJson1.put(peerArrDto.get(0).getOrgName(), orgJson2);
-
-		caJson2.put("caName", caArr.get(0));
-		caJson2.put("url", peerArrDto.get(0).getCaUrl());
-		caJson1.put("ca.org" + peerArrDto.get(0).getOrgName() + ".com", caJson2);
 
 		fabricJson.put("name", channelName);
 		fabricJson.put("version", "1.0.0");
@@ -254,7 +268,7 @@ public class Util {
 
 		policyDto.setSubPolicy("Readers");
 		policiesJson.put("Readers", createPolicyJson(policyDto));
-		
+
 		policyDto.setSubPolicy("Endorsement");
 		policiesJson.put("Endorsement", createPolicyJson(policyDto));
 
@@ -769,7 +783,6 @@ public class Util {
 				System.out.println(successOutput.toString());
 			}
 
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -953,10 +966,11 @@ public class Util {
 //			return transactionEntityBuilder.createdAt(transactionDto.getCreatedAt()).build();
 //		}
 
-		return TransactionEntity.builder().id(transactionDto.getId()).txId(transactionDto.getTxId()).creatorId(transactionDto.getCreatorId())
-				.txType(transactionDto.getTxType()).timestamp(transactionDto.getTimestamp())
-				.ccName(transactionDto.getCcName()).ccVersion(transactionDto.getCcVersion())
-				.ccArgs(transactionDto.getCcArgs()).blockEntity(toEntity(transactionDto.getBlockDto()))
+		return TransactionEntity.builder().id(transactionDto.getId()).txId(transactionDto.getTxId())
+				.creatorId(transactionDto.getCreatorId()).txType(transactionDto.getTxType())
+				.timestamp(transactionDto.getTimestamp()).ccName(transactionDto.getCcName())
+				.ccVersion(transactionDto.getCcVersion()).ccArgs(transactionDto.getCcArgs())
+				.blockEntity(toEntity(transactionDto.getBlockDto()))
 				.channelInfoEntity(toEntity(transactionDto.getChannelInfoDto()))
 				.createdAt(transactionDto.getCreatedAt()).build();
 	}
@@ -974,8 +988,9 @@ public class Util {
 //		}
 
 		return BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash()).blockNum(blockDto.getBlockNum())
-				.txCount(blockDto.getTxCount()).timestamp(blockDto.getTimestamp()).prevDataHash(blockDto.getPrevDataHash())
-				.channelInfoEntity(toEntity(blockDto.getChannelInfoDto())).createdAt(blockDto.getCreatedAt()).build();
+				.txCount(blockDto.getTxCount()).timestamp(blockDto.getTimestamp())
+				.prevDataHash(blockDto.getPrevDataHash()).channelInfoEntity(toEntity(blockDto.getChannelInfoDto()))
+				.createdAt(blockDto.getCreatedAt()).build();
 
 	}
 
@@ -1051,19 +1066,20 @@ public class Util {
 	}
 
 	public TransactionDto toDto(TransactionEntity transactionEntity) {
-		return TransactionDto.builder().id(transactionEntity.getId()).txId(transactionEntity.getTxId()).creatorId(transactionEntity.getCreatorId())
-				.txType(transactionEntity.getTxType()).timestamp(transactionEntity.getTimestamp())
-				.ccName(transactionEntity.getCcName()).ccVersion(transactionEntity.getCcVersion())
-				.ccArgs(transactionEntity.getCcArgs()).blockDto(toDto(transactionEntity.getBlockEntity()))
+		return TransactionDto.builder().id(transactionEntity.getId()).txId(transactionEntity.getTxId())
+				.creatorId(transactionEntity.getCreatorId()).txType(transactionEntity.getTxType())
+				.timestamp(transactionEntity.getTimestamp()).ccName(transactionEntity.getCcName())
+				.ccVersion(transactionEntity.getCcVersion()).ccArgs(transactionEntity.getCcArgs())
+				.blockDto(toDto(transactionEntity.getBlockEntity()))
 				.channelInfoDto(toDto(transactionEntity.getChannelInfoEntity()))
 				.createdAt(transactionEntity.getCreatedAt()).build();
 	}
 
 	public BlockDto toDto(BlockEntity blockEntity) {
 		return BlockDto.builder().blockDataHash(blockEntity.getBlockDataHash()).blockNum(blockEntity.getBlockNum())
-				.txCount(blockEntity.getTxCount()).timestamp(blockEntity.getTimestamp()).prevDataHash(blockEntity.getPrevDataHash())
-				.channelInfoDto(toDto(blockEntity.getChannelInfoEntity())).createdAt(blockEntity.getCreatedAt())
-				.build();
+				.txCount(blockEntity.getTxCount()).timestamp(blockEntity.getTimestamp())
+				.prevDataHash(blockEntity.getPrevDataHash()).channelInfoDto(toDto(blockEntity.getChannelInfoEntity()))
+				.createdAt(blockEntity.getCreatedAt()).build();
 
 	}
 

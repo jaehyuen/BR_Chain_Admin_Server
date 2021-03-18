@@ -9,9 +9,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 
+import org.hyperledger.fabric.gateway.ContractEvent;
+import org.hyperledger.fabric.gateway.Network;
 import org.hyperledger.fabric.sdk.BlockEvent;
 import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.Channel;
@@ -75,17 +78,15 @@ public class FabricService {
 	private void init() throws Exception {
 
 		List<ChannelInfoDto> channelInfoDtoList = new ArrayList<ChannelInfoDto>();
-		List<FabricMemberDto> peerDtoArr        = new ArrayList<FabricMemberDto>();
-		List<FabricMemberDto> ordererDtoArr     = new ArrayList<FabricMemberDto>();
-		List<String> orgs                       = new ArrayList<String>();
-		
+		List<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
+		List<FabricMemberDto> ordererDtoArr = new ArrayList<FabricMemberDto>();
+		List<String> orgs = new ArrayList<String>();
+
 		Channel channel;
 
-		
 		channelInfoDtoList.addAll(channelService.findChannelInfoList());
-		
-		for (ChannelInfoDto channelInfoDto : channelInfoDtoList) {
 
+		for (ChannelInfoDto channelInfoDto : channelInfoDtoList) {
 
 			orgs.addAll(containerService.findOrgsInChannel(channelInfoDto.getChannelName()));
 
@@ -95,8 +96,10 @@ public class FabricService {
 
 			containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
 
-			channel = fabricClient.testInitChannel(peerDtoArr, ordererDtoArr, channelInfoDto.getChannelName(),
-					channelInfoDto.getChannelBlock() == 0 ? 0 : channelInfoDto.getChannelBlock() - 1);
+			Network newwork = fabricClient.connectNetwork(channelInfoDto.getChannelName(), orgs.get(0),
+					util.createFabrcSetting(channelInfoDto.getChannelName(), ordererDtoArr, peerDtoArr, orgs));
+
+			channel = newwork.getChannel();
 
 			for (int i = channelInfoDto.getChannelBlock(); i < channel.queryBlockchainInfo().getHeight(); i++) {
 
@@ -110,6 +113,11 @@ public class FabricService {
 
 			fabricClient.testRegisterEventListener(channelInfoDto.getChannelName(),
 					createBlockListener(channelInfoDto.getChannelName()));
+
+			peerDtoArr.clear();
+			ordererDtoArr.clear();
+			orgs.clear();
+
 		}
 
 	}
@@ -331,10 +339,9 @@ public class FabricService {
 			// 채널 생성시 필요한 fabricMemvber(peer, orderer) Dto 생성
 			ArrayList<FabricMemberDto> peerDtoArr = new ArrayList<FabricMemberDto>();
 
-			for (int i = 0; i < createChannelDto.getPeerOrgs().length; i++) {
-
-				peerDtoArr.addAll(containerService.createMemberDtoArr("peer", createChannelDto.getPeerOrgs()[i]));
-
+		
+			for(String org:createChannelDto.getPeerOrgs()) {
+				peerDtoArr.addAll(containerService.createMemberDtoArr("peer", org));
 			}
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					createChannelDto.getOrderingOrg());
@@ -421,6 +428,10 @@ public class FabricService {
 			logger.info("[채널생성] 종료");
 
 			fabricClient.testInitChannel(peerDtoArr, ordererDtoArr, createChannelDto.getChannelName(), 0);
+			
+			Network newwork = fabricClient.connectNetwork(channelInfoDto.getChannelName(), createChannelDto.getPeerOrgs().get(0),
+					util.createFabrcSetting(channelInfoDto.getChannelName(), ordererDtoArr, peerDtoArr, createChannelDto.getPeerOrgs()));
+			
 			fabricClient.testRegisterEventListener(createChannelDto.getChannelName(),
 					createBlockListener(channelInfoDto.getChannelName()));
 
@@ -654,25 +665,6 @@ public class FabricService {
 			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer",
 					channelInfoDto.getOrderingOrg());
 
-//			Optional<ChannelHandleEntity> channelHandleEntity = channelService.findChannelHandleByChannel(channelName);
-//			ChannelHandleDto channelHandleDto = new ChannelHandleDto();
-//
-//			if (channelHandleEntity.isPresent()) {
-//				throw new Exception("already registered event listener");
-//
-//			} else {
-//
-//				String handle = fabricClient.registerEventListener(
-//						peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
-//						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
-//						createBlockListener(channelName),
-//						channelInfoDto.getChannelBlock() < 1 ? 0 : channelInfoDto.getChannelBlock() - 1);
-//
-//				channelHandleDto.setChannelName(channelName);
-//				channelHandleDto.setHandle(handle);
-//				channelService.saveChannelHandle(channelHandleDto);
-//
-//			}
 			ChannelHandleDto channelHandleDto;
 			try {
 
@@ -687,12 +679,13 @@ public class FabricService {
 				channelHandleDto = new ChannelHandleDto();
 
 				// 이벤트 리슨 등록
-				String handle = fabricClient.registerEventListener(
-						peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
-						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
-						createBlockListener(channelName),
-						channelInfoDto.getChannelBlock() < 1 ? 0 : channelInfoDto.getChannelBlock() - 1);
+//				String handle = fabricClient.registerEventListener(
+//						peerDtoArr.get((int) (Math.random() * peerDtoArr.size())),
+//						ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName,
+//						createBlockListener(channelName),
+//						channelInfoDto.getChannelBlock() < 1 ? 0 : channelInfoDto.getChannelBlock() - 1);
 
+				String handle = "zz";
 				channelHandleDto.setChannelName(channelName);
 				channelHandleDto.setHandle(handle);
 
@@ -837,43 +830,72 @@ public class FabricService {
 	 * @return 생성한 이벤트 리스너
 	 */
 
-	private BlockListener createBlockListener(String channelName) {
+	private Consumer<BlockEvent> createBlockListener(String channelName) {
 
-		// 블록 리스너 생성
-		BlockListener blockListener = new BlockListener() {
+		Consumer<BlockEvent> blockEventListener = blockEvent -> {
 
-			@Override
-			public void received(BlockEvent blockEvent) {
+			// 채널 정보 조회
+			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
+			try {
+				blockService.inspectBlock(blockEvent, channelInfoDto);
+			} catch (InvalidProtocolBufferException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 
-				// 채널 정보 조회
-				ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
-				try {
-					blockService.inspectBlock(blockEvent, channelInfoDto);
-				} catch (InvalidProtocolBufferException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+			channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
+			channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
+			channelService.saveChannelInfo(channelInfoDto);
 
-				channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
-				channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
-				channelService.saveChannelInfo(channelInfoDto);
+			try {
 
-				try {
+				// 웹소캣 연결된 클라이언트에게 이벤트 전송
+				webSocket.convertAndSend("/event", blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
 
-					// 웹소캣 연결된 클라이언트에게 이벤트 전송
-					webSocket.convertAndSend("/event",
-							blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
-
-				} catch (MessagingException | InvalidProtocolBufferException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
+			} catch (MessagingException | InvalidProtocolBufferException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
 		};
 
-		return blockListener;
+		return blockEventListener;
+
+//		// 블록 리스너 생성
+//		BlockListener blockListener = new BlockListener() {
+//
+//			@Override
+//			public void received(BlockEvent blockEvent) {
+//
+//				// 채널 정보 조회
+//				ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
+//				try {
+//					blockService.inspectBlock(blockEvent, channelInfoDto);
+//				} catch (InvalidProtocolBufferException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+//
+//				channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
+//				channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
+//				channelService.saveChannelInfo(channelInfoDto);
+//
+//				try {
+//
+//					// 웹소캣 연결된 클라이언트에게 이벤트 전송
+//					webSocket.convertAndSend("/event",
+//							blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
+//
+//				} catch (MessagingException | InvalidProtocolBufferException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//
+//			}
+//
+//		};
+//
+//		return blockListener;
 	}
 
 	/**

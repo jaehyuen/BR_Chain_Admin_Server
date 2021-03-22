@@ -1014,42 +1014,28 @@ public class FabricClient {
 			channel.addPeer(peer);
 			// 체인코드 승인 함수 시작
 			approveChaincodeWithLifecycle(client, channel, ccName, packageId, ccVersion, sequence);
-			verifyChaincodeApproved(client, channel, ccName, packageId, ccVersion, sequence);
 			channel.removePeer(peer);
 			
 		}
-		
-		
-//		
 		
 
 		Thread.sleep(1000);
-		for (String org : orgs) {
-			for (FabricMemberDto peerDto : peerDtoArr) {
-				if (org.equals(peerDto.getOrgName())) {
-					client    = createClient(peerDto);
-					peerProps = createFabricProperties(peerDto);
-					peer      = client.newPeer(peerDto.getConName(),peerDto.getConUrl(),peerProps);
-				}
 
-			}
-			
-			System.out.println("Org : "+org+", peer : "+peer.getName());
-			channel.addPeer(peer);
-			// 체인코드 승인 함수 시작
-			verifyChaincodeApproved(client, channel, ccName, packageId, ccVersion, sequence);
-			response.addAll(commitChaincodeWithLifecycle(client, channel, ccName, packageId, ccVersion, sequence));
-			channel.removePeer(peer);
-			
-		}
+		client    = createClient(peerDtoArr.get(0));
+		peerProps = createFabricProperties(peerDtoArr.get(0));
+		peer      = client.newPeer(peerDtoArr.get(0).getConName(), peerDtoArr.get(0).getConUrl(), peerProps);
+	
 		
 		channel.addPeer(peer);
 		
+		// 체인코드 승인 함수 시작
+		response.addAll(commitChaincodeWithLifecycle(client, channel, ccName, packageId, ccVersion, sequence));
+
+		Thread.sleep(1000);
 		channel.sendTransaction(response);
 		// 체인코드 커밋 함수 시작
-		
-		
-//		channel.shutdown(false);
+
+		channel.shutdown(false);
 	}
 
 	/**
@@ -1361,17 +1347,7 @@ public class FabricClient {
 		
 		return  channel.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest, channel.getPeers());
 
-//		for (LifecycleCommitChaincodeDefinitionProposalResponse response : lifecycleCommitChaincodeDefinitionProposalResponses) {
-//
-//			System.out.println("[commitChaincodeWithLifecycle()] ---"+response.getChaincodeActionResponseStatus());
-//		}
-//
-//		// 체인코드 커밋 결과 오더러로 전송
-//		channel.sendTransaction(lifecycleCommitChaincodeDefinitionProposalResponses);
-//
-//		System.out.println("[commitChaincodeWithLifecycle()] Finish Commit Chaincode With LifeCycle");
-//		System.out.println("");
-//		System.out.println("");
+
 
 	}
 

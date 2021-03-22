@@ -974,21 +974,18 @@ public class FabricClient {
 	}
 
 	public void activeChaincode(List<FabricMemberDto> peerDtoArr, FabricMemberDto ordererDto, String channelName, List<String> orgs, String ccName, String ccVersion) throws Exception {
-		HFClient   client       = createClient(peerDtoArr.get(0));
+		HFClient                                                       client       = createClient(peerDtoArr.get(0));
 
 		// 오더러 정보 생성
-		Properties ordererProps = createFabricProperties(ordererDto);
-		Orderer    orderer      = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
+		Properties                                                     ordererProps = createFabricProperties(ordererDto);
+		Orderer                                                        orderer      = client.newOrderer(ordererDto.getConName(), ordererDto.getConUrl(), ordererProps);
 
 		// 피어 정보 생성
-		Properties peerProps    = createFabricProperties(peerDtoArr.get(0));
-		Peer       peer         = client.newPeer(peerDtoArr.get(0)
-			.getConName(),
-				peerDtoArr.get(0)
-					.getConUrl(),
-				peerProps);
+		Properties                                                     peerProps    = createFabricProperties(peerDtoArr.get(0));
+		Peer                                                           peer         = client.newPeer(peerDtoArr.get(0).getConName(),peerDtoArr.get(0).getConUrl(),peerProps);
 
-		Channel    channel      = client.newChannel(channelName);
+		Channel                                                        channel      = client.newChannel(channelName);
+		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> response     = new ArrayList<LifecycleCommitChaincodeDefinitionProposalResponse>();
 
 		channel.addPeer(peer);
 		channel.addOrderer(orderer);
@@ -996,6 +993,8 @@ public class FabricClient {
 
 		long   sequence  = getChaincodeSequence(client, channel, ccName);
 		String packageId = verifyChaincodeInstalled(client, channel.getPeers(), ccName, ccVersion);
+		
+		channel.removePeer(peer);
 
 		System.out.println(sequence + "  sequencesequencesequence");
 		System.out.println(packageId + "  packageIdpackageIdpackageId");
@@ -1004,16 +1003,53 @@ public class FabricClient {
 		for (String org : orgs) {
 			for (FabricMemberDto peerDto : peerDtoArr) {
 				if (org.equals(peerDto.getOrgName())) {
-					client = createClient(peerDto);
+					client    = createClient(peerDto);
+					peerProps = createFabricProperties(peerDto);
+					peer      = client.newPeer(peerDto.getConName(),peerDto.getConUrl(),peerProps);
 				}
 
 			}
-			verifyChaincodeApproved(client, testNetworkMap.get(channelName).getChannel(), ccName, packageId, ccVersion, sequence);
+			
+			System.out.println("Org : "+org+", peer : "+peer.getName());
+			channel.addPeer(peer);
+			// 체인코드 승인 함수 시작
+			approveChaincodeWithLifecycle(client, channel, ccName, packageId, ccVersion, sequence);
+			verifyChaincodeApproved(client, channel, ccName, packageId, ccVersion, sequence);
+			channel.removePeer(peer);
+			
 		}
-//		verifyChaincodeApproved(client, channel, ccName, packageId, ccVersion, sequence);
+		
+		
+//		
+		
 
+		Thread.sleep(1000);
+		for (String org : orgs) {
+			for (FabricMemberDto peerDto : peerDtoArr) {
+				if (org.equals(peerDto.getOrgName())) {
+					client    = createClient(peerDto);
+					peerProps = createFabricProperties(peerDto);
+					peer      = client.newPeer(peerDto.getConName(),peerDto.getConUrl(),peerProps);
+				}
+
+			}
+			
+			System.out.println("Org : "+org+", peer : "+peer.getName());
+			channel.addPeer(peer);
+			// 체인코드 승인 함수 시작
+			verifyChaincodeApproved(client, channel, ccName, packageId, ccVersion, sequence);
+			response.addAll(commitChaincodeWithLifecycle(client, channel, ccName, packageId, ccVersion, sequence));
+			channel.removePeer(peer);
+			
+		}
+		
+		channel.addPeer(peer);
+		
+		channel.sendTransaction(response);
 		// 체인코드 커밋 함수 시작
-		commitChaincodeWithLifecycle(client, testNetworkMap.get(channelName).getChannel(), ccName, packageId, ccVersion, sequence);
+		
+		
+//		channel.shutdown(false);
 	}
 
 	/**
@@ -1216,7 +1252,7 @@ public class FabricClient {
 			.getName());
 
 		// 체인코드 PDC 설정파일 설정
-		ChaincodeCollectionConfiguration                   collectionConfig                                   = ChaincodeCollectionConfiguration.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
+//		ChaincodeCollectionConfiguration                   collectionConfig                                   = ChaincodeCollectionConfiguration.fromJsonFile(new File(System.getProperty("user.dir") + "/chaincode/collections_config.json"));
 
 		// 체인코드 승인 리퀘스트 생성
 		LifecycleApproveChaincodeDefinitionForMyOrgRequest lifecycleApproveChaincodeDefinitionForMyOrgRequest = client.newLifecycleApproveChaincodeDefinitionForMyOrgRequest();
@@ -1226,7 +1262,7 @@ public class FabricClient {
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeVersion(chaincodeVersion);
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setInitRequired(false);
 		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setPackageId(packageID);
-		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeCollectionConfiguration(collectionConfig);
+//		lifecycleApproveChaincodeDefinitionForMyOrgRequest.setChaincodeCollectionConfiguration(collectionConfig);
 
 		// 생성한 리퀘스트 전송
 		Collection<LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse> lifecycleApproveChaincodeDefinitionForMyOrgProposalResponse = channel.sendLifecycleApproveChaincodeDefinitionForMyOrgProposal(lifecycleApproveChaincodeDefinitionForMyOrgRequest, channel.getPeers());
@@ -1298,11 +1334,13 @@ public class FabricClient {
 	 * @param packageID        체인코드 패키지 아이디
 	 * @param chaincodeVersion 체인코드 버전
 	 * @param sequence         체인코드 시퀀스
+	 * @return 
+	 * @return 
 	 * 
 	 * @throws Exception
 	 */
 
-	private void commitChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID, String chaincodeVersion, long sequence) throws Exception {
+	private Collection<LifecycleCommitChaincodeDefinitionProposalResponse> commitChaincodeWithLifecycle(HFClient client, Channel channel, String chaincodeName, String packageID, String chaincodeVersion, long sequence) throws Exception {
 
 		System.out.println("[commitChaincodeWithLifecycle()] Start Commit Chaincode With LifeCycle");
 
@@ -1319,19 +1357,21 @@ public class FabricClient {
 //		lifecycleCommitChaincodeDefinitionRequest.setChaincodeCollectionConfiguration(collectionConfig);
 
 		// 생성한 리퀘스트 전송
-		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> lifecycleCommitChaincodeDefinitionProposalResponses = channel.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest, channel.getPeers());
+//		Collection<LifecycleCommitChaincodeDefinitionProposalResponse> lifecycleCommitChaincodeDefinitionProposalResponses = new ArrayList<LifecycleCommitChaincodeDefinitionProposalResponse>();
+		
+		return  channel.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest, channel.getPeers());
 
-		for (LifecycleCommitChaincodeDefinitionProposalResponse response : lifecycleCommitChaincodeDefinitionProposalResponses) {
-
-			System.out.println("[commitChaincodeWithLifecycle()] ---"+response.getChaincodeActionResponseStatus());
-		}
-
-		// 체인코드 커밋 결과 오더러로 전송
-		channel.sendTransaction(lifecycleCommitChaincodeDefinitionProposalResponses);
-
-		System.out.println("[commitChaincodeWithLifecycle()] Finish Commit Chaincode With LifeCycle");
-		System.out.println("");
-		System.out.println("");
+//		for (LifecycleCommitChaincodeDefinitionProposalResponse response : lifecycleCommitChaincodeDefinitionProposalResponses) {
+//
+//			System.out.println("[commitChaincodeWithLifecycle()] ---"+response.getChaincodeActionResponseStatus());
+//		}
+//
+//		// 체인코드 커밋 결과 오더러로 전송
+//		channel.sendTransaction(lifecycleCommitChaincodeDefinitionProposalResponses);
+//
+//		System.out.println("[commitChaincodeWithLifecycle()] Finish Commit Chaincode With LifeCycle");
+//		System.out.println("");
+//		System.out.println("");
 
 	}
 

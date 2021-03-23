@@ -160,8 +160,9 @@ public class ChannelService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-				.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
+//	ConInfoDto test=containerService.findConInfoByConName(conName);
+	ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByConInfoEntityConName(conName);
+
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 

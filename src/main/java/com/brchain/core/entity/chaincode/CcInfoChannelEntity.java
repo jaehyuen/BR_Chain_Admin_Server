@@ -43,7 +43,7 @@ public class CcInfoChannelEntity extends BaseEntity {
 	private ChannelInfoEntity channelInfoEntity;
 
 	@ManyToOne(targetEntity = CcInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-	@JoinColumn(name = "CCINFO_CC_NAME")
+	@JoinColumn(name = "CCINFO_CC_ID")
 	private CcInfoEntity ccInfoEntity;
 
 	@Builder

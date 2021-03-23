@@ -613,7 +613,8 @@ public class FabricService {
 			try {
 
 				// 이미 인스턴스화가 진행된 체인코드인지 조회
-				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
+//				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
+				ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(), activeCcDto.getId());
 				fabricClient.activeChaincode(peerDtoArr,ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
 
 				ccInfoChannelDto.setCcVersion(activeCcDto.getCcVersion());
@@ -645,87 +646,88 @@ public class FabricService {
 
 	}
 
-	/**
-	 * 체인코드 인스턴스화 서비스 (1.4.x 버전)
-	 * 
-	 * @param instantiateCcDto 체인코드 인스턴스화 관련 DTO
-	 * 
-	 * @return 결과 DTO(체인코드 인스턴스화 결과)
-	 */
-
-	public ResultDto instantiateChaincode(ActiveCcDto instantiateCcDto) {
-
-		logger.info("[체인코드 인스턴스화] 시작");
-		logger.info("[체인코드 인스턴스화] InstantiateCcDto : " + instantiateCcDto);
-
-		logger.info("[체인코드 인스턴스화] instantiateCcDto.getChannelName() : " + instantiateCcDto.getChannelName());
-
-		try {
-
-			// 채인코드 인스턴스화를 진항항 채널 정보 조회
-			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(instantiateCcDto.getChannelName());
-
-			// 인스턴스화를 진행할 체인코드 정보 조회
-			CcInfoDto      ccInfoDto      = chaincodeService.findCcInfoById(instantiateCcDto.getId());
-
-			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoDto);
-
-			// 체인코드 인스턴스화를 진행할 피어조회
-//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
-
-			logger.info("[체인코드 인스턴스화] channelInfoPeerDtoArr : " + channelInfoPeerDtoArr);
-
-			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
-			ArrayList<FabricMemberDto> peerDtoArr    = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
-				.getConInfoDto()
-				.getOrgName());
-
-			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
-			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
-
-			CcInfoChannelDto           ccInfoChannelDto;
-			try {
-
-				// 이미 인스턴스화가 진행된 체인코드인지 조회
-				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
-
-				// 조회가 되면 업데이트 진행
-				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(),
-						instantiateCcDto.getCcLang(), true);
-
-				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
-
-				// 채널에 활성화된 체인코드정보 업데이트
-				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
-
-			} catch (IllegalArgumentException e) {
-
-				// 조회가 안되면 인스턴스화 진행
-				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(),
-						instantiateCcDto.getCcLang(), false);
-
-				ccInfoChannelDto = new CcInfoChannelDto();
-				ccInfoChannelDto.setCcInfoDto(ccInfoDto);
-				ccInfoChannelDto.setChannelInfoDto(channelInfoDto);
-				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
-
-				// 채널에 활성화된 체인코드정보 저장
-				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
-			}
-
-			logger.info("[체인코드 인스턴스화] 종료");
-
-		} catch (Exception e) {
-
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
-		}
-
-		return util.setResult("0000", true, "Success instantiate chaincode", null);
-
-	}
+//	/**
+//	 * 체인코드 인스턴스화 서비스 (1.4.x 버전)
+//	 * 
+//	 * @param instantiateCcDto 체인코드 인스턴스화 관련 DTO
+//	 * 
+//	 * @return 결과 DTO(체인코드 인스턴스화 결과)
+//	 */
+//
+//	public ResultDto instantiateChaincode(ActiveCcDto instantiateCcDto) {
+//
+//		logger.info("[체인코드 인스턴스화] 시작");
+//		logger.info("[체인코드 인스턴스화] InstantiateCcDto : " + instantiateCcDto);
+//
+//		logger.info("[체인코드 인스턴스화] instantiateCcDto.getChannelName() : " + instantiateCcDto.getChannelName());
+//
+//		try {
+//
+//			// 채인코드 인스턴스화를 진항항 채널 정보 조회
+//			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(instantiateCcDto.getChannelName());
+//
+//			// 인스턴스화를 진행할 체인코드 정보 조회
+//			CcInfoDto      ccInfoDto      = chaincodeService.findCcInfoById(instantiateCcDto.getId());
+//
+//			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoDto);
+//
+//			// 체인코드 인스턴스화를 진행할 피어조회
+////			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
+//
+//			logger.info("[체인코드 인스턴스화] channelInfoPeerDtoArr : " + channelInfoPeerDtoArr);
+//
+//			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
+//			ArrayList<FabricMemberDto> peerDtoArr    = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
+//				.getConInfoDto()
+//				.getOrgName());
+//
+//			// 체인코드 인스턴스화를 진행할 FabricMembetDto(peer) 생성
+//			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
+//
+//			CcInfoChannelDto           ccInfoChannelDto;
+//			try {
+//
+//				// 이미 인스턴스화가 진행된 체인코드인지 조회
+////				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
+//				ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(instantiateCcDto.getChannelName(), instantiateCcDto.getId());
+//
+//				// 조회가 되면 업데이트 진행
+//				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(),
+//						instantiateCcDto.getCcLang(), true);
+//
+//				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
+//
+//				// 채널에 활성화된 체인코드정보 업데이트
+//				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
+//
+//			} catch (IllegalArgumentException e) {
+//
+//				// 조회가 안되면 인스턴스화 진행
+//				fabricClient.instantiateChaincode(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), instantiateCcDto.getChannelName(), instantiateCcDto.getCcName(), instantiateCcDto.getCcVersion(),
+//						instantiateCcDto.getCcLang(), false);
+//
+//				ccInfoChannelDto = new CcInfoChannelDto();
+//				ccInfoChannelDto.setCcInfoDto(ccInfoDto);
+//				ccInfoChannelDto.setChannelInfoDto(channelInfoDto);
+//				ccInfoChannelDto.setCcVersion(instantiateCcDto.getCcVersion());
+//
+//				// 채널에 활성화된 체인코드정보 저장
+//				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
+//			}
+//
+//			logger.info("[체인코드 인스턴스화] 종료");
+//
+//		} catch (Exception e) {
+//
+//			logger.error(e.getMessage());
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+//		}
+//
+//		return util.setResult("0000", true, "Success instantiate chaincode", null);
+//
+//	}
 
 	/**
 	 * 채널 블록 이벤트 등록 서비스

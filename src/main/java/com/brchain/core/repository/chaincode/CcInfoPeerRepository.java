@@ -14,7 +14,9 @@ public interface CcInfoPeerRepository extends JpaRepository<CcInfoPeerEntity, Lo
 
 	ArrayList<CcInfoPeerEntity> findByConInfoEntity(ConInfoEntity conInfoEntity);
 	
-	@Query(value = "SELECT * FROM CCINFO_PEER WHERE CCINFO_ID=:id", nativeQuery = true)
-	List<CcInfoPeerEntity> findByccInfoId(Long id);
+//	@Query(value = "SELECT * FROM CCINFO_PEER WHERE CCINFO_ID=:id", nativeQuery = true)
+	
+	@Query("select a,b,c from CcInfoPeerEntity a left join fetch a.conInfoEntity b left join fetch a.ccInfoEntity c where c.id=:id ")
+	List<CcInfoPeerEntity> findByCcId(Long id);
 
 }

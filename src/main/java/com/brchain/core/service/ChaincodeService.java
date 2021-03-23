@@ -235,7 +235,8 @@ public class ChaincodeService {
 	}
 
 	public List<CcInfoPeerDto> findByccInfoId(Long id) {
-		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByccInfoId(id);
+//		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByccInfoId(id);
+		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByCcId(id);
 		List<CcInfoPeerDto>    ccInfoPeerDtoList   = new ArrayList<CcInfoPeerDto>();
 		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 			ccInfoPeerDtoList.add(util.toDto(ccInfoPeerEntity));

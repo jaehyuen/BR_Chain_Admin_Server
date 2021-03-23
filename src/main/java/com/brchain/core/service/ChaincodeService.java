@@ -155,7 +155,8 @@ public class ChaincodeService {
 	public ResultDto getCcListToActiveInChannel(String channelName) {
 		JSONArray                     jsonArr               = new JSONArray();
 
-		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
+//		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
+		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelName);
 
 		for (ChannelInfoPeerDto channelInfoPeerDto : channelInfoPeerDtoArr) {
 

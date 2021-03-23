@@ -671,7 +671,8 @@ public class FabricService {
 			logger.info("[체인코드 인스턴스화] channelInfo : " + channelInfoDto);
 
 			// 체인코드 인스턴스화를 진행할 피어조회
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			logger.info("[체인코드 인스턴스화] channelInfoPeerDtoArr : " + channelInfoPeerDtoArr);
 
@@ -745,7 +746,8 @@ public class FabricService {
 			ChannelInfoDto                channelInfoDto        = channelService.findChannelInfoByChannelName(channelName);
 
 			// 이벤트 리슨을 등록할 피어 정보 조회
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			// 이벤트 리슨을 등록할 FabricMembetDto(peer) 생성
 			ArrayList<FabricMemberDto>    peerDtoArr            = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
@@ -811,7 +813,8 @@ public class FabricService {
 			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
 
 			// 이벤트 리슨을 삭제할 피어 정보 조회
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			// 이벤트 리슨을 삭제할 FabricMemberDto(peer) 생성
 			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
@@ -861,8 +864,8 @@ public class FabricService {
 			ChannelInfoDto     channelInfoDto     = channelService.findChannelInfoByChannelName(channelName);
 
 			// 앵커피어를 등록할 채널에 피어 정보 조회??
-			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto)
-				.get(0);
+//			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto).get(0);
+			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto.getChannelName(), conInfoDto.getConName()).get(0);
 
 			// 조회한 피어에 앵커피어 설정이 되어있으면 에러발샐
 			if (channelInfoPeerDto.isAnchorYn()) {

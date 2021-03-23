@@ -190,8 +190,7 @@ public class ChannelService {
 
 		JSONArray resultJsonArr = new JSONArray();
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository
-				.findByChannelInfoEntity(util.toEntity(findChannelInfoByChannelName(channelName)));
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerArr = channelInfoPeerRepository.findByChannelName(channelName);
 
 		for (ChannelInfoPeerEntity channelInfoPeer : channelInfoPeerArr) {
 
@@ -214,10 +213,10 @@ public class ChannelService {
 	 * @return 조회한 채널 정보 (피어) DTO 리스트
 	 */
 
-	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelInfo(ChannelInfoDto channelInfoDto) {
+//	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelInfo(ChannelInfoDto channelInfoDto) {
+	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelInfo(String channelName) {
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository
-				.findByChannelInfoEntity(util.toEntity(channelInfoDto));
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository.findByChannelName(channelName);
 
 		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
 
@@ -237,11 +236,11 @@ public class ChannelService {
 	 * @return 조회한 채널 정보 (피어) DTO 리스트
 	 */
 
-	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelNameAndConName(ChannelInfoDto channelInfoDto,
-			ConInfoDto conInfoDto) {
+//	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelNameAndConName(ChannelInfoDto channelInfoDto, ConInfoDto conInfoDto) {
+	public ArrayList<ChannelInfoPeerDto> findChannelInfoPeerByChannelNameAndConName(String channelName, String conName) {
 
-		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository
-				.findByChannelInfoEntityAndConInfoEntity(util.toEntity(channelInfoDto), util.toEntity(conInfoDto));
+//		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository.findByChannelNameAndConName(util.toEntity(channelInfoDto), util.toEntity(conInfoDto));
+		ArrayList<ChannelInfoPeerEntity> channelInfoPeerEntityArr = channelInfoPeerRepository.findByChannelNameAndConName(channelName, conName);
 
 		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = new ArrayList<ChannelInfoPeerDto>();
 

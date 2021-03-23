@@ -17,10 +17,15 @@ public interface ChannelInfoPeerRepository extends JpaRepository<ChannelInfoPeer
 	
 
 	@Query("select a,b,c from ChannelInfoPeerEntity a left join fetch a.channelInfoEntity b left join fetch a.conInfoEntity c where c.conName=:conName ")
-	ArrayList<ChannelInfoPeerEntity> findByConInfoEntityConName(@Param("conName")String conName);
+	ArrayList<ChannelInfoPeerEntity> findByConInfoEntityConName(@Param("conName") String conName);
 
-	ArrayList<ChannelInfoPeerEntity> findByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
+	@Query("select a,b,c from ChannelInfoPeerEntity a left join fetch a.channelInfoEntity b left join fetch a.conInfoEntity c where b.channelName=:channelName ")
+	ArrayList<ChannelInfoPeerEntity> findByChannelName(@Param("channelName") String channelName);
 	
-	ArrayList<ChannelInfoPeerEntity> findByChannelInfoEntityAndConInfoEntity(ChannelInfoEntity channelInfoEntity,ConInfoEntity conInfoEntity);
+//	ArrayList<ChannelInfoPeerEntity> findByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
+	
+//	ArrayList<ChannelInfoPeerEntity> findByChannelInfoEntityAndConInfoEntity(ChannelInfoEntity channelInfoEntity,ConInfoEntity conInfoEntity);
+	@Query("select a,b,c from ChannelInfoPeerEntity a left join fetch a.channelInfoEntity b left join fetch a.conInfoEntity c where b.channelName=:channelName and c.conName=:conName ")
+	ArrayList<ChannelInfoPeerEntity> findByChannelNameAndConName(@Param("conName") String conName, @Param("channelName") String channelName);
 
 }

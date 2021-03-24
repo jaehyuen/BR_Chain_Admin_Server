@@ -45,6 +45,7 @@ import com.brchain.core.dto.channel.ChannelHandleDto;
 import com.brchain.core.dto.channel.ChannelInfoDto;
 import com.brchain.core.dto.channel.ChannelInfoPeerDto;
 import com.brchain.core.dto.channel.CreateChannelDto;
+import com.brchain.core.repository.channel.ChannelInfoPeerRepository;
 import com.brchain.core.util.Util;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -72,6 +73,7 @@ public class FabricService {
 
 	private Logger                      logger = LoggerFactory.getLogger(this.getClass());
 
+	
 	@PostConstruct
 	private void init() throws Exception {
 

@@ -1,17 +1,17 @@
 package com.brchain.core.repository.channel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.brchain.core.entity.ConInfoEntity;
-import com.brchain.core.entity.channel.ChannelInfoEntity;
 import com.brchain.core.entity.channel.ChannelInfoPeerEntity;
 
-public interface ChannelInfoPeerRepository extends JpaRepository<ChannelInfoPeerEntity, Long> {
+@Repository
+public interface ChannelInfoPeerRepository extends JpaRepository<ChannelInfoPeerEntity, Long>, ChannelInfoPeerRepositoryCustom {
 
 	List<ChannelInfoPeerEntity> findByConInfoEntity(ConInfoEntity conInfoEntity);
 	

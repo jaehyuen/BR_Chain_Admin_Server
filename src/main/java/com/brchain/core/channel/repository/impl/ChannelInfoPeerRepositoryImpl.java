@@ -1,4 +1,4 @@
-package com.brchain.core.channel.repository.Impl;
+package com.brchain.core.channel.repository.impl;
 
 import java.util.List;
 

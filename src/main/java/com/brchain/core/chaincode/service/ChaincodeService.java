@@ -185,12 +185,11 @@ public class ChaincodeService {
 	 */
 
 	public ResultDto getCcListActive(String channelName) {
-		JSONArray                      jsonArr                = new JSONArray();
+		
+		JSONArray                 jsonArr                 = new JSONArray();
+		List<CcInfoChannelEntity> ccInfoChannelEntityList = ccInfoChannelRepository.findByChannelName(channelName);
 
-//		ArrayList<CcInfoChannelEntity> ccInfoChannelEntityArr = ccInfoChannelRepository.findByChannelInfoEntity(util.toEntity(channelService.findChannelInfoByChannelName(channelName)));
-		ArrayList<CcInfoChannelEntity> ccInfoChannelEntityArr = ccInfoChannelRepository.findByChannelName(channelName);
-
-		for (CcInfoChannelEntity ccInfoChannelEntity : ccInfoChannelEntityArr) {
+		for (CcInfoChannelEntity ccInfoChannelEntity : ccInfoChannelEntityList) {
 
 			JSONObject ccInfoChannelJson = new JSONObject();
 
@@ -211,18 +210,18 @@ public class ChaincodeService {
 	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
-//	public CcInfoChannelDto findCcInfoChannelByChannelInfoAndCcInfo(ChannelInfoDto channelInfoDto, CcInfoDto ccInfoDto) {
 	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, Long id) {
 
-//		return util.toDto(ccInfoChannelRepository.findByChannelInfoEntityAndCcInfoEntity(util.toEntity(channelInfoDto), util.toEntity(ccInfoDto)).orElseThrow(IllegalArgumentException::new));
 		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, id).orElseThrow(IllegalArgumentException::new));
 
 	}
 
 	public List<CcInfoPeerDto> findByccInfoId(Long id) {
 //		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByccInfoId(id);
+		
 		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByCcId(id);
 		List<CcInfoPeerDto>    ccInfoPeerDtoList   = new ArrayList<CcInfoPeerDto>();
+		
 		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 			ccInfoPeerDtoList.add(util.toDto(ccInfoPeerEntity));
 		}

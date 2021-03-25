@@ -196,9 +196,6 @@ public class ChannelService {
 
 			JSONObject resultJson = new JSONObject();
 
-//			resultJson.put("conName", channelInfoPeer.getConInfoEntity().getConName());
-//			resultJson.put("anchorYn", channelInfoPeer.isAnchorYn());
-
 			resultJsonArr.add(util.toDto(channelInfoPeer));
 		}
 

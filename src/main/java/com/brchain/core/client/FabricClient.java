@@ -83,7 +83,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import com.brchain.core.dto.FabricMemberDto;
+import com.brchain.core.fabric.dto.FabricMemberDto;
 import com.brchain.core.util.BrchainUser;
 import com.brchain.core.util.Util;
 

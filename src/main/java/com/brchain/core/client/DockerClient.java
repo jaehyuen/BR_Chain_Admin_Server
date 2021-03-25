@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.brchain.core.dto.ConInfoDto;
+import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.util.ContainerSetting;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;

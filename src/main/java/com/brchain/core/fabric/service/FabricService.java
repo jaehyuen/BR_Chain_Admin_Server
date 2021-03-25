@@ -76,10 +76,7 @@ public class FabricService {
 	private final Util                  util;
 
 	private Logger                      logger = LoggerFactory.getLogger(this.getClass());
-	
-	private final ChannelInfoPeerRepository channelInfoPeerRepository;
-
-	
+		
 	@PostConstruct
 	private void init() throws Exception {
 
@@ -124,7 +121,6 @@ public class FabricService {
 			orgs.clear();
 
 		}
-		channelInfoPeerRepository.test("z");
 
 	}
 

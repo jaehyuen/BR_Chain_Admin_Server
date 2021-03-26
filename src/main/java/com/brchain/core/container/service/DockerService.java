@@ -1,5 +1,6 @@
 package com.brchain.core.container.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
+import com.brchain.core.container.dto.DockerStatsDto;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -175,7 +177,7 @@ public class DockerService {
 
 	public ResultDto getAllContainersInfo() {
 
-		JSONArray resultJsonArr = new JSONArray();
+		List<DockerStatsDto> dockerStatsDtoList = new ArrayList<DockerStatsDto>();
 
 		try {
 
@@ -183,25 +185,27 @@ public class DockerService {
 
 			for (Container container : containerList) {
 
-				JSONObject resultJson = new JSONObject();
-				ImmutableList<PortMapping> portList = container.ports();
+				DockerStatsDto             dockerStatsDto = new DockerStatsDto();
+				ImmutableList<PortMapping> portList       = container.ports();
 
 				for (PortMapping port : portList) {
 
-					if (!port.publicPort().equals(0)) {
+					if (!port.publicPort()
+						.equals(0)) {
 
-						resultJson.put("conPort", port.publicPort());
+						dockerStatsDto.setConPort(port.publicPort());
 
 					}
 
 				}
 
-				resultJson.put("conId", container.id());
-				resultJson.put("conName", container.names().get(0));
-				resultJson.put("conCreated", new Date(container.created() * 1000).toString());
-				resultJson.put("conStatus", container.status());
+				dockerStatsDto.setConId(container.id());
+				dockerStatsDto.setConName(container.names()
+					.get(0));
+				dockerStatsDto.setConCreated(new Date(container.created() * 1000).toString());
+				dockerStatsDto.setConStatus(container.status());
 
-				resultJsonArr.add(resultJson);
+				dockerStatsDtoList.add(dockerStatsDto);
 
 			}
 
@@ -213,7 +217,7 @@ public class DockerService {
 
 		}
 
-		return util.setResult("0000", true, "Success get all containers info", resultJsonArr);
+		return util.setResult("0000", true, "Success get all containers info", dockerStatsDtoList);
 	}
 
 	/**

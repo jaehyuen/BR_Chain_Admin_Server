@@ -302,10 +302,10 @@ public class ChannelService {
 			channelSummaryDto.setPercent(increase / preTxCnt * 100);
 
 			if (channelSummaryDto.getPreTxCnt() > channelSummaryDto.getNowTxCnt()) {
-				channelSummaryDto.setIndex(false);
+				channelSummaryDto.setFlag(false);
 
 			} else {
-				channelSummaryDto.setIndex(true);
+				channelSummaryDto.setFlag(true);
 			}
 
 		}

@@ -28,6 +28,8 @@ import lombok.NoArgsConstructor;
                         @ColumnResult(name="channelName", type = String.class),
                         @ColumnResult(name="channelBlock", type = Integer.class),
                         @ColumnResult(name="channelTx", type = Integer.class),
+                        @ColumnResult(name="preBlockCnt", type = Long.class),
+                        @ColumnResult(name="nowBlockCnt", type = Long.class),
                         @ColumnResult(name="preTxCnt", type = Long.class),
                         @ColumnResult(name="nowTxCnt", type = Long.class),
                 })
@@ -37,6 +39,14 @@ import lombok.NoArgsConstructor;
 @NamedNativeQuery(resultSetMapping = "ChannelSummaryDtoMapping",query = "SELECT CHANNEL_NAME as channelName,\n"
 		+ "CHANNEL_TX as channelTx,\n"
 		+ "CHANNEL_BLOCK as channelBlock,\n"
+		+ "       (SELECT Count(*)\n"
+		+ "        FROM   BLOCK \n"
+		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"
+		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preBlockCnt,\n"
+		+ "       (SELECT Count(*)\n"
+		+ "        FROM   BLOCK \n"
+		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210322'\n"
+		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowBlockCnt,\n"
 		+ "       (SELECT Count(*)\n"
 		+ "        FROM   TRANSACTION \n"
 		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"

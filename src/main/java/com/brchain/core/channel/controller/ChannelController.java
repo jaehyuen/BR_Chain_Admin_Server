@@ -40,6 +40,13 @@ public class ChannelController {
 		}
 
 	}
+	
+	@GetMapping("/list/summary")
+	public ResponseEntity<ResultDto> getChannelSummaryList() {
+
+		return ResponseEntity.status(HttpStatus.OK).body(channelService.getChannelSummaryList());
+
+	}
 
 	@ApiOperation(value = "Hyperledger Fabric 채널에 가입된 컨테이너 조회", notes = "컨테이너 이름 및 채널명으로 Hyperledger Fabric 채널에 가입된 컨테이너를 조회하는 API")
 	@GetMapping("/list/peer")

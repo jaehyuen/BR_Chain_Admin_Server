@@ -29,32 +29,31 @@ public class BlockEntity extends BaseEntity {
 
 	@Id
 	@Column(name = "BLOCK_DATA_HASH", nullable = false)
-	private String blockDataHash;
+	private String            blockDataHash;
 
 	@Column(name = "BLOCK_NUM", nullable = false)
-	private int blockNum;
+	private int               blockNum;
 
 	@Column(name = "TX_COUNT", nullable = false)
-	private int txCount;
+	private int               txCount;
 
 	@Column(name = "TIMESTAMP", nullable = false)
-	private Date timestamp;
+	private Date              timestamp;
 
 	@Column(name = "PREV_DATA_HASH", nullable = false)
-	private String prevDataHash;
+	private String            prevDataHash;
 
 	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
 	private ChannelInfoEntity channelInfoEntity;
 
 	@Builder
-	public BlockEntity(String blockDataHash, int blockNum, int txCount, Date timestamp, String prevDataHash,
-			ChannelInfoEntity channelInfoEntity, LocalDateTime createdAt) {
-		this.blockDataHash = blockDataHash;
-		this.blockNum = blockNum;
-		this.txCount = txCount;
-		this.timestamp = timestamp;
-		this.prevDataHash = prevDataHash;
+	public BlockEntity(String blockDataHash, int blockNum, int txCount, Date timestamp, String prevDataHash, ChannelInfoEntity channelInfoEntity, LocalDateTime createdAt) {
+		this.blockDataHash     = blockDataHash;
+		this.blockNum          = blockNum;
+		this.txCount           = txCount;
+		this.timestamp         = timestamp;
+		this.prevDataHash      = prevDataHash;
 		this.channelInfoEntity = channelInfoEntity;
 		super.setCreatedAt(createdAt);
 

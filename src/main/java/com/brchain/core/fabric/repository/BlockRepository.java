@@ -7,6 +7,7 @@ import com.brchain.core.fabric.entity.BlockEntity;
 
 public interface BlockRepository extends JpaRepository<BlockEntity, String> {
 	
+
 	int countByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
 
 

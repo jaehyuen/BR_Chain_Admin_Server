@@ -1,7 +1,9 @@
 package com.brchain.core.channel.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
@@ -10,14 +12,12 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelHandleDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.channel.dto.ChannelInfoPeerDto;
+import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
 import com.brchain.core.channel.repository.ChannelHandleRepository;
 import com.brchain.core.channel.repository.ChannelInfoPeerRepository;
 import com.brchain.core.channel.repository.ChannelInfoRepository;
-import com.brchain.core.container.dto.ConInfoDto;
-import com.brchain.core.container.entitiy.ConInfoEntity;
-import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class ChannelService {
 	private final ChannelHandleRepository channelHandleRepository;
 
 	// 서비스
-	private final ContainerService containerService;
+//	private final ContainerService containerService;
 
 	private final Util util;
 
@@ -283,6 +283,34 @@ public class ChannelService {
 	public ChannelHandleDto findChannelHandleByChannel(String channelName) {
 
 		return util.toDto(channelHandleRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
+	}
+
+	public ResultDto getChannelSummaryList() {
+
+		Date                    now                   = new Date();
+		List<ChannelSummaryDto> channelSummaryDtoList = channelInfoRepository.findChannelSummary();
+		for (ChannelSummaryDto channelSummaryDto : channelSummaryDtoList) {
+
+			Long preTxCnt = channelSummaryDto.getPreTxCnt();
+			Long nowTxCnt = channelSummaryDto.getNowTxCnt();
+			Long increase = Math.abs(preTxCnt - nowTxCnt);
+
+			if (preTxCnt == 0) {
+				preTxCnt = (long) 1;
+			}
+
+			channelSummaryDto.setPercent(increase / preTxCnt * 100);
+
+			if (channelSummaryDto.getPreTxCnt() > channelSummaryDto.getNowTxCnt()) {
+				channelSummaryDto.setIndex(false);
+
+			} else {
+				channelSummaryDto.setIndex(true);
+			}
+
+		}
+
+		return util.setResult("0000", true, "Success get channel info by channel name", channelSummaryDtoList);
 	}
 
 }

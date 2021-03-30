@@ -26,18 +26,16 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CHANNELINFO_PEER")
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class ChannelInfoPeerEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
-	private Long id;
+	private Long              id;
 
 	@Column(name = "ANCHOR_YN", nullable = false)
-	private boolean anchorYn;
+	private boolean           anchorYn;
 
 	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
@@ -45,16 +43,15 @@ public class ChannelInfoPeerEntity extends BaseEntity {
 
 	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CONINFO_CON_NAME")
-	private ConInfoEntity conInfoEntity;
+	private ConInfoEntity     conInfoEntity;
 
 	@Builder
-	public ChannelInfoPeerEntity(Long id, boolean anchorYn, ChannelInfoEntity channelInfoEntity,
-			ConInfoEntity conInfoEntity, LocalDateTime createdAt) {
+	public ChannelInfoPeerEntity(Long id, boolean anchorYn, ChannelInfoEntity channelInfoEntity, ConInfoEntity conInfoEntity, LocalDateTime createdAt) {
 
-		this.id = id;
-		this.anchorYn = anchorYn;
+		this.id                = id;
+		this.anchorYn          = anchorYn;
 		this.channelInfoEntity = channelInfoEntity;
-		this.conInfoEntity = conInfoEntity;
+		this.conInfoEntity     = conInfoEntity;
 		super.setCreatedAt(createdAt);
 
 	}

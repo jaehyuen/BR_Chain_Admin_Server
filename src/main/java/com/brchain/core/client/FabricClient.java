@@ -547,11 +547,12 @@ public class FabricClient {
 			sshClient.uploadFile(path, fileName + ".pb");
 		}
 
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 
 		// json 변경
 		String command = "configtxlator proto_decode --input " + sourceDir + "/" + path + fileName + ".pb --type common.Config > " + sourceDir + "/" + path + fileName + ".json";
-
+		logger.info("command :"+command);
+		
 		if (environment.getActiveProfiles()[0].equals("local")) {
 			sshClient.execCommand(command);
 			Thread.sleep(1000);
@@ -563,7 +564,7 @@ public class FabricClient {
 			util.execute(command);
 		}
 
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 		return (JSONObject) jsonParser.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
 
 	}

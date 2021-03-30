@@ -478,10 +478,11 @@ public class FabricService {
 	 * @throws InvocationTargetException
 	 * @throws IOException
 	 * @throws TransactionException
+	 * @throws InterruptedException 
 	 */
 
 	public void joinChannel(ArrayList<FabricMemberDto> peerDtoArr, ArrayList<FabricMemberDto> ordererDtoArr, String channelName)
-			throws InvalidArgumentException, ProposalException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, TransactionException {
+			throws InvalidArgumentException, ProposalException, CryptoException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, IOException, TransactionException, InterruptedException {
 
 		for (FabricMemberDto peerDto : peerDtoArr) {
 
@@ -874,6 +875,7 @@ public class FabricService {
 //			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto).get(0);
 			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto.getChannelName(), conInfoDto.getConName()).get(0);
 
+//			System.out.println()
 			// 조회한 피어에 앵커피어 설정이 되어있으면 에러발샐
 			if (channelInfoPeerDto.isAnchorYn()) {
 				throw new Exception(conName + " is already anchor peer");

@@ -32,6 +32,7 @@ import com.brchain.core.channel.dto.ChannelInfoPeerDto;
 import com.brchain.core.channel.entitiy.ChannelHandleEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
+import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity.ChannelInfoPeerEntityBuilder;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.fabric.dto.BlockDto;
@@ -745,12 +746,15 @@ public class Util {
 			cmdList.add("cmd");
 			cmdList.add("/c");
 		} else {
-			cmdList.add("/bin/sh");
+			cmdList.add("/bin/bash");
 			cmdList.add("-c");
 		}
 		// 명령어 셋팅
 		cmdList.add(cmd);
 		String[] array = cmdList.toArray(new String[cmdList.size()]);
+		System.out.println("command2 :"+array[0]);
+		System.out.println("command2 :"+array[1]);
+		System.out.println("command2 :"+array[2]);
 
 		try {
 
@@ -781,6 +785,7 @@ public class Util {
 				// shell 실행이 비정상 종료되었을 경우
 				System.out.println("비정상 종료");
 				System.out.println(successOutput.toString());
+				System.out.println(errorOutput.toString());
 			}
 
 		} catch (IOException e) {
@@ -810,187 +815,128 @@ public class Util {
 
 	public ConInfoEntity toEntity(ConInfoDto conInfoDto) {
 
-//		ConInfoEntityBuilder conInfoEntityBuilder = ConInfoEntity.builder().conId(conInfoDto.getConId())
-//				.conName(conInfoDto.getConName()).conType(conInfoDto.getConType()).conNum(conInfoDto.getConNum())
-//				.conCnt(conInfoDto.getConCnt()).conPort(conInfoDto.getConPort()).orgName(conInfoDto.getOrgName())
-//				.orgType(conInfoDto.getOrgType()).consoOrgs(conInfoDto.getConsoOrgs())
-//				.couchdbYn(conInfoDto.isCouchdbYn()).gossipBootAddr(conInfoDto.getGossipBootAddress())
-//				.ordererPorts(conInfoDto.getOrdererPorts());
-//
-//		if (conInfoDto.getCreatedAt() == null) {
-//			return conInfoEntityBuilder.build();
-//		} else {
-//			return conInfoEntityBuilder.createdAt(conInfoDto.getCreatedAt()).build();
-//		}
-
-		return ConInfoEntity.builder().conId(conInfoDto.getConId()).conName(conInfoDto.getConName())
-				.conType(conInfoDto.getConType()).conNum(conInfoDto.getConNum()).conCnt(conInfoDto.getConCnt())
-				.conPort(conInfoDto.getConPort()).orgName(conInfoDto.getOrgName()).orgType(conInfoDto.getOrgType())
-				.consoOrgs(conInfoDto.getConsoOrgs()).couchdbYn(conInfoDto.isCouchdbYn())
-				.gossipBootAddr(conInfoDto.getGossipBootAddr()).ordererPorts(conInfoDto.getOrdererPorts())
-				.createdAt(conInfoDto.getCreatedAt()).build();
+		return ConInfoEntity.builder()
+			.conId(conInfoDto.getConId())
+			.conName(conInfoDto.getConName())
+			.conType(conInfoDto.getConType())
+			.conNum(conInfoDto.getConNum())
+			.conCnt(conInfoDto.getConCnt())
+			.conPort(conInfoDto.getConPort())
+			.orgName(conInfoDto.getOrgName())
+			.orgType(conInfoDto.getOrgType())
+			.consoOrgs(conInfoDto.getConsoOrgs())
+			.couchdbYn(conInfoDto.isCouchdbYn())
+			.gossipBootAddr(conInfoDto.getGossipBootAddr())
+			.ordererPorts(conInfoDto.getOrdererPorts())
+			.createdAt(conInfoDto.getCreatedAt())
+			.build();
 	}
 
 	public CcInfoEntity toEntity(CcInfoDto ccInfoDto) {
 
-//		CcInfoEntityBuilder ccInfoEntityBuilder = CcInfoEntity.builder().ccName(ccInfoDto.getCcName())
-//				.ccPath(ccInfoDto.getCcPath()).ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc());
-//
-//		if (ccInfoDto.getCreatedAt() == null) {
-//			return ccInfoEntityBuilder.build();
-//		} else {
-//			return ccInfoEntityBuilder.createdAt(ccInfoDto.getCreatedAt()).build();
-//		}
-//
-		return CcInfoEntity.builder().id(ccInfoDto.getId()).ccName(ccInfoDto.getCcName()).ccPath(ccInfoDto.getCcPath())
-				.ccLang(ccInfoDto.getCcLang()).ccDesc(ccInfoDto.getCcDesc()).ccVersion(ccInfoDto.getCcVersion())
-				.createdAt(ccInfoDto.getCreatedAt()).build();
+		return CcInfoEntity.builder()
+			.id(ccInfoDto.getId())
+			.ccName(ccInfoDto.getCcName())
+			.ccPath(ccInfoDto.getCcPath())
+			.ccLang(ccInfoDto.getCcLang())
+			.ccDesc(ccInfoDto.getCcDesc())
+			.ccVersion(ccInfoDto.getCcVersion())
+			.createdAt(ccInfoDto.getCreatedAt())
+			.build();
 	}
 
 	public CcInfoPeerEntity toEntity(CcInfoPeerDto ccInfoPeerDto) {
 
-//		CcInfoPeerEntityBuilder ccInfoPeerEntityBuilder = CcInfoPeerEntity.builder().id(ccInfoPeerDto.getId())
-//				.ccVersion(ccInfoPeerDto.getCcVersion()).conInfoEntity(ccInfoPeerDto.getConInfoEntity())
-//				.ccInfoEntity(ccInfoPeerDto.getCcInfoEntity());
-//
-//		if (ccInfoPeerDto.getCreatedAt() == null) {
-//			return ccInfoPeerEntityBuilder.build();
-//		} else {
-//			return ccInfoPeerEntityBuilder.createdAt(ccInfoPeerDto.getCreatedAt()).build();
-//		}
-
-		return CcInfoPeerEntity.builder().id(ccInfoPeerDto.getId()).ccVersion(ccInfoPeerDto.getCcVersion())
-				.conInfoEntity(toEntity(ccInfoPeerDto.getConInfoDto()))
-				.ccInfoEntity(toEntity(ccInfoPeerDto.getCcInfoDto())).createdAt(ccInfoPeerDto.getCreatedAt()).build();
+		return CcInfoPeerEntity.builder()
+			.id(ccInfoPeerDto.getId())
+			.ccVersion(ccInfoPeerDto.getCcVersion())
+			.conInfoEntity(toEntity(ccInfoPeerDto.getConInfoDto()))
+			.ccInfoEntity(toEntity(ccInfoPeerDto.getCcInfoDto()))
+			.createdAt(ccInfoPeerDto.getCreatedAt())
+			.build();
 	}
 
 	public CcInfoChannelEntity toEntity(CcInfoChannelDto ccInfoChannelDto) {
 
-//		CcInfoChannelEntityBuilder ccInfoChannelEntityBuilder = CcInfoChannelEntity.builder()
-//				.id(ccInfoChannelDto.getId()).ccVersion(ccInfoChannelDto.getCcVersion())
-//				.channelInfoEntity(ccInfoChannelDto.getChannelInfoEntity())
-//				.ccInfoEntity(ccInfoChannelDto.getCcInfoEntity());
-//
-//		if (ccInfoChannelDto.getCreatedAt() == null) {
-//			return ccInfoChannelEntityBuilder.build();
-//		} else {
-//			return ccInfoChannelEntityBuilder.createdAt(ccInfoChannelDto.getCreatedAt()).build();
-//		}
-
-		return CcInfoChannelEntity.builder().id(ccInfoChannelDto.getId()).ccVersion(ccInfoChannelDto.getCcVersion())
-				.channelInfoEntity(toEntity(ccInfoChannelDto.getChannelInfoDto()))
-				.ccInfoEntity(toEntity(ccInfoChannelDto.getCcInfoDto())).createdAt(ccInfoChannelDto.getCreatedAt())
-				.build();
+		return CcInfoChannelEntity.builder()
+			.id(ccInfoChannelDto.getId())
+			.ccVersion(ccInfoChannelDto.getCcVersion())
+			.channelInfoEntity(toEntity(ccInfoChannelDto.getChannelInfoDto()))
+			.ccInfoEntity(toEntity(ccInfoChannelDto.getCcInfoDto()))
+			.createdAt(ccInfoChannelDto.getCreatedAt())
+			.build();
 
 	}
 
 	public ChannelInfoEntity toEntity(ChannelInfoDto channelInfoDto) {
 
-//		ChannelInfoEntityBuilder channelInfoEntityBuilder = ChannelInfoEntity.builder()
-//				.channelName(channelInfoDto.getChannelName()).channelBlock(channelInfoDto.getChannelBlock())
-//				.channelTx(channelInfoDto.getChannelTx()).orderingOrg(channelInfoDto.getOrderingOrg())
-//				.appAdminPolicyType(channelInfoDto.getAppAdminPolicyType())
-//				.appAdminPolicyValue(channelInfoDto.getAppAdminPolicyValue())
-//				.ordererAdminPolicyType(channelInfoDto.getOrdererAdminPolicyType())
-//				.ordererAdminPolicyValue(channelInfoDto.getOrdererAdminPolicyValue())
-//				.channelAdminPolicyType(channelInfoDto.getChannelAdminPolicyType())
-//				.channelAdminPolicyValue(channelInfoDto.getChannelAdminPolicyValue())
-//				.batchTimeout(channelInfoDto.getBatchTimeout()).batchSizeAbsolMax(channelInfoDto.getBatchSizeAbsolMax())
-//				.batchSizeMaxMsg(channelInfoDto.getBatchSizeMaxMsg())
-//				.batchSizePreferMax(channelInfoDto.getBatchSizePreferMax());
-//
-//		if (channelInfoDto.getCreatedAt() == null) {
-//			return channelInfoEntityBuilder.build();
-//		} else {
-//			return channelInfoEntityBuilder.createdAt(channelInfoDto.getCreatedAt()).build();
-//		}
-
-		return ChannelInfoEntity.builder().channelName(channelInfoDto.getChannelName())
-				.channelBlock(channelInfoDto.getChannelBlock()).channelTx(channelInfoDto.getChannelTx())
-				.orderingOrg(channelInfoDto.getOrderingOrg()).appAdminPolicyType(channelInfoDto.getAppAdminPolicyType())
-				.appAdminPolicyValue(channelInfoDto.getAppAdminPolicyValue())
-				.ordererAdminPolicyType(channelInfoDto.getOrdererAdminPolicyType())
-				.ordererAdminPolicyValue(channelInfoDto.getOrdererAdminPolicyValue())
-				.channelAdminPolicyType(channelInfoDto.getChannelAdminPolicyType())
-				.channelAdminPolicyValue(channelInfoDto.getChannelAdminPolicyValue())
-				.batchTimeout(channelInfoDto.getBatchTimeout()).batchSizeAbsolMax(channelInfoDto.getBatchSizeAbsolMax())
-				.batchSizeMaxMsg(channelInfoDto.getBatchSizeMaxMsg())
-				.batchSizePreferMax(channelInfoDto.getBatchSizePreferMax()).createdAt(channelInfoDto.getCreatedAt())
-				.build();
+		return ChannelInfoEntity.builder()
+			.channelName(channelInfoDto.getChannelName())
+			.channelBlock(channelInfoDto.getChannelBlock())
+			.channelTx(channelInfoDto.getChannelTx())
+			.orderingOrg(channelInfoDto.getOrderingOrg())
+			.appAdminPolicyType(channelInfoDto.getAppAdminPolicyType())
+			.appAdminPolicyValue(channelInfoDto.getAppAdminPolicyValue())
+			.ordererAdminPolicyType(channelInfoDto.getOrdererAdminPolicyType())
+			.ordererAdminPolicyValue(channelInfoDto.getOrdererAdminPolicyValue())
+			.channelAdminPolicyType(channelInfoDto.getChannelAdminPolicyType())
+			.channelAdminPolicyValue(channelInfoDto.getChannelAdminPolicyValue())
+			.batchTimeout(channelInfoDto.getBatchTimeout())
+			.batchSizeAbsolMax(channelInfoDto.getBatchSizeAbsolMax())
+			.batchSizeMaxMsg(channelInfoDto.getBatchSizeMaxMsg())
+			.batchSizePreferMax(channelInfoDto.getBatchSizePreferMax())
+			.createdAt(channelInfoDto.getCreatedAt())
+			.build();
 	}
 
 	public ChannelInfoPeerEntity toEntity(ChannelInfoPeerDto channelInfoPeerDto) {
 
-//		ChannelInfoPeerEntityBuilder channelInfoPeerEntityBuilder = ChannelInfoPeerEntity.builder()
-//				.id(channelInfoPeerDto.getId()).anchorYn(channelInfoPeerDto.isAnchorYn())
-//				.conInfoEntity(channelInfoPeerDto.getConInfoEntity())
-//				.channelInfoEntity(channelInfoPeerDto.getChannelInfoEntity());
-//
-//		if (channelInfoPeerDto.getCreatedAt() == null) {
-//			return channelInfoPeerEntityBuilder.build();
-//		} else {
-//			return channelInfoPeerEntityBuilder.createdAt(channelInfoPeerDto.getCreatedAt()).build();
-//		}
-
-		return ChannelInfoPeerEntity.builder().id(channelInfoPeerDto.getId()).anchorYn(channelInfoPeerDto.isAnchorYn())
-				.conInfoEntity(toEntity(channelInfoPeerDto.getConInfoDto()))
-				.channelInfoEntity(toEntity(channelInfoPeerDto.getChannelInfoDto()))
-				.createdAt(channelInfoPeerDto.getCreatedAt()).build();
+		return ChannelInfoPeerEntity.builder()
+			.id(channelInfoPeerDto.getId())
+			.anchorYn(channelInfoPeerDto.isAnchorYn())
+			.conInfoEntity(toEntity(channelInfoPeerDto.getConInfoDto()))
+			.channelInfoEntity(toEntity(channelInfoPeerDto.getChannelInfoDto()))
+			.createdAt(channelInfoPeerDto.getCreatedAt())
+			.build();
 	}
 
 	public ChannelHandleEntity toEntity(ChannelHandleDto channelHandleDto) {
 
-//		ChannelHandleEntityBuilder channelHandleEntityBuilder = ChannelHandleEntity.builder()
-//				.handle(channelHandleDto.getHandle()).channelName(channelHandleDto.getChannelName());
-//		if (channelHandleDto.getCreatedAt() == null) {
-//			return channelHandleEntityBuilder.build();
-//		} else {
-//			return channelHandleEntityBuilder.createdAt(channelHandleDto.getCreatedAt()).build();
-//		}
-
-		return ChannelHandleEntity.builder().handle(channelHandleDto.getHandle())
-				.channelName(channelHandleDto.getChannelName()).createdAt(channelHandleDto.getCreatedAt()).build();
+		return ChannelHandleEntity.builder()
+			.handle(channelHandleDto.getHandle())
+			.channelName(channelHandleDto.getChannelName())
+			.createdAt(channelHandleDto.getCreatedAt())
+			.build();
 	}
 
 	public TransactionEntity toEntity(TransactionDto transactionDto) {
 
-//		TransactionEntityBuilder transactionEntityBuilder = TransactionEntity.builder().txID(transactionDto.getTxID())
-//				.creatorId(transactionDto.getCreatorId()).txType(transactionDto.getTxType())
-//				.timestamp(transactionDto.getTimestamp()).ccName(transactionDto.getCcName())
-//				.ccVersion(transactionDto.getCcVersion()).ccArgs(transactionDto.getCcArgs())
-//				.blockEntity(transactionDto.getBlockEntity()).channelInfoEntity(transactionDto.getChannelInfoEntity());
-//
-//		if (transactionDto.getCreatedAt() == null) {
-//			return transactionEntityBuilder.build();
-//		} else {
-//			return transactionEntityBuilder.createdAt(transactionDto.getCreatedAt()).build();
-//		}
-
-		return TransactionEntity.builder().id(transactionDto.getId()).txId(transactionDto.getTxId())
-				.creatorId(transactionDto.getCreatorId()).txType(transactionDto.getTxType())
-				.timestamp(transactionDto.getTimestamp()).ccName(transactionDto.getCcName())
-				.ccVersion(transactionDto.getCcVersion()).ccArgs(transactionDto.getCcArgs())
-				.blockEntity(toEntity(transactionDto.getBlockDto()))
-				.channelInfoEntity(toEntity(transactionDto.getChannelInfoDto()))
-				.createdAt(transactionDto.getCreatedAt()).build();
+		return TransactionEntity.builder()
+			.id(transactionDto.getId())
+			.txId(transactionDto.getTxId())
+			.creatorId(transactionDto.getCreatorId())
+			.txType(transactionDto.getTxType())
+			.timestamp(transactionDto.getTimestamp())
+			.ccName(transactionDto.getCcName())
+			.ccVersion(transactionDto.getCcVersion())
+			.ccArgs(transactionDto.getCcArgs())
+			.blockEntity(toEntity(transactionDto.getBlockDto()))
+			.channelInfoEntity(toEntity(transactionDto.getChannelInfoDto()))
+			.createdAt(transactionDto.getCreatedAt())
+			.build();
 	}
 
 	public BlockEntity toEntity(BlockDto blockDto) {
 
-//		BlockEntityBuilder blockEntityBuilder = BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash())
-//				.blockNum(blockDto.getBlockNum()).txCount(blockDto.getTxCount())
-//				.prevDataHash(blockDto.getPrevDataHash()).channelInfoEntity(blockDto.getChannelInfoEntity());
-//
-//		if (blockDto.getCreatedAt() == null) {
-//			return blockEntityBuilder.build();
-//		} else {
-//			return blockEntityBuilder.createdAt(blockDto.getCreatedAt()).build();
-//		}
-
-		return BlockEntity.builder().blockDataHash(blockDto.getBlockDataHash()).blockNum(blockDto.getBlockNum())
-				.txCount(blockDto.getTxCount()).timestamp(blockDto.getTimestamp())
-				.prevDataHash(blockDto.getPrevDataHash()).channelInfoEntity(toEntity(blockDto.getChannelInfoDto()))
-				.createdAt(blockDto.getCreatedAt()).build();
+		return BlockEntity.builder()
+			.blockDataHash(blockDto.getBlockDataHash())
+			.blockNum(blockDto.getBlockNum())
+			.txCount(blockDto.getTxCount())
+			.timestamp(blockDto.getTimestamp())
+			.prevDataHash(blockDto.getPrevDataHash())
+			.channelInfoEntity(toEntity(blockDto.getChannelInfoDto()))
+			.createdAt(blockDto.getCreatedAt())
+			.build();
 
 	}
 
@@ -1003,83 +949,122 @@ public class Util {
 	 */
 
 	public ConInfoDto toDto(ConInfoEntity conInfoEntity) {
-		return ConInfoDto.builder().conName(conInfoEntity.getConName()).conId(conInfoEntity.getConId())
-				.conCnt(conInfoEntity.getConCnt()).conType(conInfoEntity.getConType()).conNum(conInfoEntity.getConNum())
-				.conPort(conInfoEntity.getConPort()).orgName(conInfoEntity.getOrgName())
-				.orgType(conInfoEntity.getOrgType()).consoOrgs(conInfoEntity.getConsoOrgs())
-				.couchdbYn(conInfoEntity.isCouchdbYn()).gossipBootAddr(conInfoEntity.getGossipBootAddr())
-				.ordererPorts(conInfoEntity.getOrdererPorts()).createdAt(conInfoEntity.getCreatedAt()).build();
+		return ConInfoDto.builder()
+			.conName(conInfoEntity.getConName())
+			.conId(conInfoEntity.getConId())
+			.conCnt(conInfoEntity.getConCnt())
+			.conType(conInfoEntity.getConType())
+			.conNum(conInfoEntity.getConNum())
+			.conPort(conInfoEntity.getConPort())
+			.orgName(conInfoEntity.getOrgName())
+			.orgType(conInfoEntity.getOrgType())
+			.consoOrgs(conInfoEntity.getConsoOrgs())
+			.couchdbYn(conInfoEntity.isCouchdbYn())
+			.gossipBootAddr(conInfoEntity.getGossipBootAddr())
+			.ordererPorts(conInfoEntity.getOrdererPorts())
+			.createdAt(conInfoEntity.getCreatedAt())
+			.build();
 
 	}
 
 	public CcInfoDto toDto(CcInfoEntity ccInfoEntity) {
-		return CcInfoDto.builder().id(ccInfoEntity.getId()).ccName(ccInfoEntity.getCcName())
-				.ccPath(ccInfoEntity.getCcPath()).ccLang(ccInfoEntity.getCcLang()).ccDesc(ccInfoEntity.getCcDesc())
-				.ccVersion(ccInfoEntity.getCcVersion()).createdAt(ccInfoEntity.getCreatedAt()).build();
+		return CcInfoDto.builder()
+			.id(ccInfoEntity.getId())
+			.ccName(ccInfoEntity.getCcName())
+			.ccPath(ccInfoEntity.getCcPath())
+			.ccLang(ccInfoEntity.getCcLang())
+			.ccDesc(ccInfoEntity.getCcDesc())
+			.ccVersion(ccInfoEntity.getCcVersion())
+			.createdAt(ccInfoEntity.getCreatedAt())
+			.build();
 	}
 
 	public CcInfoPeerDto toDto(CcInfoPeerEntity ccInfoPeerEntity) {
-		return CcInfoPeerDto.builder().id(ccInfoPeerEntity.getId()).ccVersion(ccInfoPeerEntity.getCcVersion())
-				.conInfoDto(toDto(ccInfoPeerEntity.getConInfoEntity()))
-				.ccInfoDto(toDto(ccInfoPeerEntity.getCcInfoEntity())).createdAt(ccInfoPeerEntity.getCreatedAt())
-				.build();
+		return CcInfoPeerDto.builder()
+			.id(ccInfoPeerEntity.getId())
+			.ccVersion(ccInfoPeerEntity.getCcVersion())
+			.conInfoDto(toDto(ccInfoPeerEntity.getConInfoEntity()))
+			.ccInfoDto(toDto(ccInfoPeerEntity.getCcInfoEntity()))
+			.createdAt(ccInfoPeerEntity.getCreatedAt())
+			.build();
 	}
 
 	public CcInfoChannelDto toDto(CcInfoChannelEntity ccInfoChannelEntity) {
-		return CcInfoChannelDto.builder().id(ccInfoChannelEntity.getId()).ccVersion(ccInfoChannelEntity.getCcVersion())
-				.channelInfoDto(toDto(ccInfoChannelEntity.getChannelInfoEntity()))
-				.ccInfoDto(toDto(ccInfoChannelEntity.getCcInfoEntity())).createdAt(ccInfoChannelEntity.getCreatedAt())
-				.build();
+		return CcInfoChannelDto.builder()
+			.id(ccInfoChannelEntity.getId())
+			.ccVersion(ccInfoChannelEntity.getCcVersion())
+			.channelInfoDto(toDto(ccInfoChannelEntity.getChannelInfoEntity()))
+			.ccInfoDto(toDto(ccInfoChannelEntity.getCcInfoEntity()))
+			.createdAt(ccInfoChannelEntity.getCreatedAt())
+			.build();
 	}
 
 	public ChannelInfoDto toDto(ChannelInfoEntity channelInfoEntity) {
 
-		return ChannelInfoDto.builder().channelName(channelInfoEntity.getChannelName())
-				.channelBlock(channelInfoEntity.getChannelBlock()).channelTx(channelInfoEntity.getChannelTx())
-				.orderingOrg(channelInfoEntity.getOrderingOrg())
-				.appAdminPolicyType(channelInfoEntity.getAppAdminPolicyType())
-				.appAdminPolicyValue(channelInfoEntity.getAppAdminPolicyValue())
-				.ordererAdminPolicyType(channelInfoEntity.getOrdererAdminPolicyType())
-				.ordererAdminPolicyValue(channelInfoEntity.getOrdererAdminPolicyValue())
-				.channelAdminPolicyType(channelInfoEntity.getChannelAdminPolicyType())
-				.channelAdminPolicyValue(channelInfoEntity.getChannelAdminPolicyValue())
-				.batchTimeout(channelInfoEntity.getBatchTimeout())
-				.batchSizeAbsolMax(channelInfoEntity.getBatchSizeAbsolMax())
-				.batchSizeMaxMsg(channelInfoEntity.getBatchSizeMaxMsg())
-				.batchSizePreferMax(channelInfoEntity.getBatchSizePreferMax())
-				.createdAt(channelInfoEntity.getCreatedAt()).build();
+		return ChannelInfoDto.builder()
+			.channelName(channelInfoEntity.getChannelName())
+			.channelBlock(channelInfoEntity.getChannelBlock())
+			.channelTx(channelInfoEntity.getChannelTx())
+			.orderingOrg(channelInfoEntity.getOrderingOrg())
+			.appAdminPolicyType(channelInfoEntity.getAppAdminPolicyType())
+			.appAdminPolicyValue(channelInfoEntity.getAppAdminPolicyValue())
+			.ordererAdminPolicyType(channelInfoEntity.getOrdererAdminPolicyType())
+			.ordererAdminPolicyValue(channelInfoEntity.getOrdererAdminPolicyValue())
+			.channelAdminPolicyType(channelInfoEntity.getChannelAdminPolicyType())
+			.channelAdminPolicyValue(channelInfoEntity.getChannelAdminPolicyValue())
+			.batchTimeout(channelInfoEntity.getBatchTimeout())
+			.batchSizeAbsolMax(channelInfoEntity.getBatchSizeAbsolMax())
+			.batchSizeMaxMsg(channelInfoEntity.getBatchSizeMaxMsg())
+			.batchSizePreferMax(channelInfoEntity.getBatchSizePreferMax())
+			.createdAt(channelInfoEntity.getCreatedAt())
+			.build();
 	}
 
 	public ChannelInfoPeerDto toDto(ChannelInfoPeerEntity channelInfoPeerEntity) {
-		return ChannelInfoPeerDto.builder().id(channelInfoPeerEntity.getId())
-				.anchorYn(channelInfoPeerEntity.isAnchorYn())
-				.conInfoDto(toDto(channelInfoPeerEntity.getConInfoEntity()))
-				.channelInfoDto(toDto(channelInfoPeerEntity.getChannelInfoEntity()))
-				.createdAt(channelInfoPeerEntity.getCreatedAt()).build();
+		return ChannelInfoPeerDto.builder()
+			.id(channelInfoPeerEntity.getId())
+			.anchorYn(channelInfoPeerEntity.isAnchorYn())
+			.conInfoDto(toDto(channelInfoPeerEntity.getConInfoEntity()))
+			.channelInfoDto(toDto(channelInfoPeerEntity.getChannelInfoEntity()))
+			.createdAt(channelInfoPeerEntity.getCreatedAt())
+			.build();
 	}
 
 	public ChannelHandleDto toDto(ChannelHandleEntity channelHandleEntity) {
-		return ChannelHandleDto.builder().handle(channelHandleEntity.getHandle())
-				.channelName(channelHandleEntity.getChannelName()).createdAt(channelHandleEntity.getCreatedAt())
-				.build();
+		return ChannelHandleDto.builder()
+			.handle(channelHandleEntity.getHandle())
+			.channelName(channelHandleEntity.getChannelName())
+			.createdAt(channelHandleEntity.getCreatedAt())
+			.build();
 
 	}
 
 	public TransactionDto toDto(TransactionEntity transactionEntity) {
-		return TransactionDto.builder().id(transactionEntity.getId()).txId(transactionEntity.getTxId())
-				.creatorId(transactionEntity.getCreatorId()).txType(transactionEntity.getTxType())
-				.timestamp(transactionEntity.getTimestamp()).ccName(transactionEntity.getCcName())
-				.ccVersion(transactionEntity.getCcVersion()).ccArgs(transactionEntity.getCcArgs())
-				.blockDto(toDto(transactionEntity.getBlockEntity()))
-				.channelInfoDto(toDto(transactionEntity.getChannelInfoEntity()))
-				.createdAt(transactionEntity.getCreatedAt()).build();
+		return TransactionDto.builder()
+			.id(transactionEntity.getId())
+			.txId(transactionEntity.getTxId())
+			.creatorId(transactionEntity.getCreatorId())
+			.txType(transactionEntity.getTxType())
+			.timestamp(transactionEntity.getTimestamp())
+			.ccName(transactionEntity.getCcName())
+			.ccVersion(transactionEntity.getCcVersion())
+			.ccArgs(transactionEntity.getCcArgs())
+			.blockDto(toDto(transactionEntity.getBlockEntity()))
+			.channelInfoDto(toDto(transactionEntity.getChannelInfoEntity()))
+			.createdAt(transactionEntity.getCreatedAt())
+			.build();
 	}
 
 	public BlockDto toDto(BlockEntity blockEntity) {
-		return BlockDto.builder().blockDataHash(blockEntity.getBlockDataHash()).blockNum(blockEntity.getBlockNum())
-				.txCount(blockEntity.getTxCount()).timestamp(blockEntity.getTimestamp())
-				.prevDataHash(blockEntity.getPrevDataHash()).channelInfoDto(toDto(blockEntity.getChannelInfoEntity()))
-				.createdAt(blockEntity.getCreatedAt()).build();
+		return BlockDto.builder()
+			.blockDataHash(blockEntity.getBlockDataHash())
+			.blockNum(blockEntity.getBlockNum())
+			.txCount(blockEntity.getTxCount())
+			.timestamp(blockEntity.getTimestamp())
+			.prevDataHash(blockEntity.getPrevDataHash())
+			.channelInfoDto(toDto(blockEntity.getChannelInfoEntity()))
+			.createdAt(blockEntity.getCreatedAt())
+			.build();
 
 	}
 

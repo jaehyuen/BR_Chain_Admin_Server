@@ -111,25 +111,6 @@ public class ChannelService {
 		JSONObject resultJson = new JSONObject();
 
 		ChannelInfoEntity channelInfoEntity = channelInfoRepository.findById(channelName).get();
-//
-//		resultJson.put("channelBlock", channelInfoEntity.getChannelBlock());
-//		resultJson.put("channelTx", channelInfoEntity.getChannelTx());
-//		resultJson.put("channelName", channelInfoEntity.getChannelName());
-//		resultJson.put("orderingOrg", channelInfoEntity.getOrderingOrg());
-//
-//		resultJson.put("appAdminPolicyType", channelInfoEntity.getAppAdminPolicyType());
-//		resultJson.put("appAdminPolicyValue", channelInfoEntity.getAppAdminPolicyValue());
-//
-//		resultJson.put("channelAdminPolicyType", channelInfoEntity.getChannelAdminPolicyType());
-//		resultJson.put("channelAdminPolicyValue", channelInfoEntity.getChannelAdminPolicyValue());
-//
-//		resultJson.put("ordererAdminPolicyType", channelInfoEntity.getOrdererAdminPolicyType());
-//		resultJson.put("ordererAdminPolicyValue", channelInfoEntity.getOrdererAdminPolicyValue());
-//
-//		resultJson.put("batchTimeout", channelInfoEntity.getBatchTimeout());
-//		resultJson.put("batchSizeAbsolMax", channelInfoEntity.getBatchSizeAbsolMax());
-//		resultJson.put("batchSizeMaxMsg", channelInfoEntity.getBatchSizeMaxMsg());
-//		resultJson.put("batchSizePreferMax", channelInfoEntity.getBatchSizePreferMax());
 
 		return util.setResult("0000", true, "Success get channel info", util.toDto(channelInfoEntity));
 
@@ -141,11 +122,13 @@ public class ChannelService {
 	 * @param channelInfoPeerDto 채널 정보 (피어) 관련 DTO
 	 * 
 	 * @return 저장한 채널 정보 (피어) DTO
+	 * @throws InterruptedException 
 	 */
 
-	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) {
-
-		return util.toDto(channelInfoPeerRepository.save(util.toEntity(channelInfoPeerDto)));
+	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) throws InterruptedException {
+		ChannelInfoPeerEntity channelInfoPeerEntity= util.toEntity(channelInfoPeerDto);
+		Thread.sleep(1000);
+		return util.toDto(channelInfoPeerRepository.save(channelInfoPeerEntity));
 
 	}
 

@@ -36,26 +36,28 @@ import lombok.NoArgsConstructor;
 )
 
 
-@NamedNativeQuery(resultSetMapping = "ChannelSummaryDtoMapping",query = "SELECT CHANNEL_NAME as channelName,\n"
-		+ "CHANNEL_TX as channelTx,\n"
-		+ "CHANNEL_BLOCK as channelBlock,\n"
-		+ "       (SELECT Count(*)\n"
-		+ "        FROM   BLOCK \n"
-		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"
-		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preBlockCnt,\n"
-		+ "       (SELECT Count(*)\n"
-		+ "        FROM   BLOCK \n"
-		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210322'\n"
-		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowBlockCnt,\n"
-		+ "       (SELECT Count(*)\n"
-		+ "        FROM   TRANSACTION \n"
-		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"
-		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preTxCnt,\n"
-		+ "       (SELECT Count(*)\n"
-		+ "        FROM   TRANSACTION\n"
-		+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210322'\n"
-		+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowTxCnt\n"
-		+ "FROM   CHANNELINFO c; ",name = "ChannelInfoEntity.findChannelSummary")
+@NamedNativeQuery( resultSetMapping = "ChannelSummaryDtoMapping",
+							  query = "SELECT CHANNEL_NAME as channelName,\n"
+									+ "CHANNEL_TX as channelTx,\n"
+									+ "CHANNEL_BLOCK as channelBlock,\n"
+									+ "       (SELECT Count(*)\n"
+									+ "        FROM   BLOCK \n"
+									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"
+									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preBlockCnt,\n"
+									+ "       (SELECT Count(*)\n"
+									+ "        FROM   BLOCK \n"
+									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210322'\n"
+									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowBlockCnt,\n"
+									+ "       (SELECT Count(*)\n"
+									+ "        FROM   TRANSACTION \n"
+									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210317'\n"
+									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preTxCnt,\n"
+									+ "       (SELECT Count(*)\n"
+									+ "        FROM   TRANSACTION\n"
+									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m%d') = '20210322'\n"
+									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowTxCnt\n"
+									+ "FROM   CHANNELINFO c; ",
+							   name = "ChannelInfoEntity.findChannelSummary")
 
 @Data
 @EqualsAndHashCode(callSuper = false)

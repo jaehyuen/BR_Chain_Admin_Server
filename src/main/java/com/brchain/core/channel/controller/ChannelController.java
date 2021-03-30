@@ -41,6 +41,7 @@ public class ChannelController {
 
 	}
 	
+	@ApiOperation(value = "Hyperledger Fabric 채널 요약 리스트 조회", notes = "Hyperledger Fabric 채널 요약 리스트를 조회하는 API")
 	@GetMapping("/list/summary")
 	public ResponseEntity<ResultDto> getChannelSummaryList() {
 

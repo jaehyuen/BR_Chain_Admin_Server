@@ -1,6 +1,7 @@
 package com.brchain.core.chaincode.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -15,6 +16,7 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.chaincode.dto.CcInfoChannelDto;
 import com.brchain.core.chaincode.dto.CcInfoDto;
 import com.brchain.core.chaincode.dto.CcInfoPeerDto;
+import com.brchain.core.chaincode.dto.CcSummaryDto;
 import com.brchain.core.chaincode.entitiy.CcInfoChannelEntity;
 import com.brchain.core.chaincode.entitiy.CcInfoEntity;
 import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
@@ -23,6 +25,7 @@ import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
 import com.brchain.core.chaincode.repository.CcInfoRepository;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.channel.dto.ChannelInfoPeerDto;
+import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.util.Util;
@@ -229,6 +232,12 @@ public class ChaincodeService {
 		return ccInfoPeerDtoList;
 	}
 
+	public ResultDto getChaincodeSummaryList() {
+
+		List<CcSummaryDto> CcSummaryDtoList = ccInfoPeerRepository.findChaincodeSummary();
+
+		return util.setResult("0000", true, "Success get cc summary", CcSummaryDtoList);
+	}
 
 
 }

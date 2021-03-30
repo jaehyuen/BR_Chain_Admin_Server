@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,8 +29,8 @@ public class CcInfoEntity extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
-	private Long id;
-	
+	private Long   id;
+
 	@Column(name = "CC_NAME", nullable = false)
 	private String ccName;
 
@@ -46,13 +47,12 @@ public class CcInfoEntity extends BaseEntity {
 	private String ccVersion;
 
 	@Builder
-	public CcInfoEntity(Long id,String ccName, String ccPath, String ccLang, String ccDesc, String ccVersion,
-			LocalDateTime createdAt) {
-		this.id = id;
-		this.ccName = ccName;
-		this.ccPath = ccPath;
-		this.ccLang = ccLang;
-		this.ccDesc = ccDesc;
+	public CcInfoEntity(Long id, String ccName, String ccPath, String ccLang, String ccDesc, String ccVersion, LocalDateTime createdAt) {
+		this.id        = id;
+		this.ccName    = ccName;
+		this.ccPath    = ccPath;
+		this.ccLang    = ccLang;
+		this.ccDesc    = ccDesc;
 		this.ccVersion = ccVersion;
 		super.setCreatedAt(createdAt);
 

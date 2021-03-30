@@ -10,7 +10,6 @@ import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 
 public interface ChannelInfoRepository extends JpaRepository<ChannelInfoEntity, String> {
-	
 
 	@Query(nativeQuery = true)
 	List<ChannelSummaryDto> findChannelSummary();

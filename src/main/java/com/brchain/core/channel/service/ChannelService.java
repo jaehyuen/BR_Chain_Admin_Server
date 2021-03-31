@@ -1,6 +1,8 @@
 package com.brchain.core.channel.service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -270,16 +272,25 @@ public class ChannelService {
 
 	public ResultDto getChannelSummaryList() {
 
-		Date                    now                   = new Date();
-		List<ChannelSummaryDto> channelSummaryDtoList = channelInfoRepository.findChannelSummary();
+		Calendar cal = Calendar.getInstance();
+		cal.add(cal.MONTH, -1);
+		
+		SimpleDateFormat        dateFormat            = new SimpleDateFormat("yyyyMM");
+		String                  nowMonth              = dateFormat.format(new Date());
+		String                  preMonth              = dateFormat.format(cal.getTime());
+		
+		
+		System.out.println("nowMonth : "+nowMonth+", preMonth : "+preMonth);
+		List<ChannelSummaryDto> channelSummaryDtoList = channelInfoRepository.findChannelSummary("20210317","20210322");
 		for (ChannelSummaryDto channelSummaryDto : channelSummaryDtoList) {
 
-			Long preTxCnt = channelSummaryDto.getPreTxCnt();
-			Long nowTxCnt = channelSummaryDto.getNowTxCnt();
-			Long increase = Math.abs(preTxCnt - nowTxCnt);
+			Double preTxCnt = channelSummaryDto.getPreTxCnt();
+			Double nowTxCnt = channelSummaryDto.getNowTxCnt();
+			
+			Double increase = Math.abs(preTxCnt - nowTxCnt);
 
 			if (preTxCnt == 0) {
-				preTxCnt = (long) 1;
+				preTxCnt = 1d;
 			}
 
 			channelSummaryDto.setPercent(increase / preTxCnt * 100);

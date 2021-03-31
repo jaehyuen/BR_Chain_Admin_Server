@@ -8,14 +8,14 @@ public class ChannelSummaryDto {
 	private String  channelName;  // 채널 이름
 	private int     channelBlock; // 채널 블럭수
 	private int     channelTx;    // 채널 트렌젝션수
-	private Long    preBlockCnt;  // 채널 블럭수
-	private Long    nowBlockCnt;  // 채널 트렌젝션수
-	private Long    preTxCnt;     // 채널 블럭수
-	private Long    nowTxCnt;     // 채널 트렌젝션수
-	private Long    percent;
+	private Double    preBlockCnt;  // 채널 블럭수
+	private Double    nowBlockCnt;  // 채널 트렌젝션수
+	private Double    preTxCnt;     // 채널 블럭수
+	private Double    nowTxCnt;     // 채널 트렌젝션수
+	private Double    percent;
 	private boolean flag;
 
-	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Long preBlockCnt, Long nowBlockCnt, Long preTxCnt, Long nowTxCnt) {
+	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Double preBlockCnt, Double nowBlockCnt, Double preTxCnt, Double nowTxCnt) {
 
 		this.channelName  = channelName;
 		this.channelBlock = channelBlock;

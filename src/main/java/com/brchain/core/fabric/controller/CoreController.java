@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.container.dto.CreateOrgConInfoDto;
 import com.brchain.core.container.service.ContainerService;
-import com.brchain.core.container.service.DockerService;
+import com.brchain.core.fabric.service.BlockService;
 import com.brchain.core.fabric.service.FabricService;
 
 import io.swagger.annotations.ApiOperation;
@@ -32,6 +32,7 @@ public class CoreController {
 
 	private final ContainerService containerService;
 	private final FabricService    fabricService;
+	private final BlockService     blockService;
 
 	@ApiOperation(value = "조직 타입에 따를 컨데이너 정보 조회", notes = "조직 타입에 따른 컨테이너 정보를 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
 	@GetMapping("/org/list")
@@ -54,6 +55,14 @@ public class CoreController {
 	public ResponseEntity<ResultDto> getMemberList(@ApiParam(value = "조회할 HyperLedger Fabric 조직명", required = true) @RequestParam(value = "orgName") String orgName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.getMemberList(orgName));
+
+	}
+	
+	@ApiOperation(value = "채널 블록 리스트 조회", notes = "HyperLedger Fabric 채널 이름에 블록 정보들을 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@GetMapping("/block/list")
+	public ResponseEntity<ResultDto> getBlockList(@ApiParam(value = "조회할 HyperLedger Fabric 조직명", required = true) @RequestParam(value = "channelName") String channelName) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(blockService.getBlockListByChannel(channelName));
 
 	}
 

@@ -1,22 +1,21 @@
 package com.brchain.core.fabric.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.codec.binary.Hex;
-import org.hyperledger.fabric.protos.common.Common.Block;
-import org.hyperledger.fabric.protos.common.Common.BlockData;
-import org.hyperledger.fabric.protos.common.Common.Payload;
 import org.hyperledger.fabric.sdk.BlockInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.springframework.stereotype.Service;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.fabric.dto.BlockDto;
-import com.brchain.core.fabric.dto.TransactionDto;
+import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.repository.BlockRepository;
 import com.brchain.core.util.Util;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import javassist.bytecode.ByteArray;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,11 +23,11 @@ import lombok.RequiredArgsConstructor;
 public class BlockService {
 
 	// jpa 레파지토리
-	private final BlockRepository blockRepository;
+	private final BlockRepository    blockRepository;
 
 	private final TransactionService transactionService;
 
-	private final Util util;
+	private final Util               util;
 
 	/**
 	 * 블록정보 저장 서비스
@@ -54,7 +53,8 @@ public class BlockService {
 
 	public BlockDto findBlockByBlockDataHash(String blockDataHash) {
 
-		return util.toDto(blockRepository.findById(blockDataHash).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(blockRepository.findById(blockDataHash)
+			.orElseThrow(IllegalArgumentException::new));
 	}
 
 	/**
@@ -74,7 +74,9 @@ public class BlockService {
 	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) throws InvalidProtocolBufferException {
 
 		BlockDto blockDto;
-		int txCnt = block.getBlock().getData().getDataCount();
+		int      txCnt = block.getBlock()
+			.getData()
+			.getDataCount();
 		try {
 
 			// 이벤트로 받은 blockDataHash이 있는지 조회
@@ -83,12 +85,16 @@ public class BlockService {
 		} catch (IllegalArgumentException e) {
 
 			// 조회가 안되면 리슨받은 블록 정보 저장
+//			block.getBlock().sh
 			blockDto = new BlockDto();
 			blockDto.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
 			blockDto.setBlockNum((int) block.getBlockNumber());
 			blockDto.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
-			blockDto.setTimestamp(block.getEnvelopeInfo(0).getTimestamp());
-			blockDto.setTxCount(block.getBlock().getData().getDataCount());
+			blockDto.setTimestamp(block.getEnvelopeInfo(0)
+				.getTimestamp());
+			blockDto.setTxCount(block.getBlock()
+				.getData()
+				.getDataCount());
 			blockDto.setChannelInfoDto(channelInfoDto);
 
 			saveBLock(blockDto);
@@ -98,6 +104,17 @@ public class BlockService {
 		for (EnvelopeInfo envelopeInfo : block.getEnvelopeInfos()) {
 			transactionService.inspectTransaction(envelopeInfo, channelInfoDto, blockDto);
 
+		}
+
+	}
+
+	public ResultDto getBlockListByChannel(String channelName) {
+		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
+
+		if (blockEntityList.isEmpty()) {
+			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<BlockEntity>());
+		} else {
+			return util.setResult("0000", true, "Success get block by channel name", blockEntityList);
 		}
 
 	}

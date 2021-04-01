@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
+import com.brchain.core.fabric.dto.BlockAndTxDto;
 import com.brchain.core.fabric.dto.BlockDto;
 import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.repository.BlockRepository;
@@ -109,10 +110,11 @@ public class BlockService {
 	}
 
 	public ResultDto getBlockListByChannel(String channelName) {
-		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
+//		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
+		List<BlockAndTxDto> blockEntityList = blockRepository.findByChannelName(channelName);
 
 		if (blockEntityList.isEmpty()) {
-			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<BlockEntity>());
+			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<BlockAndTxDto>());
 		} else {
 			return util.setResult("0000", true, "Success get block by channel name", blockEntityList);
 		}

@@ -26,7 +26,7 @@ spring:
             minimum-idle: 10
             maximum-pool-size: 50
             transaction-isolation: TRANSACTION_READ_UNCOMMITTED
-            pool-name: pool-jiniworld_demo
+            pool-name: pool-brchain
 
     jpa:
         hibernate:

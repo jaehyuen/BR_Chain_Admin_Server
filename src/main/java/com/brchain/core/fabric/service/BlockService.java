@@ -3,6 +3,7 @@ package com.brchain.core.fabric.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.codec.binary.Hex;
 import org.hyperledger.fabric.protos.common.Common;
@@ -23,6 +24,7 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.fabric.dto.BlockAndTxDto;
 import com.brchain.core.fabric.dto.BlockDto;
+import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.repository.BlockRepository;
 import com.brchain.core.util.Util;
 import com.google.protobuf.ByteString;
@@ -112,7 +114,7 @@ public class BlockService {
 
 			saveBLock(blockDto);
 		}
-		
+
 		// 디비에 저장할 데이터 테스트중...
 //		block.getTransactionCount();
 //		block.getTransActionsMetaData();
@@ -135,7 +137,7 @@ public class BlockService {
 //		SerializedIdentity test8=  SerializedIdentity.parseFrom(test7.getCreator());
 //		test8.getMspid();
 //		test8.get
-		
+
 //		ByteString test5 = test4.getPayload();
 //		ProposalResponse test6=ProposalResponse.parseFrom(test4.toByteString());
 //		ChaincodeActionPayload test5= ChaincodeActionPayload.parseFrom(test4.toByteString());
@@ -158,6 +160,12 @@ public class BlockService {
 		} else {
 			return util.setResult("0000", true, "Success get block by channel name", blockEntityList);
 		}
+
+	}
+
+	public ResultDto getBlockByBlockDataHash(String blockDataHash) {
+
+		return util.setResult("0000", true, "Success get block by channel name", findBlockByBlockDataHash(blockDataHash));
 
 	}
 

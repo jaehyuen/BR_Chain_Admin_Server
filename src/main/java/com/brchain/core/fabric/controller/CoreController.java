@@ -58,11 +58,19 @@ public class CoreController {
 
 	}
 	
-	@ApiOperation(value = "채널 블록 리스트 조회", notes = "HyperLedger Fabric 채널 이름에 블록 정보들을 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@ApiOperation(value = "채널 블록 리스트 조회", notes = "HyperLedger Fabric 채널 이름으로 블록 정보들을 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
 	@GetMapping("/block/list")
 	public ResponseEntity<ResultDto> getBlockList(@ApiParam(value = "조회할 HyperLedger Fabric 조직명", required = true) @RequestParam(value = "channelName") String channelName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(blockService.getBlockListByChannel(channelName));
+
+	}
+	
+	@ApiOperation(value = "블록 정보 조회", notes = "블록 데이터 해쉬값으로 블록 정보를 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@GetMapping("/block")
+	public ResponseEntity<ResultDto> getBlock(@ApiParam(value = "조회할 블록 데이터 해쉬값", required = true) @RequestParam(value = "blockDataHash") String blockDataHash) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(blockService.getBlockByBlockDataHash(blockDataHash));
 
 	}
 

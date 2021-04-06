@@ -1,5 +1,8 @@
 package com.brchain.core.fabric.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeType;
 import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo;
@@ -7,6 +10,7 @@ import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo.TransactionA
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 
+import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.fabric.dto.BlockDto;
 import com.brchain.core.fabric.dto.TransactionDto;
@@ -116,6 +120,18 @@ public class TransactionService {
 
 			}
 			saveTransaction(transactionDto);
+		}
+
+	}
+	
+	public ResultDto getTxListByChannel(String channelName) {
+//		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
+		List<TransactionEntity> transactionEntity = transactionRepository.findByChannelName(channelName);
+
+		if (transactionEntity.isEmpty()) {
+			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<TransactionEntity>());
+		} else {
+			return util.setResult("0000", true, "Success get block by channel name", transactionEntity);
 		}
 
 	}

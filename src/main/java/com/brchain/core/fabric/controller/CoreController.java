@@ -17,6 +17,7 @@ import com.brchain.core.container.dto.CreateOrgConInfoDto;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.fabric.service.BlockService;
 import com.brchain.core.fabric.service.FabricService;
+import com.brchain.core.fabric.service.TransactionService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,9 +31,10 @@ import lombok.RequiredArgsConstructor;
 
 public class CoreController {
 
-	private final ContainerService containerService;
-	private final FabricService    fabricService;
-	private final BlockService     blockService;
+	private final ContainerService   containerService;
+	private final FabricService      fabricService;
+	private final BlockService       blockService;
+	private final TransactionService transactionService;
 
 	@ApiOperation(value = "조직 타입에 따를 컨데이너 정보 조회", notes = "조직 타입에 따른 컨테이너 정보를 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
 	@GetMapping("/org/list")
@@ -71,6 +73,14 @@ public class CoreController {
 	public ResponseEntity<ResultDto> getBlock(@ApiParam(value = "조회할 블록 데이터 해쉬값", required = true) @RequestParam(value = "blockDataHash") String blockDataHash) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(blockService.getBlockByBlockDataHash(blockDataHash));
+
+	}
+	
+	@ApiOperation(value = "채널 트랜잭션 리스트 조회", notes = "HyperLedger Fabric 채널 이름으로 트렌잭션 정보들을 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@GetMapping("/transaction/list")
+	public ResponseEntity<ResultDto> getTxList(@ApiParam(value = "조회할 HyperLedger Fabric 채널명", required = true) @RequestParam(value = "channelName") String channelName) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(transactionService.getTxListByChannel(channelName));
 
 	}
 

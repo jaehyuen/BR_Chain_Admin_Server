@@ -83,5 +83,13 @@ public class CoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(transactionService.getTxListByChannel(channelName));
 
 	}
+	
+	@ApiOperation(value = "트랜잭션 정보 조회", notes = "트랜잭션 아이디값으로 트랜잭션 정보를 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@GetMapping("/transaction")
+	public ResponseEntity<ResultDto> getTx(@ApiParam(value = "트랜잭션 아이디값", required = true) @RequestParam(value = "txId") String txId) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(transactionService.getTxByTxId(txId));
+
+	}
 
 }

@@ -41,7 +41,6 @@ import com.brchain.core.channel.dto.ChannelHandleDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.channel.dto.ChannelInfoPeerDto;
 import com.brchain.core.channel.dto.CreateChannelDto;
-import com.brchain.core.channel.repository.ChannelInfoPeerRepository;
 import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;

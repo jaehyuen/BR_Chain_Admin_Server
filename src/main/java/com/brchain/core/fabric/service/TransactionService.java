@@ -129,10 +129,16 @@ public class TransactionService {
 		List<TransactionEntity> transactionEntity = transactionRepository.findByChannelName(channelName);
 
 		if (transactionEntity.isEmpty()) {
-			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<TransactionEntity>());
+			return util.setResult("0000", true, "Success get tx by channel name", new ArrayList<TransactionEntity>());
 		} else {
-			return util.setResult("0000", true, "Success get block by channel name", transactionEntity);
+			return util.setResult("0000", true, "Success get tx by channel name", transactionEntity);
 		}
+
+	}
+	
+	public ResultDto getTxByTxId(String txId) {
+
+		return util.setResult("0000", true, "Success get tx by tx id", findBlockByTxId(txId));
 
 	}
 

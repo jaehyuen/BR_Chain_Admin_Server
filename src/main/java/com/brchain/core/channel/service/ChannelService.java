@@ -280,8 +280,8 @@ public class ChannelService {
 		String                  preMonth              = dateFormat.format(cal.getTime());
 		
 		
-		System.out.println("nowMonth : "+nowMonth+", preMonth : "+preMonth);
-		List<ChannelSummaryDto> channelSummaryDtoList = channelInfoRepository.findChannelSummary("20210317","20210322");
+
+		List<ChannelSummaryDto> channelSummaryDtoList = channelInfoRepository.findChannelSummary(preMonth,nowMonth);
 		for (ChannelSummaryDto channelSummaryDto : channelSummaryDtoList) {
 
 			Double preTxCnt = channelSummaryDto.getPreTxCnt();
@@ -293,7 +293,7 @@ public class ChannelService {
 				preTxCnt = 1d;
 			}
 
-			channelSummaryDto.setPercent(increase / preTxCnt * 100);
+			channelSummaryDto.setPercent(Math.round(increase / preTxCnt * 100));
 
 			if (channelSummaryDto.getPreTxCnt() > channelSummaryDto.getNowTxCnt()) {
 				channelSummaryDto.setFlag(false);

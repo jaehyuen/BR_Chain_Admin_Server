@@ -97,10 +97,10 @@ public class ChaincodeController {
 
 	@ApiOperation(value = "Hyperledger Fabric 체인코드 활성화", notes = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API")
 	@PostMapping("/active")
-	public ResponseEntity<String> getChaincodeListToActiveInChannel(
+	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
 			@ApiParam(value = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)throws Exception {
-			fabricService.activeChaincode(activeCcDto);
-		return ResponseEntity.status(HttpStatus.OK).body("");
+			
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.activeChaincode(activeCcDto));
 
 	}
 	

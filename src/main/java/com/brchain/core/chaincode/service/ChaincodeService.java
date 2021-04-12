@@ -143,21 +143,12 @@ public class ChaincodeService {
 	 */
 
 	public ResultDto getCcListToActiveInChannel(String channelName) {
-		JSONArray                     jsonArr               = new JSONArray();
+		JSONArray              jsonArr             = new JSONArray();
 
-//		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelService.findChannelInfoByChannelName(channelName));
-		ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelName);
+		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findCcInfoPeerToActive(channelName);
+		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
 
-		for (ChannelInfoPeerDto channelInfoPeerDto : channelInfoPeerDtoArr) {
-
-			ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(channelInfoPeerDto.getConInfoDto()));
-			for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
-
-				JSONObject ccInfoChannelJson = new JSONObject();
-
-				jsonArr.add(util.toDto(ccInfoPeerEntity));
-
-			}
+			jsonArr.add(util.toDto(ccInfoPeerEntity));
 
 		}
 
@@ -213,14 +204,13 @@ public class ChaincodeService {
 	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
-	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, Long id) {
+	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, String ccName) {
 
-		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, id).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName));
 
 	}
 
 	public List<CcInfoPeerDto> findByccInfoId(Long id) {
-//		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByccInfoId(id);
 		
 		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByCcId(id);
 		List<CcInfoPeerDto>    ccInfoPeerDtoList   = new ArrayList<CcInfoPeerDto>();
@@ -238,6 +228,9 @@ public class ChaincodeService {
 
 		return util.setResult("0000", true, "Success get cc summary", CcSummaryDtoList);
 	}
-
-
+	
+//	public void test() {
+//		System.out.println(ccInfoChannelRepository.testQuery("querytestchannel", "test-cc"));
+//	}
+	
 }

@@ -10,5 +10,6 @@ public interface CcInfoChannelCustomRepository {
 
 	List<CcInfoChannelEntity> findByChannelName(@Param("channelName") String channelName);
 
+	CcInfoChannelEntity findByChannelNameAndCcName(@Param("channelName") String channelName,@Param("ccName") String ccName);
 
 }

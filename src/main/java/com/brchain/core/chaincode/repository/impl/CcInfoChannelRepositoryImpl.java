@@ -24,7 +24,24 @@ public class CcInfoChannelRepositoryImpl extends QuerydslRepositorySupport imple
 			.fetchJoin()
 			.leftJoin(ccInfoChannelEntity.channelInfoEntity)
 			.fetchJoin()
+			.where(ccInfoChannelEntity.channelInfoEntity.channelName.eq(channelName))
 			.fetch();
+	}
+
+	@Override
+	public CcInfoChannelEntity findByChannelNameAndCcName(String channelName, String ccName) {
+		final QCcInfoChannelEntity ccInfoChannelEntity = QCcInfoChannelEntity.ccInfoChannelEntity;
+
+		return from(ccInfoChannelEntity).where(ccInfoChannelEntity.ccInfoEntity.ccName.eq(ccName)
+			.and(ccInfoChannelEntity.channelInfoEntity.channelName.eq(channelName)))
+			.fetchOne();
+
+//				from(ccInfoChannelEntity).leftJoin(ccInfoChannelEntity.ccInfoEntity)
+//			.fetchJoin()
+//			.leftJoin(ccInfoChannelEntity.channelInfoEntity)
+//			.fetchJoin()
+//			.where(ccInfoChannelEntity.channelInfoEntity.channelName.eq(channelName))
+//			.fetch();
 	}
 
 }

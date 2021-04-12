@@ -8,9 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.brchain.core.chaincode.dto.CcSummaryDto;
 import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
+import com.brchain.core.chaincode.repository.custom.CcInfoPeerCustomRepository;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 
-public interface CcInfoPeerRepository extends JpaRepository<CcInfoPeerEntity, Long> {
+public interface CcInfoPeerRepository extends JpaRepository<CcInfoPeerEntity, Long>, CcInfoPeerCustomRepository{
 
 	ArrayList<CcInfoPeerEntity> findByConInfoEntity(ConInfoEntity conInfoEntity);
 		

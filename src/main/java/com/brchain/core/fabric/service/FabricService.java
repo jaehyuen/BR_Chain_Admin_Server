@@ -596,7 +596,7 @@ public class FabricService {
 				}
 
 				if (!flag) {
-					System.out.println(peerDto.getConName() + " 여기에 체인코드 설치 안");
+					System.out.println(peerDto.getConName() + " 여기에 체인코드 설치 안됨");
 					InstallCcDto installCcDto = new InstallCcDto();
 
 					installCcDto.setCcName(activeCcDto.getCcName());
@@ -619,7 +619,7 @@ public class FabricService {
 
 				// 이미 인스턴스화가 진행된 체인코드인지 조회
 //				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
-				ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(), activeCcDto.getId());
+				ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(), activeCcDto.getCcName());
 				fabricClient.activeChaincode(peerDtoArr,ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
 
 				ccInfoChannelDto.setCcVersion(activeCcDto.getCcVersion());
@@ -627,7 +627,7 @@ public class FabricService {
 				// 채널에 활성화된 체인코드정보 업데이트
 				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 
-			} catch (IllegalArgumentException e) {
+			} catch (Exception e) {
 
 
 				ccInfoChannelDto = new CcInfoChannelDto();

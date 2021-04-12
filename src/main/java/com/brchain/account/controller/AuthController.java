@@ -14,7 +14,7 @@ import com.brchain.account.dto.RegisterDto;
 import com.brchain.account.service.AuthService;
 import com.brchain.account.service.RefreshTokenService;
 import com.brchain.common.dto.ResultDto;
-import com.brchain.core.channel.service.ChannelService;
+import com.brchain.core.chaincode.service.ChaincodeService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,8 +27,9 @@ public class AuthController {
 
 	private final AuthService         authService;
 	private final RefreshTokenService refreshTokenService;
-
-
+//	private final ChaincodeService cc;
+	
+	
 	@ApiOperation(value = "회원가입", notes = "회원가입 API")
 	@PostMapping("/register")
 	public ResponseEntity<ResultDto> register(@ApiParam(value = "회원가입 정보 DTO", required = true) @RequestBody RegisterDto registerDto) {
@@ -60,10 +61,10 @@ public class AuthController {
 	
 
 //	@GetMapping("/test")
-//	public ResponseEntity<ResultDto> getChannelSummaryList() {
+//	public ResponseEntity<String> getChannelSummaryList() {
 //
-//		channelService.getChannelSummaryList();
-//		return ResponseEntity.status(HttpStatus.OK).body(channelService.getChannelSummaryList());
+//		cc.test();
+//		return ResponseEntity.status(HttpStatus.OK).body("");
 //
 //	}
 	

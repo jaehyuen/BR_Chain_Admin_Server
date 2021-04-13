@@ -7,6 +7,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.container.dto.ConInfoDto;
@@ -114,6 +115,7 @@ public class ContainerService {
 	 * @return 결과 DTO(조직 리스트)
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getOrgList(String orgType) {
 
 		ArrayList<ConInfoEntity> conInfoEntityList;
@@ -147,6 +149,7 @@ public class ContainerService {
 	 * @return 결과 DTO(조직 리스트)
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getMemberList(String orgName) {
 
 		ArrayList<ConInfoEntity> conInfoEntityList = conInfoRepository.findByOrgName(orgName);
@@ -178,6 +181,7 @@ public class ContainerService {
 	 * @return FabricMemberDTO 배열
 	 */
 
+	@Transactional(readOnly = true)
 	public ArrayList<FabricMemberDto> createMemberDtoArr(String orgType, String orgName) {
 
 		ArrayList<FabricMemberDto> resultArr = new ArrayList<FabricMemberDto>();
@@ -216,10 +220,10 @@ public class ContainerService {
 	 * @return 컨소시엄에 있는지 여부
 	 */
 
+	@Transactional(readOnly = true)
 	public boolean isMemOfConso(String ordererOrgName, String peerOrgName) {
 
-		ArrayList<ConInfoEntity> conInfoEntityArr = conInfoRepository.findByConTypeAndOrgName("orderer",
-				ordererOrgName);
+		ArrayList<ConInfoEntity> conInfoEntityArr = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
 
 		String[] consoList = conInfoEntityArr.get(0).getConsoOrgs().split(" ");
 
@@ -263,6 +267,7 @@ public class ContainerService {
 	 * @return 결과 DTO(포트 사용가능 여부)
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto canUseConPort(String port) {
 
 		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConPort(port);

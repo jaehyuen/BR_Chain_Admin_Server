@@ -9,6 +9,7 @@ import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
@@ -124,8 +125,8 @@ public class TransactionService {
 
 	}
 	
+	@Transactional(readOnly = true)
 	public ResultDto getTxListByChannel(String channelName) {
-//		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
 		List<TransactionEntity> transactionEntity = transactionRepository.findByChannelName(channelName);
 
 		if (transactionEntity.isEmpty()) {
@@ -136,6 +137,7 @@ public class TransactionService {
 
 	}
 	
+	@Transactional(readOnly = true)
 	public ResultDto getTxByTxId(String txId) {
 
 		return util.setResult("0000", true, "Success get tx by tx id", findBlockByTxId(txId));

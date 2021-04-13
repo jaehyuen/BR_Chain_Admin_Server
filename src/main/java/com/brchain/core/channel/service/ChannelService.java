@@ -9,6 +9,7 @@ import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelHandleDto;
@@ -86,6 +87,7 @@ public class ChannelService {
 	 * @return 결과 DTO(채널 리스트)
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getChannelList() {
 
 		JSONArray resultJsonArr = new JSONArray();
@@ -108,6 +110,7 @@ public class ChannelService {
 	 * @return 결과 DTO(채널 정보)
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getChannelByChannelName(String channelName) {
 
 		JSONObject resultJson = new JSONObject();
@@ -142,6 +145,7 @@ public class ChannelService {
 	 * @return 채널 정보 (피어) 조회 결과 DTO
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getChannelListPeerByConName(String conName) {
 
 		JSONArray resultJsonArr = new JSONArray();
@@ -171,6 +175,7 @@ public class ChannelService {
 	 * @return 채널 정보 (피어) 조회 결과 DTO
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getChannelListPeerByChannelName(String channelName) {
 
 		JSONArray resultJsonArr = new JSONArray();
@@ -270,6 +275,7 @@ public class ChannelService {
 		return util.toDto(channelHandleRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
 	}
 
+	@Transactional(readOnly = true)
 	public ResultDto getChannelSummaryList() {
 
 		Calendar cal = Calendar.getInstance();

@@ -1,16 +1,14 @@
 package com.brchain.core.chaincode.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import javax.transaction.Transactional;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.chaincode.dto.CcInfoChannelDto;
@@ -23,9 +21,6 @@ import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
 import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
 import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
 import com.brchain.core.chaincode.repository.CcInfoRepository;
-import com.brchain.core.channel.dto.ChannelInfoDto;
-import com.brchain.core.channel.dto.ChannelInfoPeerDto;
-import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.util.Util;
@@ -72,6 +67,7 @@ public class ChaincodeService {
 	 * @return 조죄한 체인코드 정보 DTO
 	 */
 
+//	@Transactional(readOnly = true)
 	public CcInfoDto findCcInfoById(Long id) {
 
 		return util.toDto(ccInfoRepository.findById(id)
@@ -84,7 +80,8 @@ public class ChaincodeService {
 	 * 
 	 * @return 체인코드 조회 결과 DTO
 	 */
-
+	
+	@Transactional(readOnly = true)
 	public ResultDto getCcList() {
 
 		JSONArray          resultJsonArr = new JSONArray();
@@ -117,7 +114,7 @@ public class ChaincodeService {
 	 * 
 	 * @return 체인코드 정보 (피어) 조회 결과 DTO
 	 */
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResultDto getCcListPeer(String conName) {
 
 		JSONArray                   resultJsonArr       = new JSONArray();
@@ -142,6 +139,7 @@ public class ChaincodeService {
 	 * @return 체인코드 리스트 조회 결과 DTO
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getCcListToActiveInChannel(String channelName) {
 		JSONArray              jsonArr             = new JSONArray();
 
@@ -178,6 +176,7 @@ public class ChaincodeService {
 	 * @return 체인코드 리스트 조회 결과 DTO
 	 */
 
+	@Transactional(readOnly = true)
 	public ResultDto getCcListActive(String channelName) {
 		
 		JSONArray                 jsonArr                 = new JSONArray();
@@ -204,12 +203,14 @@ public class ChaincodeService {
 	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
+	
 	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, String ccName) {
 
 		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName));
 
 	}
 
+	@Transactional(readOnly = true)
 	public List<CcInfoPeerDto> findByccInfoId(Long id) {
 		
 		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByCcId(id);
@@ -222,6 +223,7 @@ public class ChaincodeService {
 		return ccInfoPeerDtoList;
 	}
 
+	@Transactional(readOnly = true)
 	public ResultDto getChaincodeSummaryList() {
 
 		List<CcSummaryDto> CcSummaryDtoList = ccInfoPeerRepository.findChaincodeSummary();

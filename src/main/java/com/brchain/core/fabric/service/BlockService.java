@@ -19,6 +19,7 @@ import org.hyperledger.fabric.protos.peer.TransactionPackage.TransactionAction;
 import org.hyperledger.fabric.sdk.BlockInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
@@ -151,8 +152,8 @@ public class BlockService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public ResultDto getBlockListByChannel(String channelName) {
-//		List<BlockEntity> blockEntityList = blockRepository.findByChannelName(channelName);
 		List<BlockAndTxDto> blockEntityList = blockRepository.findByChannelName(channelName);
 
 		if (blockEntityList.isEmpty()) {
@@ -163,6 +164,7 @@ public class BlockService {
 
 	}
 
+	@Transactional(readOnly = true)
 	public ResultDto getBlockByBlockDataHash(String blockDataHash) {
 
 		return util.setResult("0000", true, "Success get block by channel name", findBlockByBlockDataHash(blockDataHash));

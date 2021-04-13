@@ -2,6 +2,9 @@ package com.brchain.core.chaincode.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -76,20 +79,19 @@ public class ChaincodeService {
 	}
 
 	/**
-	 * 체인코드 리스트 조회 서비스
+	 * 모든 체인코드 리스트 조회 서비스
 	 * 
-	 * @return 체인코드 조회 결과 DTO
+	 * @return 결과 DTO (체인코드 정보)
 	 */
 	
 	@Transactional(readOnly = true)
-	public ResultDto getCcList() {
+	public ResultDto<List<CcInfoDto>> getCcList() {
 
-		JSONArray          resultJsonArr = new JSONArray();
+		List<CcInfoEntity> ccInfoList = ccInfoRepository.findAll();
 
-		List<CcInfoEntity> ccInfoArr     = ccInfoRepository.findAll();
-
-
-		return util.setResult("0000", true, "Success get chaincode info", ccInfoArr);
+		return util.setResult("0000", true, "Success get chaincode info", ccInfoList.stream()
+			.map(ccInfo -> util.toDto(ccInfo))
+			.collect(Collectors.toList()));
 
 	}
 
@@ -112,23 +114,16 @@ public class ChaincodeService {
 	 * 
 	 * @param conName 컨테이너 이름
 	 * 
-	 * @return 체인코드 정보 (피어) 조회 결과 DTO
+	 * @return 결과 DTO (체인코드 정보 (피어))
 	 */
 	@Transactional(readOnly = true)
-	public ResultDto getCcListPeer(String conName) {
+	public ResultDto<List<CcInfoPeerDto>> getCcListPeer(String conName) {
 
-		JSONArray                   resultJsonArr       = new JSONArray();
+		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
-		ArrayList<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
-
-		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
-
-			JSONObject resultJson = new JSONObject();
-
-			resultJsonArr.add(util.toDto(ccInfoPeerEntity));
-		}
-
-		return util.setResult("0000", true, "Success get chaincode info", resultJsonArr);
+		return util.setResult("0000", true, "Success get chaincode info", ccInfoPeerList.stream()
+			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
+			.collect(Collectors.toList()));
 	}
 
 	/**
@@ -136,21 +131,17 @@ public class ChaincodeService {
 	 * 
 	 * @param channelName 채널 이름
 	 * 
-	 * @return 체인코드 리스트 조회 결과 DTO
+	 * @return 결과 DTO (체인코드 리스트)
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto getCcListToActiveInChannel(String channelName) {
-		JSONArray              jsonArr             = new JSONArray();
+	public ResultDto<List<CcInfoPeerDto>> getCcListToActiveInChannel(String channelName) {
+		
+		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findCcInfoPeerToActive(channelName);
 
-		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findCcInfoPeerToActive(channelName);
-		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
-
-			jsonArr.add(util.toDto(ccInfoPeerEntity));
-
-		}
-
-		return util.setResult("0000", true, "Success get chaincode list channel", jsonArr);
+		return util.setResult("0000", true, "Success get chaincode list channel", ccInfoPeerList.stream()
+			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
+			.collect(Collectors.toList()));
 
 	}
 
@@ -173,24 +164,17 @@ public class ChaincodeService {
 	 * 
 	 * @param channelName 채널 이름
 	 * 
-	 * @return 체인코드 리스트 조회 결과 DTO
+	 * @return 결과 DTO(체인코드 리스트)
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto getCcListActive(String channelName) {
-		
-		JSONArray                 jsonArr                 = new JSONArray();
-		List<CcInfoChannelEntity> ccInfoChannelEntityList = ccInfoChannelRepository.findByChannelName(channelName);
+	public ResultDto<List<CcInfoChannelDto>> getCcListActive(String channelName) {
 
-		for (CcInfoChannelEntity ccInfoChannelEntity : ccInfoChannelEntityList) {
+		List<CcInfoChannelEntity> ccInfoChannelList = ccInfoChannelRepository.findByChannelName(channelName);
 
-			JSONObject ccInfoChannelJson = new JSONObject();
-
-			jsonArr.add(util.toDto(ccInfoChannelEntity));
-
-		}
-
-		return util.setResult("0000", true, "Success get actived chaincode list channel ", jsonArr);
+		return util.setResult("0000", true, "Success get actived chaincode list channel ", ccInfoChannelList.stream()
+			.map(ccInfoChannel -> util.toDto(ccInfoChannel))
+			.collect(Collectors.toList()));
 
 	}
 
@@ -210,25 +194,35 @@ public class ChaincodeService {
 
 	}
 
+	/**
+	 * 체인코드 id 값으로 체인코드 정보 (피어) 조회 서비스
+	 * 
+	 * @param id 체인코드 id
+	 * 
+	 * @return 조회한 체인코드 정보 (피어) DTO
+	 */
+	
 	@Transactional(readOnly = true)
-	public List<CcInfoPeerDto> findByccInfoId(Long id) {
-		
-		List<CcInfoPeerEntity> ccInfoPeerEntityArr = ccInfoPeerRepository.findByCcId(id);
-		List<CcInfoPeerDto>    ccInfoPeerDtoList   = new ArrayList<CcInfoPeerDto>();
-		
-		for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityArr) {
-			ccInfoPeerDtoList.add(util.toDto(ccInfoPeerEntity));
-		}
+	public List<CcInfoPeerDto> findByCcInfoId(Long id) {
 
-		return ccInfoPeerDtoList;
+		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByCcId(id);
+
+		return ccInfoPeerList.stream()
+			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
+			.collect(Collectors.toList());
 	}
 
+	/**
+	 * 체인코드 요약정보 (피어) 조회 서비스
+	 * 
+	 * @return 결과 DTO(체인코드 요약정보 (피어))
+	 */
 	@Transactional(readOnly = true)
-	public ResultDto getChaincodeSummaryList() {
+	public ResultDto<List<CcSummaryDto>> getCcSummaryList() {
 
-		List<CcSummaryDto> CcSummaryDtoList = ccInfoPeerRepository.findChaincodeSummary();
+		List<CcSummaryDto> CcSummaryList = ccInfoPeerRepository.findChaincodeSummary();
 
-		return util.setResult("0000", true, "Success get cc summary", CcSummaryDtoList);
+		return util.setResult("0000", true, "Success get cc summary", CcSummaryList);
 	}
 	
 //	public void test() {

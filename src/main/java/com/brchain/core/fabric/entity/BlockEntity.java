@@ -55,7 +55,6 @@ import lombok.NoArgsConstructor;
 							  		+ "WHERE  a.CHANNELINFO_CHANNEL_NAME = :channelName\n"
 							  		+ "GROUP  BY b.BLOCK_BLOCK_DATA_HASH\n"
 							  		+ "ORDER  BY a.BLOCK_NUM DESC;",
-//							   name = "ChannelInfoEntity.findChannelSummary")
 							   name = "BlockEntity.findByChannelName")
 
 

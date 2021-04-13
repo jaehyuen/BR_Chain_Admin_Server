@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ public class DockerService {
 	 * @return 결과 DTO(삭제 결과)
 	 */
 
-	public ResultDto removeAllContainers() {
+	public ResultDto<String> removeAllContainers() {
 
 		try {
 
@@ -93,7 +92,7 @@ public class DockerService {
 	 * @return 결과 DTO(삭제 결과)
 	 */
 
-	public ResultDto removeContainer(String conId) {
+	public ResultDto<String> removeContainer(String conId) {
 
 		try {
 
@@ -131,7 +130,7 @@ public class DockerService {
 	 * @return 결과 DTO(삭제 결과)
 	 */
 
-	public ResultDto removeOrgContainers(String orgName) {
+	public ResultDto<String> removeOrgContainers(String orgName) {
 
 		try {
 
@@ -175,9 +174,9 @@ public class DockerService {
 	 * @return 결과 DTO(조회 결과)
 	 */
 
-	public ResultDto getAllContainersInfo() {
+	public ResultDto<List<DockerStatsDto>> getAllContainersInfo() {
 
-		List<DockerStatsDto> dockerStatsDtoList = new ArrayList<DockerStatsDto>();
+		List<DockerStatsDto> dockerStatsList = new ArrayList<DockerStatsDto>();
 
 		try {
 
@@ -205,7 +204,7 @@ public class DockerService {
 				dockerStatsDto.setConCreated(new Date(container.created() * 1000).toString());
 				dockerStatsDto.setConStatus(container.status());
 
-				dockerStatsDtoList.add(dockerStatsDto);
+				dockerStatsList.add(dockerStatsDto);
 
 			}
 
@@ -217,7 +216,7 @@ public class DockerService {
 
 		}
 
-		return util.setResult("0000", true, "Success get all containers info", dockerStatsDtoList);
+		return util.setResult("0000", true, "Success get all containers info", dockerStatsList);
 	}
 
 	/**

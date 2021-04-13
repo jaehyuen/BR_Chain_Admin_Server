@@ -32,7 +32,6 @@ import com.brchain.core.channel.dto.ChannelInfoPeerDto;
 import com.brchain.core.channel.entitiy.ChannelHandleEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
-import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity.ChannelInfoPeerEntityBuilder;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.fabric.dto.BlockDto;
@@ -435,9 +434,9 @@ public class Util {
 
 	}
 
-	public ResultDto setResult(String code, boolean flag, String message, Object data) {
+	public <T> ResultDto<T> setResult(String code, boolean flag, String message, T data) {
 
-		ResultDto resultDto = new ResultDto();
+		ResultDto<T> resultDto = new ResultDto<T>();
 
 		resultDto.setResultCode(code);
 		resultDto.setResultFlag(flag);
@@ -1067,6 +1066,7 @@ public class Util {
 			.build();
 
 	}
+	
 
 	/*
 	 * ########################################################################

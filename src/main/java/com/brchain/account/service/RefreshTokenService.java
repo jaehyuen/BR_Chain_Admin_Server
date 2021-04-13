@@ -59,7 +59,7 @@ public class RefreshTokenService {
 	 * @return 토큰 삭제 결과
 	 */
 
-	public ResultDto deleteRefreshToken(String refreshToken) {
+	public ResultDto<String> deleteRefreshToken(String refreshToken) {
 		refreshTokenRepository.deleteByToken(refreshToken);
 		return util.setResult("0000", true, "Success logout user", null);
 	}

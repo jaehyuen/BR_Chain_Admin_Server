@@ -580,7 +580,7 @@ public class FabricService {
 				peerDtoArr.addAll(containerService.createMemberDtoArr("peer", org));
 			}
 
-			ccInfoPeerDtoList.addAll(chaincodeService.findByccInfoId(activeCcDto.getId()));
+			ccInfoPeerDtoList.addAll(chaincodeService.findByCcInfoId(activeCcDto.getId()));
 			ordererDtoArr.addAll(containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg()));
 			System.out.println(ccInfoPeerDtoList);
 
@@ -754,7 +754,7 @@ public class FabricService {
 
 			// 이벤트 리슨을 등록할 피어 정보 조회
 //			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
+			List<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			// 이벤트 리슨을 등록할 FabricMembetDto(peer) 생성
 			ArrayList<FabricMemberDto>    peerDtoArr            = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
@@ -821,7 +821,7 @@ public class FabricService {
 
 			// 이벤트 리슨을 삭제할 피어 정보 조회
 //			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
-			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
+			List<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			// 이벤트 리슨을 삭제할 FabricMemberDto(peer) 생성
 			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))

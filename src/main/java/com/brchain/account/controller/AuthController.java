@@ -27,7 +27,7 @@ public class AuthController {
 
 	private final AuthService         authService;
 	private final RefreshTokenService refreshTokenService;
-//	private final ChaincodeService cc;
+	private final ChaincodeService cc;
 	
 	
 	@ApiOperation(value = "회원가입", notes = "회원가입 API")
@@ -60,13 +60,13 @@ public class AuthController {
 	}
 	
 
-//	@GetMapping("/test")
-//	public ResponseEntity<String> getChannelSummaryList() {
-//
-//		cc.test();
-//		return ResponseEntity.status(HttpStatus.OK).body("");
-//
-//	}
+	@GetMapping("/test")
+	public ResponseEntity<String> getChannelSummaryList() {
+
+		cc.getCcList();
+		return ResponseEntity.status(HttpStatus.OK).body("");
+
+	}
 	
 }
 

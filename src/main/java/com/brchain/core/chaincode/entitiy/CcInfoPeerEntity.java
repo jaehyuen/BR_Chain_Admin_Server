@@ -22,6 +22,7 @@ import com.brchain.common.entity.BaseEntity;
 import com.brchain.core.chaincode.dto.CcSummaryDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -51,6 +52,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CCINFO_PEER")
+@AllArgsConstructor
 @NoArgsConstructor
 public class CcInfoPeerEntity extends BaseEntity {
 

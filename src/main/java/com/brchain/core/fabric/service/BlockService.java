@@ -2,20 +2,8 @@ package com.brchain.core.fabric.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.codec.binary.Hex;
-import org.hyperledger.fabric.protos.common.Common;
-import org.hyperledger.fabric.protos.common.Common.BlockData;
-import org.hyperledger.fabric.protos.common.Common.ChannelHeader;
-import org.hyperledger.fabric.protos.common.Common.Header;
-import org.hyperledger.fabric.protos.common.Common.SignatureHeader;
-import org.hyperledger.fabric.protos.msp.Identities.SerializedIdentity;
-import org.hyperledger.fabric.protos.peer.ProposalResponsePackage.ProposalResponse;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.ChaincodeActionPayload;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.Transaction;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.TransactionAction;
 import org.hyperledger.fabric.sdk.BlockInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.springframework.stereotype.Service;
@@ -25,11 +13,8 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.fabric.dto.BlockAndTxDto;
 import com.brchain.core.fabric.dto.BlockDto;
-import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.repository.BlockRepository;
 import com.brchain.core.util.Util;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.RequiredArgsConstructor;
@@ -87,12 +72,21 @@ public class BlockService {
 
 	}
 
+	/**
+	 * 이벤트로 받은 블록 분석후 디비에 저장하는 서비스
+	 * 
+	 * @param block 이벤트로 받은 블록
+	 * @param channelInfoDto 블록에 대한 채널 정보 DTO
+	 * 
+	 * @throws InvalidProtocolBufferException
+	 */
+	
 	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) throws InvalidProtocolBufferException {
 
 		BlockDto blockDto;
-		int      txCnt = block.getBlock()
-			.getData()
-			.getDataCount();
+//		int      txCnt = block.getBlock()
+//			.getData()
+//			.getDataCount();
 		try {
 
 			// 이벤트로 받은 blockDataHash이 있는지 조회
@@ -152,20 +146,36 @@ public class BlockService {
 
 	}
 
+	/**
+	 * 채널명으로 블록 리스트 조회 서비스
+	 * 
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 결과 DTO (블록 및 트랜잭션 정보)
+	 */
+	
 	@Transactional(readOnly = true)
-	public ResultDto getBlockListByChannel(String channelName) {
-		List<BlockAndTxDto> blockEntityList = blockRepository.findByChannelName(channelName);
+	public ResultDto<List<BlockAndTxDto>> getBlockListByChannel(String channelName) {
+		List<BlockAndTxDto> blockAndTxList = blockRepository.findByChannelName(channelName);
 
-		if (blockEntityList.isEmpty()) {
+		if (blockAndTxList.isEmpty()) {
 			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<BlockAndTxDto>());
 		} else {
-			return util.setResult("0000", true, "Success get block by channel name", blockEntityList);
+			return util.setResult("0000", true, "Success get block by channel name", blockAndTxList);
 		}
 
 	}
 
+	/**
+	 * 블록 데이터 해쉬값으로 블록 조회 서비스
+	 * 
+	 * @param blockDataHash 블록 데이터 해쉬값
+	 * 
+	 * @return 결과 DTO (블록 정보)
+	 */
+	
 	@Transactional(readOnly = true)
-	public ResultDto getBlockByBlockDataHash(String blockDataHash) {
+	public ResultDto<BlockDto> getBlockByBlockDataHash(String blockDataHash) {
 
 		return util.setResult("0000", true, "Success get block by channel name", findBlockByBlockDataHash(blockDataHash));
 

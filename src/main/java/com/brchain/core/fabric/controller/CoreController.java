@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/core")
 @RequiredArgsConstructor
-
+@SuppressWarnings("rawtypes")
 public class CoreController {
 
 	private final ContainerService   containerService;

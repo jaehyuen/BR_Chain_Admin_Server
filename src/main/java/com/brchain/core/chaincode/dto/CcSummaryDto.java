@@ -7,8 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class CcSummaryDto {
 
-	private String conName;
-	private int    ccCnt;
-	
-	
+	private String conName; // 컨테이너 이름
+	private int    ccCnt;   // 체인코드 개수
+
 }

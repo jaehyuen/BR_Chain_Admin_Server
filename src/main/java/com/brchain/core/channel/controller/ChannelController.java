@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/core/channel")
 @RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
 public class ChannelController {
 
 	private final ChannelService channelService;

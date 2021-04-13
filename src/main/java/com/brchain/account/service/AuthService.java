@@ -49,7 +49,7 @@ public class AuthService {
 	 * @return 회원가입 결과 DTO
 	 */
 
-	public ResultDto register(RegisterDto registerDto) {
+	public ResultDto<String> register(RegisterDto registerDto) {
 
 		try {
 
@@ -87,7 +87,7 @@ public class AuthService {
 	 * @return 로그인 결과 DTO
 	 */
 
-	public ResultDto login(LoginDto loginDto) {
+	public ResultDto<TokenDto> login(LoginDto loginDto) {
 
 		// 로그인 시작 (로그인 실패시 401리턴)
 		Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword()));
@@ -119,7 +119,8 @@ public class AuthService {
 	 * @return 토근 재발급 결과 DTO
 	 */
 
-	public ResultDto refreshToken(RefreshTokenDto refreshTokenDto) {
+	@Transactional(readOnly = true)
+	public ResultDto<TokenDto> refreshToken(RefreshTokenDto refreshTokenDto) {
 
 		// 리프레쉬 토큰 유효성 검사
 		refreshTokenService.validateRefreshToken(refreshTokenDto.getRefreshToken());

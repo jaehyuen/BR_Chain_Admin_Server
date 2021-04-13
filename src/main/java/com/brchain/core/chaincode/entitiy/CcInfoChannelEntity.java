@@ -16,6 +16,7 @@ import javax.persistence.Table;
 import com.brchain.common.entity.BaseEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,18 +26,17 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "CCINFO_CHANNEL")
+@AllArgsConstructor
 @NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
 public class CcInfoChannelEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ID")
-	private Long id;
+	private Long              id;
 
 	@Column(name = "CC_VERSION", nullable = false)
-	private String ccVersion;
+	private String            ccVersion;
 
 	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
@@ -44,15 +44,14 @@ public class CcInfoChannelEntity extends BaseEntity {
 
 	@ManyToOne(targetEntity = CcInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "CCINFO_CC_ID")
-	private CcInfoEntity ccInfoEntity;
+	private CcInfoEntity      ccInfoEntity;
 
 	@Builder
-	public CcInfoChannelEntity(Long id, String ccVersion, ChannelInfoEntity channelInfoEntity,
-			CcInfoEntity ccInfoEntity, LocalDateTime createdAt) {
-		this.id = id;
-		this.ccVersion = ccVersion;
+	public CcInfoChannelEntity(Long id, String ccVersion, ChannelInfoEntity channelInfoEntity, CcInfoEntity ccInfoEntity, LocalDateTime createdAt) {
+		this.id                = id;
+		this.ccVersion         = ccVersion;
 		this.channelInfoEntity = channelInfoEntity;
-		this.ccInfoEntity = ccInfoEntity;
+		this.ccInfoEntity      = ccInfoEntity;
 		super.setCreatedAt(createdAt);
 
 	}

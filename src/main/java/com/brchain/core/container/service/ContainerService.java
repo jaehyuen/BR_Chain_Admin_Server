@@ -1,10 +1,10 @@
 package com.brchain.core.container.service;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,19 +88,11 @@ public class ContainerService {
 
 	public String findConInfoByConType(String conType, String orgType) {
 
-		ArrayList<ConInfoEntity> conInfoEntity = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
 		String result = "";
 
-		for (ConInfoEntity entity : conInfoEntity) {
-
-//			ConInfoDto conInfoDto = ConInfoDto.builder().conId(entity.getConId()).conName(entity.getConName())
-//					.conType(entity.getConType()).conNum(entity.getConNum()).conCnt(entity.getConCnt())
-//					.conPort(conInfoEntity.get(0).getConPort()).orgName(entity.getOrgName())
-//					.orgType(entity.getOrgType()).couchdbYn(entity.isCouchdbYn())
-//					.gossipBootAddr(entity.getGossipBootAddr()).ordererPorts(entity.getOrdererPorts()).build();
-
-			ConInfoDto conInfoDto = util.toDto(entity);
-			result = result + conInfoDto.getOrgName() + " ";
+		for (ConInfoEntity conInfo : conInfoList) {
+			result = result + conInfo.getOrgName() + " ";
 		}
 
 		return result;
@@ -116,29 +108,23 @@ public class ContainerService {
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto getOrgList(String orgType) {
+	public ResultDto<List<ConInfoDto>> getOrgList(String orgType) {
 
-		ArrayList<ConInfoEntity> conInfoEntityList;
+		List<ConInfoEntity> conInfoList;
 
 		if (orgType.equals("")) {
 
-			conInfoEntityList = conInfoRepository.findByConType("ca");
+			conInfoList = conInfoRepository.findByConType("ca");
 
 		} else {
 
-			conInfoEntityList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
+			conInfoList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
 
 		}
 
-		JSONArray resultJsonArr = new JSONArray();
-
-		for (ConInfoEntity conInfoEntity : conInfoEntityList) {
-
-			resultJsonArr.add(util.toDto(conInfoEntity));
-
-		}
-
-		return util.setResult("0000", true, "Success get container info", resultJsonArr);
+		return util.setResult("0000", true, "Success get container info", conInfoList.stream()
+			.map(conInfo -> util.toDto(conInfo))
+			.collect(Collectors.toList()));
 	}
 
 	/**
@@ -147,12 +133,13 @@ public class ContainerService {
 	 * @param orgName 조직 이름
 	 * 
 	 * @return 결과 DTO(조직 리스트)
+	 * TODO 조회쿼리 변경 준비
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto getMemberList(String orgName) {
+	public ResultDto<JSONArray> getMemberList(String orgName) {
 
-		ArrayList<ConInfoEntity> conInfoEntityList = conInfoRepository.findByOrgName(orgName);
+		List<ConInfoEntity> conInfoEntityList = conInfoRepository.findByOrgName(orgName);
 
 		JSONArray resultJsonArr = new JSONArray();
 
@@ -184,15 +171,14 @@ public class ContainerService {
 	@Transactional(readOnly = true)
 	public ArrayList<FabricMemberDto> createMemberDtoArr(String orgType, String orgName) {
 
-		ArrayList<FabricMemberDto> resultArr = new ArrayList<FabricMemberDto>();
-		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType,
-				orgName);
+		ArrayList<FabricMemberDto> resultList  = new ArrayList<FabricMemberDto>();
+		List<ConInfoEntity>        conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType, orgName);
 
-		String caUrl = "http://" + ip + ":" + conInfoArr.get(0).getConPort();
+		String                     caUrl       = "http://" + ip + ":" + conInfoList.get(0).getConPort();
 
-		conInfoArr = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
+		conInfoList = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
 
-		for (ConInfoEntity conInfo : conInfoArr) {
+		for (ConInfoEntity conInfo : conInfoList) {
 			FabricMemberDto memberDto = new FabricMemberDto();
 
 			memberDto.setConName(conInfo.getConName());
@@ -204,10 +190,10 @@ public class ContainerService {
 			memberDto.setOrgType(conInfo.getOrgType());
 			memberDto.setCaUrl(caUrl);
 
-			resultArr.add(memberDto);
+			resultList.add(memberDto);
 		}
 
-		return resultArr;
+		return resultList;
 
 	}
 
@@ -218,14 +204,15 @@ public class ContainerService {
 	 * @param peerOrgName    피어 조직 이름
 	 * 
 	 * @return 컨소시엄에 있는지 여부
+	 * TODO 쿼리 변경 예정
 	 */
 
 	@Transactional(readOnly = true)
 	public boolean isMemOfConso(String ordererOrgName, String peerOrgName) {
 
-		ArrayList<ConInfoEntity> conInfoEntityArr = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
 
-		String[] consoList = conInfoEntityArr.get(0).getConsoOrgs().split(" ");
+		String[] consoList = conInfoList.get(0).getConsoOrgs().split(" ");
 
 		for (int i = 0; i < consoList.length; i++) {
 
@@ -250,9 +237,9 @@ public class ContainerService {
 
 	public void updateConsoOrgs(String ordererOrgName, String peerOrgName) {
 
-		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
 
-		for (ConInfoEntity conInfo : conInfoArr) {
+		for (ConInfoEntity conInfo : conInfoList) {
 
 			conInfo.setConsoOrgs(conInfo.getConsoOrgs() + peerOrgName + " ");
 			conInfoRepository.save(conInfo);
@@ -265,23 +252,19 @@ public class ContainerService {
 	 * @param port 포트
 	 * 
 	 * @return 결과 DTO(포트 사용가능 여부)
+	 * TODO 쿼리 변경 예정
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto canUseConPort(String port) {
+	public ResultDto<String> canUseConPort(String port) {
 
-		ArrayList<ConInfoEntity> conInfoArr = conInfoRepository.findByConPort(port);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConPort(port);
 
-		ResultDto resultDto = new ResultDto();
-		resultDto.setResultCode(conInfoArr.isEmpty() ? "0000" : "9999");
-		resultDto.setResultFlag(conInfoArr.isEmpty());
-		resultDto.setResultMessage(conInfoArr.isEmpty() ? "사용가능" : "사용불가");
-
-		return resultDto;
+		return util.setResult(conInfoList.isEmpty() ? "0000" : "9999", conInfoList.isEmpty(), conInfoList.isEmpty() ? "사용가능" : "사용불가", null);
 
 	}
 
-	public ArrayList<String> findOrgsInChannel(String channelName) {
+	public List<String> findOrgsInChannel(String channelName) {
 
 		return conInfoRepository.findOrgsByChannelName(channelName);
 	}

@@ -2,6 +2,7 @@ package com.brchain.core.fabric.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeType;
@@ -76,6 +77,15 @@ public class TransactionService {
 
 	}
 
+	/**
+	 * 트랜잭션 분석후 디비에 저장하는 서비스
+	 * 
+	 * @param envelopeInfo 트랜잭션 정보
+	 * @param channelInfoDto 트랜잭션에 대한 채널 정보 DTO
+	 * @param blockDto 트랜잭션에 대한 블록 정보 DTO
+	 * 
+	 */
+	
 	public void inspectTransaction(EnvelopeInfo envelopeInfo, ChannelInfoDto channelInfoDto, BlockDto blockDto) {
 		String txId = null;
 
@@ -123,22 +133,41 @@ public class TransactionService {
 			saveTransaction(transactionDto);
 		}
 
+		
 	}
 	
+	/**
+	 * 채널명으로 트랜잭션 리스트 조회 서비스
+	 * 
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 결과 DTO (트랜잭션 정보 리스트)
+	 */
+	
 	@Transactional(readOnly = true)
-	public ResultDto getTxListByChannel(String channelName) {
-		List<TransactionEntity> transactionEntity = transactionRepository.findByChannelName(channelName);
+	public ResultDto<List<TransactionDto>> getTxListByChannel(String channelName) {
+		List<TransactionEntity> transactionList = transactionRepository.findByChannelName(channelName);
 
-		if (transactionEntity.isEmpty()) {
-			return util.setResult("0000", true, "Success get tx by channel name", new ArrayList<TransactionEntity>());
+		if (transactionList.isEmpty()) {
+			return util.setResult("0000", true, "Success get tx by channel name", new ArrayList<TransactionDto>());
 		} else {
-			return util.setResult("0000", true, "Success get tx by channel name", transactionEntity);
+			return util.setResult("0000", true, "Success get tx by channel name", transactionList.stream()
+				.map(transaction -> util.toDto(transaction))
+				.collect(Collectors.toList()));
 		}
 
 	}
 	
+	/**
+	 * 트랜잭션 id값으로 트랜잭션 조회 서비스
+	 * 
+	 * @param txId 트랜잭션 id
+	 * 
+	 * @return결과 DTO (트랜잭션 정보)
+	 */
+	
 	@Transactional(readOnly = true)
-	public ResultDto getTxByTxId(String txId) {
+	public ResultDto<TransactionDto> getTxByTxId(String txId) {
 
 		return util.setResult("0000", true, "Success get tx by tx id", findBlockByTxId(txId));
 

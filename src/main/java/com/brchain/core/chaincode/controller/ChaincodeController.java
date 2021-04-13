@@ -27,11 +27,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/core/chaincode/")
 @RequiredArgsConstructor
+@SuppressWarnings("rawtypes")
 public class ChaincodeController {
 
 	private final ChaincodeService chaincodeService;
 	private final FabricService fabricService;
-
+	
 	@ApiOperation(value = "Hyperledger Fabric 체인코드 조회", notes = "Hyperledger Fabric 체인코드를 조회하는 API (분리예정)")
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChaincodeList(
@@ -49,7 +50,7 @@ public class ChaincodeController {
 	@GetMapping("/list/summary")
 	public ResponseEntity<ResultDto> getChannelSummaryList() {
 
-		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getChaincodeSummaryList());
+		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcSummaryList());
 
 	}
 

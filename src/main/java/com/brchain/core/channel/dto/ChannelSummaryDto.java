@@ -7,13 +7,13 @@ public class ChannelSummaryDto {
 
 	private String  channelName;  // 채널 이름
 	private int     channelBlock; // 채널 블럭수
-	private int     channelTx;    // 채널 트렌젝션수
-	private Double  preBlockCnt;  // 채널 블럭수
-	private Double  nowBlockCnt;  // 채널 트렌젝션수
-	private Double  preTxCnt;     // 채널 블럭수
-	private Double  nowTxCnt;     // 채널 트렌젝션수
-	private Long    percent;
-	private boolean flag;
+	private int     channelTx;    // 채널 트랜잭션수
+	private Double  preBlockCnt;  // 지난달 채널 블럭수
+	private Double  nowBlockCnt;  // 이번달 채널 트랜잭션수
+	private Double  preTxCnt;     // 지난달 채널 트랜잭션수
+	private Double  nowTxCnt;     // 이번달 채널 트랜잭션수
+	private Long    percent;      // 트랜잭션 증감율
+	private boolean flag;         // 증가감소 플래그
 
 	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Double preBlockCnt, Double nowBlockCnt, Double preTxCnt, Double nowTxCnt) {
 

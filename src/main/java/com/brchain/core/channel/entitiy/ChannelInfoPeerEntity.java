@@ -16,7 +16,6 @@ import javax.persistence.Table;
 import com.brchain.common.entity.BaseEntity;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

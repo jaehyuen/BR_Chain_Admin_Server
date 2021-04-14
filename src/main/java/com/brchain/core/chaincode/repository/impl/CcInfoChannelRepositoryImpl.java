@@ -12,14 +12,15 @@ import com.brchain.core.chaincode.repository.custom.CcInfoChannelCustomRepositor
 @Transactional(readOnly = true)
 public class CcInfoChannelRepositoryImpl extends QuerydslRepositorySupport implements CcInfoChannelCustomRepository {
 
+	final QCcInfoChannelEntity ccInfoChannelEntity = QCcInfoChannelEntity.ccInfoChannelEntity;
+	
 	public CcInfoChannelRepositoryImpl() {
 		super(CcInfoChannelEntity.class);
 	}
 
 	@Override
 	public List<CcInfoChannelEntity> findByChannelName(String channelName) {
-		final QCcInfoChannelEntity ccInfoChannelEntity = QCcInfoChannelEntity.ccInfoChannelEntity;
-
+		
 		return from(ccInfoChannelEntity).leftJoin(ccInfoChannelEntity.ccInfoEntity)
 			.fetchJoin()
 			.leftJoin(ccInfoChannelEntity.channelInfoEntity)
@@ -30,8 +31,7 @@ public class CcInfoChannelRepositoryImpl extends QuerydslRepositorySupport imple
 
 	@Override
 	public CcInfoChannelEntity findByChannelNameAndCcName(String channelName, String ccName) {
-		final QCcInfoChannelEntity ccInfoChannelEntity = QCcInfoChannelEntity.ccInfoChannelEntity;
-
+		
 		return from(ccInfoChannelEntity).where(ccInfoChannelEntity.ccInfoEntity.ccName.eq(ccName)
 			.and(ccInfoChannelEntity.channelInfoEntity.channelName.eq(channelName)))
 			.fetchOne();

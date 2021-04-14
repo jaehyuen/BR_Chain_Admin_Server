@@ -9,7 +9,6 @@ import org.springframework.util.StringUtils;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
 import com.brchain.core.channel.entitiy.QChannelInfoPeerEntity;
 import com.brchain.core.channel.repository.custom.ChannelInfoPeerCustomRepository;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
 @Transactional(readOnly = true)

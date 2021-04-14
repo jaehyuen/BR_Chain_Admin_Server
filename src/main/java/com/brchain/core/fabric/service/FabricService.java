@@ -937,7 +937,6 @@ public class FabricService {
 			try {
 				blockService.inspectBlock(blockEvent, channelInfoDto);
 			} catch (InvalidProtocolBufferException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -951,7 +950,6 @@ public class FabricService {
 				webSocket.convertAndSend("/event", blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
 
 			} catch (MessagingException | InvalidProtocolBufferException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -970,7 +968,6 @@ public class FabricService {
 //				try {
 //					blockService.inspectBlock(blockEvent, channelInfoDto);
 //				} catch (InvalidProtocolBufferException e1) {
-//					// TODO Auto-generated catch block
 //					e1.printStackTrace();
 //				}
 //
@@ -985,7 +982,6 @@ public class FabricService {
 //							blockEvent.getBlockNumber() + " in " + blockEvent.getChannelId());
 //
 //				} catch (MessagingException | InvalidProtocolBufferException e) {
-//					// TODO Auto-generated catch block
 //					e.printStackTrace();
 //				}
 //

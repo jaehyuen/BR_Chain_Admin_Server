@@ -26,42 +26,35 @@ public class BrchainUser implements User {
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return this.name;
 	}
 
 	@Override
 	public Set<String> getRoles() {
-		// TODO Auto-generated method stub
 		return this.roles;
 	}
 
 	@Override
 	public String getAccount() {
-		// TODO Auto-generated method stub
 		return this.account;
 	}
 
 	@Override
 	public String getAffiliation() {
-		// TODO Auto-generated method stub
 		return this.affiliation;
 	}
 
 	@Override
 	public Enrollment getEnrollment() {
-		// TODO Auto-generated method stub
 		return this.enrollment;
 	}
 
 	@Override
 	public String getMspId() {
-		// TODO Auto-generated method stub
 		return this.mspId;
 	}
 
 	public String getOrganization() {
-		// TODO Auto-generated method stub
 		return this.organization;
 	}
 

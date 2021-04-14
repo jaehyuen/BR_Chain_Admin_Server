@@ -139,7 +139,7 @@ public class ContainerService {
 	@Transactional(readOnly = true)
 	public ResultDto<JSONArray> getMemberList(String orgName) {
 
-		List<ConInfoEntity> conInfoEntityList = conInfoRepository.findByOrgName(orgName);
+		List<ConInfoEntity> conInfoEntityList = conInfoRepository.findMemberByOrgName(orgName);
 
 		JSONArray resultJsonArr = new JSONArray();
 

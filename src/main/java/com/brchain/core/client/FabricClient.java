@@ -1173,7 +1173,7 @@ public class FabricClient {
 
 		long sequence = 1L;
 
-		// TODO 체인코드가 없을떄는 시퀀스가 1로 시작되야함
+
 		// 현재 체인코드가 없으면 (namespace test-cc is not defined) 에러
 
 		try {
@@ -1430,7 +1430,6 @@ public class FabricClient {
 //			bos.close();
 //			configPb = bos.toByteArray();
 //		} catch (IOException ex) {
-//			// TODO: Handle the exception
 //		}
 //
 ////		logger.info(util.configtxRequest("http://192.168.65.169:7059/protolator/encode/common.Config",channelName, config,modifiedConfig).);

@@ -2,7 +2,6 @@ package com.brchain.account.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +16,8 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.chaincode.service.ChaincodeService;
 import com.brchain.core.container.repository.ConInfoRepository;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,31 +33,31 @@ public class AuthController {
 	private final ChaincodeService cc;
 	private final ConInfoRepository conInfoRepository;
 	
-	@ApiOperation(value = "회원가입", notes = "회원가입 API")
+	@Operation(summary = "회원가입", description = "회원가입 API")
 	@PostMapping("/register")
-	public ResponseEntity<ResultDto> register(@ApiParam(value = "회원가입 정보 DTO", required = true) @RequestBody RegisterDto registerDto) {
+	public ResponseEntity<ResultDto> register(@Parameter(description = "회원가입 정보 DTO", required = true) @RequestBody RegisterDto registerDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(authService.register(registerDto));
 	}
 
-	@ApiOperation(value = "로그인", notes = "로그인 API")
+	@Operation(summary = "로그인", description = "로그인 API")
 	@PostMapping("/login")
-	public ResponseEntity<ResultDto> login(@ApiParam(value = "로그인 정보 DTO", required = true) @RequestBody LoginDto loginDto) {
+	public ResponseEntity<ResultDto> login(@Parameter(required = true) @RequestBody LoginDto loginDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginDto));
 	}
 
-	@ApiOperation(value = "JWT 토큰 재발급", notes = "JWT 토큰 재발급 API")
+	@Operation(summary = "JWT 토큰 재발급", description = "JWT 토큰 재발급 API")
 	@PostMapping("/refresh")
-	public ResponseEntity<ResultDto> refreshToken(@ApiParam(value = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
+	public ResponseEntity<ResultDto> refreshToken(@Parameter(description = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(authService.refreshToken(refreshTokenDto));
 
 	}
 
-	@ApiOperation(value = "로그아웃", notes = "로그아웃 API")
+	@Operation(summary = "로그아웃", description = "로그아웃 API")
 	@PostMapping("/logout")
-	public ResponseEntity<ResultDto> logout(@ApiParam(value = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
+	public ResponseEntity<ResultDto> logout(@Parameter(description = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(refreshTokenService.deleteRefreshToken(refreshTokenDto.getRefreshToken()));
 	}

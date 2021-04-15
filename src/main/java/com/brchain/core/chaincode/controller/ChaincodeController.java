@@ -19,8 +19,8 @@ import com.brchain.core.chaincode.dto.InstallCcDto;
 import com.brchain.core.chaincode.service.ChaincodeService;
 import com.brchain.core.fabric.service.FabricService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*")
@@ -33,10 +33,10 @@ public class ChaincodeController {
 	private final ChaincodeService chaincodeService;
 	private final FabricService fabricService;
 	
-	@ApiOperation(value = "Hyperledger Fabric 체인코드 조회", notes = "Hyperledger Fabric 체인코드를 조회하는 API (분리예정)")
+	@Operation(summary = "Hyperledger Fabric 체인코드 조회", description = "Hyperledger Fabric 체인코드를 조회하는 API (분리예정)")
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChaincodeList(
-			@ApiParam(value = "컨테이너 이름", required = false) @RequestParam(value = "conName", required = false) String conName) {
+			@Parameter(description = "컨테이너 이름", required = false) @RequestParam(value = "conName", required = false) String conName) {
 
 		if (conName != null) {
 			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListPeer(conName));
@@ -46,7 +46,7 @@ public class ChaincodeController {
 
 	}
 	
-	@ApiOperation(value = "Hyperledger Fabric 체인코드 요약 리스트 조회", notes = "Hyperledger Fabric 체인코드 요약 리스트를 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 체인코드 요약 리스트 조회", description = "Hyperledger Fabric 체인코드 요약 리스트를 조회하는 API")
 	@GetMapping("/list/summary")
 	public ResponseEntity<ResultDto> getChannelSummaryList() {
 
@@ -54,52 +54,52 @@ public class ChaincodeController {
 
 	}
 
-	@ApiOperation(value = "Hyperledger Fabric 채널에 활성화된 체인코드 조회", notes = "Hyperledger Fabric 채널에 활성화된 체인코드를 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널에 활성화된 체인코드 조회", description = "Hyperledger Fabric 채널에 활성화된 체인코드를 조회하는 API")
 	@GetMapping("/list/channel")
 	public ResponseEntity<ResultDto> getChaincodeListChannel(
-			@ApiParam(value = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
+			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListActive(channelName));
 
 	}
 
-	@ApiOperation(value = "Hyperledger Fabric 채널에 활성 가능한 체인코드 조회", notes = "Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널에 활성 가능한 체인코드 조회", description = "Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API")
 	@GetMapping("/list/toactive")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
-			@ApiParam(value = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
+			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListToActiveInChannel(channelName));
 
 	}
 
-	@ApiOperation(value = "Hyperledger Fabric 체인코드 설치", notes = "Hyperledger Fabric 체인코드를 피어에 설치하는 API")
+	@Operation(summary = "Hyperledger Fabric 체인코드 설치", description = "Hyperledger Fabric 체인코드를 피어에 설치하는 API")
 	@PostMapping(value = "/install")
 	public ResponseEntity<ResultDto> installChaincode(
-			@ApiParam(value = "체인코드 설치 관련 DTO", required = true) @RequestBody InstallCcDto installCcDto)
+			@Parameter(description = "체인코드 설치 관련 DTO", required = true) @RequestBody InstallCcDto installCcDto)
 			throws IOException {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.installChaincode(installCcDto));
 
 	}
 
-	@ApiOperation(value = "Hyperledger Fabric 체인코드 업로드", notes = "Hyperledger Fabric 체인코드를 서버에 업로드하는 API")
+	@Operation(summary = "Hyperledger Fabric 체인코드 업로드", description = "Hyperledger Fabric 체인코드를 서버에 업로드하는 API")
 	@PostMapping(value = "/upload")
 	public ResponseEntity<ResultDto> uploadChaincode(
-			@ApiParam(value = "체인코드 압축 파일", required = true) @RequestParam("ccFile") MultipartFile ccFile,
-			@ApiParam(value = "체인코드 이름", required = true) @RequestParam("ccName") String ccName,
-			@ApiParam(value = "체인코드 설명", required = true) @RequestParam("ccDesc") String ccDesc,
-			@ApiParam(value = "체인코드 언어", required = true) @RequestParam("ccLang") String ccLang,
-			@ApiParam(value = "체인코드 버전", required = true) @RequestParam("ccVersion") String ccVersion)
+			@Parameter(description = "체인코드 압축 파일", required = true) @RequestParam("ccFile") MultipartFile ccFile,
+			@Parameter(description = "체인코드 이름", required = true) @RequestParam("ccName") String ccName,
+			@Parameter(description = "체인코드 설명", required = true) @RequestParam("ccDesc") String ccDesc,
+			@Parameter(description = "체인코드 언어", required = true) @RequestParam("ccLang") String ccLang,
+			@Parameter(description = "체인코드 버전", required = true) @RequestParam("ccVersion") String ccVersion)
 			throws IOException {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang, ccVersion));
 
 	}
 
-	@ApiOperation(value = "Hyperledger Fabric 체인코드 활성화", notes = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API")
+	@Operation(summary = "Hyperledger Fabric 체인코드 활성화", description = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API")
 	@PostMapping("/active")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
-			@ApiParam(value = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)throws Exception {
+			@Parameter(description = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)throws Exception {
 			
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.activeChaincode(activeCcDto));
 

@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-	private final UserDetailsServiceImpl userDetailsService;
+	private final UserDetailsServiceImpl  userDetailsService;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 //	private final TestAuthProvider testAuthProvider;
 
@@ -34,24 +34,37 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	public void configure(HttpSecurity httpSecurity) throws Exception {
-		httpSecurity.cors().and().csrf().disable().authorizeRequests().antMatchers("/api/auth/**").permitAll()
-				.antMatchers("/api/core/**").permitAll().antMatchers("/api/core/chaincode/**").permitAll()
-				.antMatchers("/**").permitAll().antMatchers("/v2/api-docs", "/configuration/ui",
-						"/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**")
-				.permitAll().anyRequest().authenticated();
+		httpSecurity.cors()
+			.and()
+			.csrf()
+			.disable()
+			.authorizeRequests()
+			.antMatchers("/api/auth/**")
+			.permitAll()
+			.antMatchers("/api/core/**")
+			.permitAll()
+			.antMatchers("/api/core/chaincode/**")
+			.permitAll()
+			.antMatchers("/**")
+			.permitAll()
+			.antMatchers("/v3/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**")
+			.permitAll()
+			.anyRequest()
+			.authenticated();
 		httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 	}
 
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-		authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+		authenticationManagerBuilder.userDetailsService(userDetailsService)
+			.passwordEncoder(passwordEncoder());
 	}
 
 	@Override
 	public void configure(WebSecurity web) {
-		web.ignoring().antMatchers("/v2/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**",
-				"/swagger/**");
+		web.ignoring()
+			.antMatchers("/v2/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**", "/swagger/**");
 	}
 
 	@Bean

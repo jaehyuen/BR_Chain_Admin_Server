@@ -11,6 +11,14 @@ brchain:
 
 server:
     port: 8080
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    displayRequestDuration: true
+    groups-order: DESC
 
 spring:
     application:

@@ -12,9 +12,8 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.container.service.DockerService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.Authorization;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*")
@@ -27,7 +26,7 @@ public class ContainerController {
 	private final DockerService    dockerService;
 	private final ContainerService containerService;
 
-		@ApiOperation(value = "모든 컨테이너 정보 조회", notes = "모든 도커 컨테이너 정보를 조회하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@Operation(summary = "모든 컨테이너 정보 조회", description = "모든 도커 컨테이너 정보를 조회하는 API")
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getContainerInfo() {
 
@@ -35,9 +34,9 @@ public class ContainerController {
 
 	}
 
-	@ApiOperation(value = "컨테이너 삭제", notes = "컨테이너 ID 또는 조직명으로 컨테이너 중지 및 삭제하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@Operation(summary = "컨테이너 삭제", description = "컨테이너 ID 또는 조직명으로 컨테이너 중지 및 삭제하는 API")
 	@GetMapping("/remove")
-	public ResponseEntity<ResultDto> removeContainer(@ApiParam(value = "삭제할 컨테이너 ID", required = false) @RequestParam(value = "conId", required = false) String conId, @ApiParam(value = "삭제할 조직명", required = false) @RequestParam(value = "orgName", required = false) String orgName) {
+	public ResponseEntity<ResultDto> removeContainer(@Parameter(description = "삭제할 컨테이너 ID", required = false) @RequestParam(value = "conId", required = false) String conId, @Parameter(description = "삭제할 조직명", required = false) @RequestParam(value = "orgName", required = false) String orgName) {
 
 		if (conId != null && conId.equals("")) {
 
@@ -53,9 +52,9 @@ public class ContainerController {
 
 	}
 
-	@ApiOperation(value = "포트 체크", notes = "사용중인 포트인지 체크하는 API", authorizations = { @Authorization(value = "Authorization") })
+	@Operation(summary = "포트 체크", description = "사용중인 포트인지 체크하는 API")
 	@GetMapping("/check/port")
-	public ResponseEntity<ResultDto> portCheck(@ApiParam(value = "확인할 포트 번호", required = false) @RequestParam(value = "port") String port) {
+	public ResponseEntity<ResultDto> portCheck(@Parameter(description = "확인할 포트 번호", required = false) @RequestParam(value = "port") String port) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(containerService.canUseConPort(port));
 

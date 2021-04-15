@@ -91,16 +91,15 @@
 		<!-- Spring Fox Dependencies -->
 		<!-- <dependency> <groupId>io.springfox</groupId> <artifactId>springfox-boot-starter</artifactId> 
 			<version>3.0.0</version> </dependency> -->
+		<!-- <dependency> <groupId>io.springfox</groupId> <artifactId>springfox-swagger-ui</artifactId> 
+			<version>2.9.2</version> </dependency> <dependency> <groupId>io.springfox</groupId> 
+			<artifactId>springfox-swagger2</artifactId> <version>2.9.2</version> </dependency> -->
 		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>2.9.2</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.4.1</version>
 		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>2.9.2</version>
-		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>com.spotify</groupId>
@@ -121,6 +120,8 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 		</dependency>
+
+		<!--Hyperledger Fabric 2.2 SDK -->
 		<dependency>
 			<groupId>org.hyperledger.fabric</groupId>
 			<artifactId>fabric-gateway-java</artifactId>
@@ -131,6 +132,8 @@
 			<artifactId>fabric-sdk-java</artifactId>
 			<version>2.2.0</version>
 		</dependency>
+
+		<!--JPA QueryDsl -->
 		<dependency>
 			<groupId>com.querydsl</groupId>
 			<artifactId>querydsl-jpa</artifactId>
@@ -148,6 +151,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<!--JPA QueryDsl -->
 			<plugin>
 				<groupId>com.mysema.maven</groupId>
 				<artifactId>apt-maven-plugin</artifactId>

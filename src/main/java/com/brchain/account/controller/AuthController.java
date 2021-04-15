@@ -15,6 +15,7 @@ import com.brchain.account.service.AuthService;
 import com.brchain.account.service.RefreshTokenService;
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.chaincode.service.ChaincodeService;
+import com.brchain.core.container.repository.ConInfoRepository;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -23,12 +24,15 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+
+//TODO 스프링시큐리티로 권한 관리 추가
+@SuppressWarnings("rawtypes")
 public class AuthController {
 
 	private final AuthService         authService;
 	private final RefreshTokenService refreshTokenService;
 	private final ChaincodeService cc;
-	
+	private final ConInfoRepository conInfoRepository;
 	
 	@ApiOperation(value = "회원가입", notes = "회원가입 API")
 	@PostMapping("/register")
@@ -60,13 +64,13 @@ public class AuthController {
 	}
 	
 
-	@GetMapping("/test")
-	public ResponseEntity<String> getChannelSummaryList() {
-
-		cc.getCcList();
-		return ResponseEntity.status(HttpStatus.OK).body("");
-
-	}
+//	@GetMapping("/test")
+//	public ResponseEntity<String> getChannelSummaryList() {
+//
+//		conInfoRepository.consortiumCheck("testorderer", "apeer");
+//		return ResponseEntity.status(HttpStatus.OK).body("");
+//
+//	}
 	
 }
 

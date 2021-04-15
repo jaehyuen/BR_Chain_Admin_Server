@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.entitiy.QConInfoEntity;
 import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
 @Transactional(readOnly = true)
@@ -36,6 +37,14 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 			.fetch();
 	}
 
+	@Override
+	public boolean portCheck(String conPort) {
+
+		return from(conInfoEntity).where(conInfoEntity.conPort.eq(conPort)
+			.and(conInfoEntity.conType.notLike("setup")))
+			.fetchFirst() != null;
+	}
+
 	private BooleanExpression eqConType(String conType) {
 		if (StringUtils.isEmpty(conType)) {
 			return null;
@@ -56,4 +65,5 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 		}
 		return conInfoEntity.orgName.eq(orgName);
 	}
+
 }

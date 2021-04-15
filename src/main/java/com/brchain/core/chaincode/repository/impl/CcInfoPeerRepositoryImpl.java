@@ -13,14 +13,15 @@ import com.brchain.core.channel.entitiy.QChannelInfoPeerEntity;
 @Transactional(readOnly = true)
 public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implements CcInfoPeerCustomRepository {
 
+	final QCcInfoPeerEntity      ccInfoPeerlEntity     = QCcInfoPeerEntity.ccInfoPeerEntity;
+	final QChannelInfoPeerEntity channelInfoPeerEntity = QChannelInfoPeerEntity.channelInfoPeerEntity;
+	
 	public CcInfoPeerRepositoryImpl() {
 		super(CcInfoPeerEntity.class);
 	}
 
 	@Override
 	public List<CcInfoPeerEntity> findCcInfoPeerToActive(String channelName) {
-		final QCcInfoPeerEntity      ccInfoPeerlEntity     = QCcInfoPeerEntity.ccInfoPeerEntity;
-		final QChannelInfoPeerEntity channelInfoPeerEntity = QChannelInfoPeerEntity.channelInfoPeerEntity;
 
 		return from(ccInfoPeerlEntity)
 			.join(channelInfoPeerEntity)

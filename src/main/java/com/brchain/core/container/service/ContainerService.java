@@ -133,29 +133,16 @@ public class ContainerService {
 	 * @param orgName 조직 이름
 	 * 
 	 * @return 결과 DTO(조직 리스트)
-	 * TODO 조회쿼리 변경 준비
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto<JSONArray> getMemberList(String orgName) {
+	public ResultDto<List<ConInfoDto>> getMemberList(String orgName) {
 
-		List<ConInfoEntity> conInfoEntityList = conInfoRepository.findMemberByOrgName(orgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findMemberByOrgName(orgName);
 
-		JSONArray resultJsonArr = new JSONArray();
-
-		for (ConInfoEntity conInfoEntity : conInfoEntityList) {
-
-			if (conInfoEntity.getConType().contains("ca") || conInfoEntity.getConType().contains("setup")
-					|| conInfoEntity.getConType().contains("couchdb")) {
-
-				continue;
-			}
-
-			resultJsonArr.add(util.toDto(conInfoEntity));
-
-		}
-
-		return util.setResult("0000", true, "Success get " + orgName + " member info list", resultJsonArr);
+		return util.setResult("0000", true, "Success get " + orgName + " member info list", conInfoList.stream()
+			.map(conInfo -> util.toDto(conInfo))
+			.collect(Collectors.toList()));
 
 	}
 
@@ -220,8 +207,7 @@ public class ContainerService {
 
 				return true;
 
-			}
-			;
+			};
 		}
 
 		return false;
@@ -252,15 +238,14 @@ public class ContainerService {
 	 * @param port 포트
 	 * 
 	 * @return 결과 DTO(포트 사용가능 여부)
-	 * TODO 쿼리 변경 예정
 	 */
 
 	@Transactional(readOnly = true)
 	public ResultDto<String> canUseConPort(String port) {
 
-		List<ConInfoEntity> conInfoList = conInfoRepository.findByConPort(port);
+		boolean portYn = conInfoRepository.portCheck(port);
 
-		return util.setResult(conInfoList.isEmpty() ? "0000" : "9999", conInfoList.isEmpty(), conInfoList.isEmpty() ? "사용가능" : "사용불가", null);
+		return util.setResult(!portYn ? "0000" : "9999", !portYn, !portYn ? "사용가능" : "사용불가", null);
 
 	}
 

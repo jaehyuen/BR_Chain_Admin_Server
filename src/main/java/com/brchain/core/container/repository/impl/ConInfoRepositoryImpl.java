@@ -6,16 +6,21 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.brchain.core.chaincode.dto.CcSummaryDto;
+import com.brchain.core.chaincode.entitiy.QCcInfoPeerEntity;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.entitiy.QConInfoEntity;
 import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
-import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 
 @Transactional(readOnly = true)
 public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements ConInfoCustomRepository {
 
-	final QConInfoEntity conInfoEntity = QConInfoEntity.conInfoEntity;
+	final QConInfoEntity    conInfoEntity    = QConInfoEntity.conInfoEntity;
+	final QCcInfoPeerEntity ccInfoPeerEntity = QCcInfoPeerEntity.ccInfoPeerEntity;
 
 	public ConInfoRepositoryImpl() {
 		super(ConInfoEntity.class);
@@ -44,6 +49,7 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 			.and(conInfoEntity.conType.notLike("setup")))
 			.fetchFirst() != null;
 	}
+
 
 	private BooleanExpression eqConType(String conType) {
 		if (StringUtils.isEmpty(conType)) {

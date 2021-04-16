@@ -28,26 +28,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@SqlResultSetMapping(
-        name="ChaincodeSummaryDtoMapping",
-        classes = @ConstructorResult(
-                targetClass = CcSummaryDto.class,
-                columns = {
-                        @ColumnResult(name="conName", type = String.class),
-                        @ColumnResult(name="ccCnt", type = Integer.class),
-                })
-)
-
-
-@NamedNativeQuery( resultSetMapping = "ChaincodeSummaryDtoMapping",
-							  query = "SELECT c.CON_NAME AS conName,\n"
-									+ "       (SELECT Count(*)\n"
-									+ "        FROM   CCINFO_PEER\n"
-									+ "        WHERE  c.CON_NAME = CONINFO_CON_NAME) AS ccCnt\n"
-									+ "FROM   CONINFO c\n"
-									+ "WHERE  c.CON_TYPE = 'peer';",
-							   name = "CcInfoPeerEntity.findChaincodeSummary")
-
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity

@@ -1,6 +1,8 @@
 # BRChain Admin Server :: Hyperledger Fabric 관리자 서버
 
-Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있는 관리자 서비스 입니다
+Hyperledger Fabric 네트워크를 docker 컨테이너 기반으로 쉽게 구성하고 테스트를 해볼수있는 관리자 서비스 입니다
+
+[`swaager-server link`](http://34.64.205.180:8080/swagger-ui.html#/)
 
 # Skill-set
 
@@ -11,6 +13,7 @@ Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있
 * MariaDB
 * WebSocket
 * JWT
+* Docker
 
 # BRChain Admin Server API
 
@@ -21,12 +24,14 @@ Hyperledger Fabric 네트워크를 쉽게 구성하고 테스트를 해볼수있
     - [`POST /refresh`](#POST-apiauthrefresh)
     - [`POST /logout`](#POST-apiauthlogout)
 - /core
-    - [`GET /container/list`](#GET-apicorecontainerlist)
-    - [`GET /org/list`](#GET-apicoreorglist)
-    - [`POST /org/create`](#POST-apicoreorgcreate)
-    - [`GET /member/list`](#GET-apicorememberlist)
     - [`GET /remove`](#GET-apicoreremove)
     - [`GET /check/port`](#GET-apicorecheckport)
+    - [`GET /block`](#GET-apicoreblock)
+    - [`GET /block/list`](#GET-apicoreblocklist)
+    - [`GET /member/list`](#GET-apicorememberlist)
+    - [`POST /org/create`](#POST-apicoreorgcreate)
+    - [`GET /org/list`](#GET-apicoreorglist)
+    - [`GET /transaction`](#GET-apicoretransaction)
     - /channel
         - [`GET /list`](#GET-apicorechannellist)
         - [`GET /list/peer`](#GET-apicorechannellistpeer)
@@ -233,6 +238,100 @@ request body
 }
 ```
 
+## `GET /api/core/block`
+블록 데이터 해쉬값으로 블록 정보를 조회하는 API
+
+### request
+
+```json
+request params
+
+{
+    "blockDataHash": "조회할 블록 데이터 해쉬값" 
+
+}
+```
+
+### response
+
+- on success
+
+```json
+{
+    "resultCode": "0000",
+    "resultMessage": "Success get block by channel name",
+    "resultData": {            
+            "blockDataHash": "데이터 해쉬값",
+            "blockNum": "블록 번호",
+            "txCount": "트랜잭션 개수",
+            "timestamp": "YYYY-MM-DD HH:MI:SS",
+            "prevDataHash": "이전 데이터 해쉬값",
+            "channelInfoDto": 채널정보json,            
+            "createdAt": "YYYY-MM-DD HH:MI:SS"
+            },
+    "resultFlag": true
+}
+```
+- on failure
+
+```json
+{
+    "resultCode": "9999",
+    "resultMessage": "error messages",
+    "resultData": null,
+    "resultFlag": false
+}
+```
+
+
+## `GET /api/core/block/list`
+HyperLedger Fabric 채널 이름으로 블록 정보들을 조회하는 API
+
+### request
+
+```json
+request params
+
+{
+    "channelName": "조회할 HyperLedger Fabric 조직명" 
+
+}
+```
+
+### response
+
+- on success
+
+```json
+{	
+    "resultCode": "0000",
+    "resultMessage": "Success get block by channel name",
+    "resultData": [
+        {
+            "blockDataHash": "블록 데이터 해쉬",
+            "blockNum;": "블록 번호",
+            "txCount;": "트랜잭션 개수",
+            "timestamp": "타임스탬프",
+            "prevDataHash": "이전블록 데이터 해쉬",
+            "txList": "트랜잭션 개수"
+        }
+    ],
+    "resultFlag": true
+}
+```
+- on failure
+
+```json
+{
+    "resultCode": "9999",
+    "resultMessage": "error messages",
+    "resultData": null,
+    "resultFlag": false
+}
+```
+
+
+
 ## `GET /api/core/org/list`
 조직 타입에 따른 컨테이너 정보를 조회하는 API
 
@@ -276,6 +375,7 @@ request params
     "resultFlag": false
 }
 ```
+
 ## `POST /api/core/org/create`
 HyperLedger Fabric 조직을 생성하는 API
 ### request
@@ -941,41 +1041,3 @@ request body
 ```
 
 ## `POST /api/core/chaincode/active`
-
-### request
-
-```json
-request body 
-
-{
-    "orgName": "test-channel",
-    "ccLang": "golang",
-    "ccName": "testCc",
-    "ccVersion": "1"
-}
-```
-
-### response
-
-- on success 
-
-```json
-{
-    "resultCode": "0000",
-    "resultMessage": "Success instantiate chaincode",
-    "resultData": null,
-    "resultFlag": true
-}
-```
-
-
-- on failure
-
-```json
-{
-    "resultCode": "9999",
-    "resultMessage": "error messages",
-    "resultData": null,
-    "resultFlag": false
-}
-```

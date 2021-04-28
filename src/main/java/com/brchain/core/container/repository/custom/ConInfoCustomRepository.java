@@ -15,4 +15,6 @@ public interface ConInfoCustomRepository {
 
 	boolean portCheck(@Param("conPort") String conPort);
 	
+	List<String> findOrgsByChannelName(@Param("channelName") String channelName);
+	
 	}

@@ -24,7 +24,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	private final UserDetailsServiceImpl  userDetailsService;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
-//	private final TestAuthProvider testAuthProvider;
 
 	@Bean(BeanIds.AUTHENTICATION_MANAGER)
 	@Override
@@ -39,15 +38,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.csrf()
 			.disable()
 			.authorizeRequests()
-			.antMatchers("/api/auth/**")
+			.antMatchers("/api/auth/**","/sock/**")
 			.permitAll()
-			.antMatchers("/api/core/**")
-			.permitAll()
-			.antMatchers("/api/core/chaincode/**")
-			.permitAll()
-			.antMatchers("/**")
-			.permitAll()
-			.antMatchers("/v3/api-docs", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**")
+			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**","/swagger-ui/**")
 			.permitAll()
 			.anyRequest()
 			.authenticated();
@@ -59,12 +52,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
 		authenticationManagerBuilder.userDetailsService(userDetailsService)
 			.passwordEncoder(passwordEncoder());
-	}
-
-	@Override
-	public void configure(WebSecurity web) {
-		web.ignoring()
-			.antMatchers("/v2/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**", "/swagger/**");
 	}
 
 	@Bean

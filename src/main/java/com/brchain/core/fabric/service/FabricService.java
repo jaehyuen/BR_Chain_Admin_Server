@@ -132,7 +132,7 @@ public class FabricService {
 	 * 
 	 */
 
-	public ResultDto createOrg(ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
+	public ResultDto<?> createOrg(ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
 
 		logger.info("[조직생성] 시작");
 
@@ -323,7 +323,7 @@ public class FabricService {
 	 * @return 결과 DTO(채널 생성 결과)
 	 */
 
-	public ResultDto createChannel(CreateChannelDto createChannelDto) {
+	public ResultDto<?> createChannel(CreateChannelDto createChannelDto) {
 
 		logger.info("[채널생성] 시작");
 		logger.info("[채널생성] " + createChannelDto.getChannelName());
@@ -512,7 +512,7 @@ public class FabricService {
 	 * @return 결과 DTO(체인코스 설치 결과)
 	 */
 
-	public ResultDto installChaincode(InstallCcDto installCcDto) {
+	public ResultDto<?> installChaincode(InstallCcDto installCcDto) {
 		logger.info("[체인코드 설치] 시작");
 		logger.info("[체인코드 설치] InstallCcDto : " + installCcDto);
 
@@ -560,7 +560,7 @@ public class FabricService {
 		return util.setResult("0000", true, "Success install chaincode", null);
 	}
 
-	public ResultDto activeChaincode(ActiveCcDto activeCcDto) throws Exception {
+	public ResultDto<?> activeChaincode(ActiveCcDto activeCcDto) throws Exception {
 
 		logger.info("[체인코드 활성화] 시작");
 		logger.info("[체인코드 활성화] activeCcDto : " + activeCcDto);
@@ -742,7 +742,7 @@ public class FabricService {
 	 * @return 결과 DTO(채널 블록 이벤트 등록 결과)
 	 */
 
-	public ResultDto registerEventListener(String channelName) {
+	public ResultDto<?> registerEventListener(String channelName) {
 
 		logger.info("[채널 블럭 이벤트 등록] 시작");
 		logger.info("[채널 블럭 이벤트 등록] channelName : " + channelName);
@@ -812,7 +812,7 @@ public class FabricService {
 	 * @return 결과 DTO(채널 블록 이벤트 삭제 결과)
 	 */
 
-	public ResultDto unregisterEventListener(String channelName) {
+	public ResultDto<?> unregisterEventListener(String channelName) {
 
 		try {
 
@@ -860,7 +860,7 @@ public class FabricService {
 	 * @return 결과 DTO(앵커피어 설정 결과)
 	 */
 
-	public ResultDto setAnchorPeer(String channelName, String conName) {
+	public ResultDto<?> setAnchorPeer(String channelName, String conName) {
 
 		try {
 
@@ -1003,7 +1003,7 @@ public class FabricService {
 	 * @return 체인코드 업로드 결과 DTO
 	 */
 
-	public ResultDto ccFileUpload(MultipartFile ccFile, String ccName, String ccDesc, String ccLang, String ccVersion) {
+	public ResultDto<?> ccFileUpload(MultipartFile ccFile, String ccName, String ccDesc, String ccLang, String ccVersion) {
 
 		try {
 

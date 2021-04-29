@@ -12,6 +12,8 @@ public interface CcInfoPeerCustomRepository {
 	List<CcInfoPeerEntity> findCcInfoPeerToActive(@Param("channelName") String channelName);
 	
 	List<CcSummaryDto> findChaincodeSummary();
+	
+	List<CcInfoPeerEntity> findByCcId(Long id);
 
 
 }

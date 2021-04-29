@@ -26,7 +26,7 @@ spring:
     datasource:
         initialization-mode: always
         password: nhepropass
-        url: jdbc:mysql://192.168.65.169:3306/brchain?serverTimezone=UTC
+        url: jdbc:mariadb://192.168.65.169:3306/brchain?serverTimezone=UTC
         username: brchain
         hikari:
             auto-commit: false
@@ -46,6 +46,7 @@ spring:
             hibernate:
                 format_sql: true
         show-sql: true
+        database-platform: com.brchain.common.configuration.BrMariaDBDialect
     main:
         allow-bean-definition-overriding: true
     profiles:

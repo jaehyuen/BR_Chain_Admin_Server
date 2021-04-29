@@ -46,4 +46,13 @@ public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implemen
 			.fetch();
 	}
 
+	@Override
+	public List<CcInfoPeerEntity> findByCcId(Long id) {
+
+		return from(ccInfoPeerEntity).leftJoin(ccInfoPeerEntity.conInfoEntity)
+				.fetchJoin()
+				.leftJoin(ccInfoPeerEntity.ccInfoEntity)
+				.fetchJoin().fetch();
+	}
+
 }

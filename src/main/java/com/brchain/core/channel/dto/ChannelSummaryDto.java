@@ -15,15 +15,27 @@ public class ChannelSummaryDto {
 	private Long    percent;      // 트랜잭션 증감율
 	private boolean flag;         // 증가감소 플래그
 
-	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Double preBlockCnt, Double nowBlockCnt, Double preTxCnt, Double nowTxCnt) {
+	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Long preBlockCnt, Long nowBlockCnt, Long preTxCnt, Long nowTxCnt) {
 
 		this.channelName  = channelName;
 		this.channelBlock = channelBlock;
 		this.channelTx    = channelTx;
-		this.preBlockCnt  = preBlockCnt;
-		this.nowBlockCnt  = nowBlockCnt;
-		this.preTxCnt     = preTxCnt;
-		this.nowTxCnt     = nowTxCnt;
+		this.preBlockCnt  = (double) preBlockCnt;
+		this.nowBlockCnt  = (double) nowBlockCnt;
+		this.preTxCnt     = (double) preTxCnt;
+		this.nowTxCnt     = (double) nowTxCnt;
+
+	}
+	
+	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx,Long preBlockCnt) {
+
+		this.channelName  = channelName;
+		this.channelBlock = channelBlock;
+		this.channelTx    = channelTx;
+		this.preBlockCnt  = (double) preBlockCnt;
+		this.nowBlockCnt  = (double) 0;
+		this.preTxCnt     = (double) 0;
+		this.nowTxCnt     = (double) 0;
 
 	}
 

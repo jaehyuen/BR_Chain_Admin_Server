@@ -35,9 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		if (uri.startsWith("/api/core")) {
 
 			String jwt = getJwtFromRequest(request);
-
+			System.out.println("testeesteesteesteesteestee1111111111111111steeste");
 			if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
-
+				System.out.println("testeesteesteesteesteestee1222222222222222steeste");
 				String username = jwtProvider.getUsernameFromJwt(jwt);
 
 				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			} else {
-
+				System.out.println("testeesteesteesteesteestee12333333333333332steeste");
 				response.sendError(401);
 			}
 		}

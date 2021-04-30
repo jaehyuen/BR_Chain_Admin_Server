@@ -6,6 +6,4 @@ import com.brchain.core.channel.entitiy.ChannelHandleEntity;
 
 public interface ChannelHandleRepository extends JpaRepository<ChannelHandleEntity, String> {
 
-//	ArrayList<ChannelHandlerEntity> findByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
-
 }

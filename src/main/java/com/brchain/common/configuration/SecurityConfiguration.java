@@ -6,7 +6,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.brchain.account.service.UserDetailsServiceImpl;
 import com.brchain.common.security.JwtAuthenticationFilter;
+import com.brchain.common.security.Unauthorized401AccessDeniedHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,13 +38,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.csrf()
 			.disable()
 			.authorizeRequests()
-			.antMatchers("/api/auth/**","/sock/**")
+			.antMatchers("/api/auth/**", "/sock/**")
 			.permitAll()
-			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**","/swagger-ui/**")
+			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**", "/swagger-ui/**")
+			.permitAll()
+			.antMatchers("/api/core/**")
+//			.access("hasRole('USER')")
 			.permitAll()
 			.anyRequest()
-			.authenticated();
-		httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+			.authenticated()
+			.and()
+			.exceptionHandling()
+			.accessDeniedHandler(new Unauthorized401AccessDeniedHandler())
+			.and()
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 	}
 

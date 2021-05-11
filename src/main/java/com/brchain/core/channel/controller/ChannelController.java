@@ -85,14 +85,14 @@ public class ChannelController {
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널 이벤트 리스너 삭제", description = "Hyperledger Fabric 채널 이벤트 리스너 삭제하는 API")
-	@GetMapping("/event/unregister")
-	public ResponseEntity<ResultDto> unregisterListener(
-			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName") String channelName) {
-
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.unregisterEventListener(channelName));
-
-	}
+//	@Operation(summary = "Hyperledger Fabric 채널 이벤트 리스너 삭제", description = "Hyperledger Fabric 채널 이벤트 리스너 삭제하는 API")
+//	@GetMapping("/event/unregister")
+//	public ResponseEntity<ResultDto> unregisterListener(
+//			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName") String channelName) {
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(fabricService.unregisterEventListener(channelName));
+//
+//	}
 
 	@Operation(summary = "Hyperledger Fabric 앵커피어 업데이트", description = "Hyperledger Fabric 앵커피어 업데이트를 하는 API")
 	@GetMapping("/update/anchor")

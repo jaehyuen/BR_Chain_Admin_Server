@@ -2,6 +2,7 @@ package com.brchain.core.client;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
-	public void connect() throws JSchException {
+	public void connect() throws JSchException  {
 
 		JSch jsch = new JSch();
 
@@ -198,7 +199,7 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
-	public void downloadFile(String path, String downloadFileName) throws SftpException, IOException, JSchException {
+	public void downloadFile(String path, String downloadFileName) throws JSchException, SftpException, IOException  {
 
 		if (channelSftp == null) {
 			connect();

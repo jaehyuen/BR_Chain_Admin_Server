@@ -75,13 +75,13 @@ public class BlockService {
 	/**
 	 * 이벤트로 받은 블록 분석후 디비에 저장하는 서비스
 	 * 
-	 * @param block 이벤트로 받은 블록
+	 * @param block          이벤트로 받은 블록
 	 * @param channelInfoDto 블록에 대한 채널 정보 DTO
 	 * 
 	 * @throws InvalidProtocolBufferException
 	 */
-	
-	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) throws InvalidProtocolBufferException {
+
+	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) {
 
 		BlockDto blockDto;
 //		int      txCnt = block.getBlock()
@@ -96,17 +96,19 @@ public class BlockService {
 
 			// 조회가 안되면 리슨받은 블록 정보 저장
 //			block.getBlock().sh
-			blockDto = new BlockDto();
-			blockDto.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
-			blockDto.setBlockNum((int) block.getBlockNumber());
-			blockDto.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
-			blockDto.setTimestamp(block.getEnvelopeInfo(0)
-				.getTimestamp());
-			blockDto.setTxCount(block.getBlock()
-				.getData()
-				.getDataCount());
-			blockDto.setChannelInfoDto(channelInfoDto);
 
+			blockDto = new BlockDto();
+			try {
+				blockDto.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
+				blockDto.setBlockNum((int) block.getBlockNumber());
+				blockDto.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
+				blockDto.setTimestamp(block.getEnvelopeInfo(0).getTimestamp());
+				blockDto.setTxCount(block.getBlock().getData().getDataCount());
+				blockDto.setChannelInfoDto(channelInfoDto);
+				
+			} catch (InvalidProtocolBufferException e1) {
+				throw new RuntimeException(channelInfoDto.getChannelName() + " 채널의 " + blockDto.getBlockNum() + "번 블록의 프로토콜 메시지가 잘못되었습니다.");
+			}
 			saveBLock(blockDto);
 		}
 
@@ -153,7 +155,7 @@ public class BlockService {
 	 * 
 	 * @return 결과 DTO (블록 및 트랜잭션 정보)
 	 */
-	
+
 	@Transactional(readOnly = true)
 	public ResultDto<List<BlockAndTxDto>> getBlockListByChannel(String channelName) {
 		List<BlockAndTxDto> blockAndTxList = blockRepository.findByChannelName(channelName);
@@ -173,7 +175,7 @@ public class BlockService {
 	 * 
 	 * @return 결과 DTO (블록 정보)
 	 */
-	
+
 	@Transactional(readOnly = true)
 	public ResultDto<BlockDto> getBlockByBlockDataHash(String blockDataHash) {
 

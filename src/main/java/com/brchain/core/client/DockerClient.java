@@ -118,7 +118,7 @@ public class DockerClient {
 	 * 
 	 */
 
-	public ContainerInfo createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
+	public ContainerInfo createContainer(ConInfoDto createConDto) throws  InterruptedException, DockerException {
 
 		// 도커 네트워크 체크로직
 		// 네트워크 조회 에러시 네트워크 생성

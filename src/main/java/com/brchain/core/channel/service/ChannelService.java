@@ -28,14 +28,14 @@ import lombok.RequiredArgsConstructor;
 public class ChannelService {
 
 	// jpa 레파지토리
-	private final ChannelInfoRepository channelInfoRepository;
+	private final ChannelInfoRepository     channelInfoRepository;
 	private final ChannelInfoPeerRepository channelInfoPeerRepository;
-	private final ChannelHandleRepository channelHandleRepository;
+	private final ChannelHandleRepository   channelHandleRepository;
 
 	// 서비스
 //	private final ContainerService containerService;
 
-	private final Util util;
+	private final Util                      util;
 
 	/**
 	 * 채널 정보 저장 서비스
@@ -61,13 +61,13 @@ public class ChannelService {
 
 	public ChannelInfoDto findChannelInfoByChannelName(String channelName) {
 
-		return util.toDto(channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(channelInfoRepository.findById(channelName)
+			.orElseThrow(IllegalArgumentException::new));
 	}
 
-	
 	/**
-	 *  모든 채널 정보 조회 서비스
-	 *  
+	 * 모든 채널 정보 조회 서비스
+	 * 
 	 * @return 모든 채널 정보 조회 결과 DTO
 	 */
 	public List<ChannelInfoDto> findChannelInfoList() {
@@ -103,7 +103,8 @@ public class ChannelService {
 	@Transactional(readOnly = true)
 	public ResultDto<ChannelInfoDto> getChannelByChannelName(String channelName) {
 
-		ChannelInfoEntity channelInfoEntity = channelInfoRepository.findById(channelName).get();
+		ChannelInfoEntity channelInfoEntity = channelInfoRepository.findById(channelName)
+			.orElseThrow(IllegalArgumentException::new);
 
 		return util.setResult("0000", true, "Success get channel info", util.toDto(channelInfoEntity));
 
@@ -115,10 +116,10 @@ public class ChannelService {
 	 * @param channelInfoPeerDto 채널 정보 (피어) 관련 DTO
 	 * 
 	 * @return 저장한 채널 정보 (피어) DTO
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 
-	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) throws InterruptedException {
+	public ChannelInfoPeerDto saveChannelInfoPeer(ChannelInfoPeerDto channelInfoPeerDto) {
 
 		ChannelInfoPeerEntity channelInfoPeerEntity = util.toEntity(channelInfoPeerDto);
 
@@ -156,11 +157,11 @@ public class ChannelService {
 	@Transactional(readOnly = true)
 	public ResultDto<List<ChannelInfoPeerDto>> getChannelListPeerByChannelName(String channelName) {
 
-		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(channelName,null);
+		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(channelName, null);
 
 		return util.setResult("0000", true, "Success get channel info by channel name", channelInfoPeerList.stream()
-				.map(channelInfoPeer -> util.toDto(channelInfoPeer))
-				.collect(Collectors.toList()));
+			.map(channelInfoPeer -> util.toDto(channelInfoPeer))
+			.collect(Collectors.toList()));
 	}
 
 	/**
@@ -173,11 +174,11 @@ public class ChannelService {
 
 	public List<ChannelInfoPeerDto> findChannelInfoPeerByChannelInfo(String channelName) {
 
-		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(channelName,null);
+		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(channelName, null);
 
 		return channelInfoPeerList.stream()
-				.map(channelInfoPeer -> util.toDto(channelInfoPeer))
-				.collect(Collectors.toList());
+			.map(channelInfoPeer -> util.toDto(channelInfoPeer))
+			.collect(Collectors.toList());
 	}
 
 	/**
@@ -194,8 +195,8 @@ public class ChannelService {
 		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(channelName, conName);
 
 		return channelInfoPeerList.stream()
-				.map(channelInfoPeer -> util.toDto(channelInfoPeer))
-				.collect(Collectors.toList());
+			.map(channelInfoPeer -> util.toDto(channelInfoPeer))
+			.collect(Collectors.toList());
 
 	}
 
@@ -235,7 +236,8 @@ public class ChannelService {
 
 	public ChannelHandleDto findChannelHandleByChannel(String channelName) {
 
-		return util.toDto(channelHandleRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
+		return util.toDto(channelHandleRepository.findById(channelName)
+			.orElseThrow(IllegalArgumentException::new));
 	}
 
 	/**
@@ -243,7 +245,7 @@ public class ChannelService {
 	 * 
 	 * @return 결과 DTO(채널 요약 정보)
 	 */
-	
+
 	@Transactional(readOnly = true)
 	public ResultDto<List<ChannelSummaryDto>> getChannelSummaryList() {
 

@@ -21,7 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
-import com.brchain.common.exception.BRChainBaseException;
+import com.brchain.common.exception.BrchainException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -40,7 +40,7 @@ public class JwtProvider {
 			InputStream resourceAsStream = getClass().getResourceAsStream("/brchain.jks");
 			keyStore.load(resourceAsStream, "Asdf!234".toCharArray());
 		} catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-			throw new BRChainBaseException("Exception occurred while loading keystore", e);
+			throw new BrchainException("Exception occurred while loading keystore", e);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class JwtProvider {
 		try {
 			return (PrivateKey) keyStore.getKey("brchain", "Asdf!234".toCharArray());
 		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-			throw new BRChainBaseException("Exception occured while retrieving public key from keystore", e);
+			throw new BrchainException("Exception occured while retrieving public key from keystore", e);
 		}
 	}
 
@@ -80,7 +80,7 @@ public class JwtProvider {
 		try {
 			return keyStore.getCertificate("brchain").getPublicKey();
 		} catch (KeyStoreException e) {
-			throw new BRChainBaseException("Exception occured while retrieving public key from keystore", e);
+			throw new BrchainException("Exception occured while retrieving public key from keystore", e);
 		}
 	}
 

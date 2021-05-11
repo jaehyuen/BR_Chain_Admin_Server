@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.brchain.account.service.UserDetailsServiceImpl;
 import com.brchain.common.security.JwtAuthenticationFilter;
-import com.brchain.common.security.Unauthorized401AccessDeniedHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,13 +42,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**", "/swagger-ui/**")
 			.permitAll()
 			.antMatchers("/api/core/**")
-//			.access("hasRole('USER')")
 			.permitAll()
 			.anyRequest()
 			.authenticated()
-			.and()
-			.exceptionHandling()
-			.accessDeniedHandler(new Unauthorized401AccessDeniedHandler())
 			.and()
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

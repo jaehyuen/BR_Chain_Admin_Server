@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.BrchainException;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
@@ -75,8 +76,9 @@ public class DockerService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(),e);
 
 		}
 
@@ -115,8 +117,9 @@ public class DockerService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(),e);
 
 		}
 
@@ -159,8 +162,9 @@ public class DockerService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(),e);
 
 		}
 
@@ -211,8 +215,9 @@ public class DockerService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(),e);
 
 		}
 

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.BrchainException;
 import com.brchain.core.chaincode.dto.ActiveCcDto;
 import com.brchain.core.chaincode.dto.CcInfoChannelDto;
 import com.brchain.core.chaincode.dto.CcInfoDto;
@@ -75,9 +76,9 @@ public class FabricService {
 	private final Util                  util;
 
 	private Logger                      logger = LoggerFactory.getLogger(this.getClass());
-		
+
 	@PostConstruct
-	private void init() throws Exception {
+	private void init() {
 
 		List<ChannelInfoDto>  channelInfoDtoList = new ArrayList<ChannelInfoDto>();
 		List<FabricMemberDto> peerDtoArr         = new ArrayList<FabricMemberDto>();
@@ -98,19 +99,29 @@ public class FabricService {
 
 			ordererDtoArr.addAll(containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg()));
 
-			Network newwork = fabricClient.connectNetwork(channelInfoDto.getChannelName(), orgs.get(0), util.createFabrcSetting(channelInfoDto.getChannelName(), ordererDtoArr, peerDtoArr, orgs));
+			Network newwork;
+			try {
+				newwork = fabricClient.connectNetwork(channelInfoDto.getChannelName(), orgs.get(0), util.createFabrcSetting(channelInfoDto.getChannelName(), ordererDtoArr, peerDtoArr, orgs));
+			} catch (IOException e) {
+
+				throw new RuntimeException("지갑 설정중 오류가 발생하였습니다.");
+			}
 
 			channel = newwork.getChannel();
 
-			for (int i = channelInfoDto.getChannelBlock(); i < channel.queryBlockchainInfo()
-				.getHeight(); i++) {
+			try {
+				for (int i = channelInfoDto.getChannelBlock(); i < channel.queryBlockchainInfo()
+					.getHeight(); i++) {
 
-				blockService.inspectBlock(channel.queryBlockByNumber(i), channelInfoDto);
+					blockService.inspectBlock(channel.queryBlockByNumber(i), channelInfoDto);
 
-				channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
-				channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
-				channelService.saveChannelInfo(channelInfoDto);
+					channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
+					channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
+					channelService.saveChannelInfo(channelInfoDto);
 
+				}
+			} catch (ProposalException | InvalidArgumentException e) {
+				throw new RuntimeException(channelInfoDto.getChannelName() + " 채널 조회중 오류가 발생하였습니다.");
 			}
 
 			fabricClient.testRegisterEventListener(channelInfoDto.getChannelName(), createBlockListener(channelInfoDto.getChannelName()));
@@ -306,8 +317,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		logger.info("[조직생성] 종료");
@@ -452,8 +464,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success create channel", null);
@@ -477,7 +490,7 @@ public class FabricService {
 	 * @throws InvocationTargetException
 	 * @throws IOException
 	 * @throws TransactionException
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 
 	public void joinChannel(ArrayList<FabricMemberDto> peerDtoArr, ArrayList<FabricMemberDto> ordererDtoArr, String channelName)
@@ -551,8 +564,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		logger.info("[체인코드 설치] 종료");
@@ -566,7 +580,7 @@ public class FabricService {
 		logger.info("[체인코드 활성화] activeCcDto : " + activeCcDto);
 
 		logger.info("[체인코드 활성화] activeCcDto.getChannelName() : " + activeCcDto.getChannelName());
-		
+
 		try {
 
 			CcInfoDto             ccInfoDto         = chaincodeService.findCcInfoById(activeCcDto.getId());
@@ -614,13 +628,13 @@ public class FabricService {
 
 			fabricClient.activeChaincode(peerDtoArr, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
 			logger.info("[체인코드 인스턴스화] 종료");
-			
+
 			try {
 
 				// 이미 인스턴스화가 진행된 체인코드인지 조회
 //				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
 				ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(), activeCcDto.getCcName());
-				fabricClient.activeChaincode(peerDtoArr,ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
+				fabricClient.activeChaincode(peerDtoArr, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
 
 				ccInfoChannelDto.setCcVersion(activeCcDto.getCcVersion());
 
@@ -628,7 +642,6 @@ public class FabricService {
 				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 
 			} catch (Exception e) {
-
 
 				ccInfoChannelDto = new CcInfoChannelDto();
 				ccInfoChannelDto.setCcInfoDto(ccInfoDto);
@@ -638,13 +651,13 @@ public class FabricService {
 				// 채널에 활성화된 체인코드정보 저장
 				chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
 			}
-			
-			
+
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success instantiate chaincode", null);
@@ -750,21 +763,21 @@ public class FabricService {
 		try {
 
 			// 이벤트 리슨을 등록할 채널 정보 조회
-			ChannelInfoDto                channelInfoDto        = channelService.findChannelInfoByChannelName(channelName);
+			ChannelInfoDto             channelInfoDto        = channelService.findChannelInfoByChannelName(channelName);
 
 			// 이벤트 리슨을 등록할 피어 정보 조회
 //			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
-			List<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
+			List<ChannelInfoPeerDto>   channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
 
 			// 이벤트 리슨을 등록할 FabricMembetDto(peer) 생성
-			ArrayList<FabricMemberDto>    peerDtoArr            = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
+			ArrayList<FabricMemberDto> peerDtoArr            = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
 				.getConInfoDto()
 				.getOrgName());
 
 			// 이벤트 리슨을 등록할 FabricMembetDto(orderer) 생성
-			ArrayList<FabricMemberDto>    ordererDtoArr         = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
+			ArrayList<FabricMemberDto> ordererDtoArr         = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
 
-			ChannelHandleDto              channelHandleDto;
+			ChannelHandleDto           channelHandleDto;
 			try {
 
 				// 이벤트 리슨이 등록된 채널인지 채널 핸들 조회
@@ -797,8 +810,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success register block event listener", null);
@@ -812,44 +826,44 @@ public class FabricService {
 	 * @return 결과 DTO(채널 블록 이벤트 삭제 결과)
 	 */
 
-	public ResultDto<?> unregisterEventListener(String channelName) {
-
-		try {
-
-			// 이벤트 리슨을 삭제할 채널 정보 조회
-			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
-
-			// 이벤트 리슨을 삭제할 피어 정보 조회
-//			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
-			List<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
-
-			// 이벤트 리슨을 삭제할 FabricMemberDto(peer) 생성
-			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
-				.getConInfoDto()
-				.getOrgName());
-
-			// 이벤트 리슨을 삭제할 FabricMemberDto(orderer) 생성
-			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
-
-			// 삭제할 채널 핸들 조회
-			String channelHandle = channelService.findChannelHandleByChannel(channelName)
-				.getHandle();
-
-			// 이벤트 리슨을 삭제
-			fabricClient.unregisterEventListener(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName, channelHandle);
-
-			// 채널 핸들 삭제
-			channelService.deleteChannelHandle(channelName);
-
-		} catch (Exception e) {
-
-			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
-		}
-
-		return util.setResult("0000", true, "Success unregister block event listener", null);
-	}
+//	public ResultDto<?> unregisterEventListener(String channelName) {
+//
+//		try {
+//
+//			// 이벤트 리슨을 삭제할 채널 정보 조회
+//			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
+//
+//			// 이벤트 리슨을 삭제할 피어 정보 조회
+////			ArrayList<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto);
+//			List<ChannelInfoPeerDto> channelInfoPeerDtoArr = channelService.findChannelInfoPeerByChannelInfo(channelInfoDto.getChannelName());
+//
+//			// 이벤트 리슨을 삭제할 FabricMemberDto(peer) 생성
+//			ArrayList<FabricMemberDto> peerDtoArr = containerService.createMemberDtoArr("peer", channelInfoPeerDtoArr.get((int) (Math.random() * channelInfoPeerDtoArr.size()))
+//				.getConInfoDto()
+//				.getOrgName());
+//
+//			// 이벤트 리슨을 삭제할 FabricMemberDto(orderer) 생성
+//			ArrayList<FabricMemberDto> ordererDtoArr = containerService.createMemberDtoArr("orderer", channelInfoDto.getOrderingOrg());
+//
+//			// 삭제할 채널 핸들 조회
+//			String channelHandle = channelService.findChannelHandleByChannel(channelName)
+//				.getHandle();
+//
+//			// 이벤트 리슨을 삭제
+//			fabricClient.unregisterEventListener(peerDtoArr.get((int) (Math.random() * peerDtoArr.size())), ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())), channelName, channelHandle);
+//
+//			// 채널 핸들 삭제
+//			channelService.deleteChannelHandle(channelName);
+//
+//		} catch (Exception e) {
+//
+//			logger.error(e.getMessage());
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+//		}
+//
+//		return util.setResult("0000", true, "Success unregister block event listener", null);
+//	}
 
 	/**
 	 * 앵커피어 설정 서비스
@@ -872,7 +886,8 @@ public class FabricService {
 
 			// 앵커피어를 등록할 채널에 피어 정보 조회??
 //			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto).get(0);
-			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto.getChannelName(), conInfoDto.getConName()).get(0);
+			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto.getChannelName(), conInfoDto.getConName())
+				.get(0);
 
 //			System.out.println()
 			// 조회한 피어에 앵커피어 설정이 되어있으면 에러발샐
@@ -912,8 +927,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success update anchor", null);
@@ -934,11 +950,7 @@ public class FabricService {
 
 			// 채널 정보 조회
 			ChannelInfoDto channelInfoDto = channelService.findChannelInfoByChannelName(channelName);
-			try {
-				blockService.inspectBlock(blockEvent, channelInfoDto);
-			} catch (InvalidProtocolBufferException e1) {
-				e1.printStackTrace();
-			}
+			blockService.inspectBlock(blockEvent, channelInfoDto);
 
 			channelInfoDto.setChannelBlock(blockService.countBychannelBlock(channelInfoDto));
 			channelInfoDto.setChannelTx(transactionService.countBychannelTransaction(channelInfoDto));
@@ -1012,15 +1024,8 @@ public class FabricService {
 			File        file        = new File(System.getProperty("user.dir") + "/chaincode/src/");
 
 			if (!file.exists()) {
-				try {
 
-					file.mkdirs();
-
-				} catch (Exception e) {
-
-					return util.setResult("9999", false, e.getMessage(), null);
-
-				}
+				file.mkdirs();
 
 			} else {
 
@@ -1057,8 +1062,9 @@ public class FabricService {
 		} catch (Exception e) {
 
 			logger.error(e.getMessage());
-			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			e.printStackTrace();
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(), e);
 
 		}
 

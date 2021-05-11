@@ -22,6 +22,7 @@ import com.brchain.account.dto.TokenDto;
 import com.brchain.account.entity.UserEntity;
 import com.brchain.account.repository.UserRepository;
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.BrchainException;
 import com.brchain.common.security.JwtProvider;
 import com.brchain.core.util.Util;
 
@@ -73,7 +74,9 @@ public class AuthService {
 
 			logger.error(e.getMessage());
 			e.printStackTrace();
-			return util.setResult("9999", false, e.getMessage(), null);
+//			return util.setResult("9999", false, e.getMessage(), null);
+			throw new BrchainException(e.getMessage(),e);
+			
 
 		}
 		return util.setResult("0000", true, "Success register", null);

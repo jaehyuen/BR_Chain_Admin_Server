@@ -16,6 +16,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.brchain.account.service.UserDetailsServiceImpl;
+import com.brchain.core.util.Util;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,35 +25,41 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private final JwtProvider jwtProvider;
+	private final JwtProvider            jwtProvider;
 	private final UserDetailsServiceImpl userDetailsService;
-
+	private final Util                   util;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-		String uri = request.getRequestURI();
+		String       uri    = request.getRequestURI();
+		ObjectMapper mapper = new ObjectMapper();
 
 		if (uri.startsWith("/api/core")) {
 
 			String jwt = getJwtFromRequest(request);
-			System.out.println("testeesteesteesteesteestee1111111111111111steeste");
-			if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
-				System.out.println("testeesteesteesteesteestee1222222222222222steeste");
-				String username = jwtProvider.getUsernameFromJwt(jwt);
 
-				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
+			if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
+
+				String                              username       = jwtProvider.getUsernameFromJwt(jwt);
+
+				UserDetails                         userDetails    = userDetailsService.loadUserByUsername(username);
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+				SecurityContextHolder.getContext()
+					.setAuthentication(authentication);
+				filterChain.doFilter(request, response);
 			} else {
-				System.out.println("testeesteesteesteesteestee12333333333333332steeste");
-				response.sendError(401);
+
+				response.setStatus(401);
+				response.setContentType("application/json;charset=UTF-8");
+				response.getWriter()
+					.write(mapper.writeValueAsString(util.setResult("9999", false, "JWT 토큰값을 확인해주십시오", null)));
 			}
+		} else {
+			filterChain.doFilter(request, response);
 		}
-		filterChain.doFilter(request, response);
 
 	}
 

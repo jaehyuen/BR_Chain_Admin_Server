@@ -18,6 +18,7 @@ import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.dto.DockerStatsDto;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
+import com.jcraft.jsch.JSchException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
@@ -30,15 +31,15 @@ import lombok.RequiredArgsConstructor;
 public class DockerService {
 
 	// 클라이언트
-	private final DockerClient dockerClient;
-	private final SshClient sshClient;
+	private final DockerClient     dockerClient;
+	private final SshClient        sshClient;
 
 	// 서비스
 	private final ContainerService containerService;
 
-	private final Util util;
+	private final Util             util;
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private Logger                 logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * 모든 컨테이너 삭제 서비스
@@ -54,7 +55,7 @@ public class DockerService {
 
 			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
-				Container container = iter.next();
+				Container  container  = iter.next();
 
 				ConInfoDto conInfoDto = null;
 
@@ -73,13 +74,20 @@ public class DockerService {
 
 			}
 
-		} catch (Exception e) {
-
+		} catch (DockerException e) {
+			// 도커 관련 오류
 			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException(e.getMessage(),e);
+			throw new BrchainException(e.getMessage(), e);
 
+		} catch (InterruptedException e) {
+			// 쓰레드 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
+
+		} catch (JSchException e) {
+			// jsch 라이브러리 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success remove container", null);
@@ -114,13 +122,20 @@ public class DockerService {
 			dockerClient.removeContainer(conId);
 			sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
 
-		} catch (Exception e) {
-
+		} catch (DockerException e) {
+			// 도커 관련 오류
 			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException(e.getMessage(),e);
+			throw new BrchainException(e.getMessage(), e);
 
+		} catch (InterruptedException e) {
+			// 쓰레드 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
+
+		} catch (JSchException e) {
+			// jsch 라이브러리 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success remove container", null);
@@ -141,11 +156,13 @@ public class DockerService {
 
 			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
-				Container container = iter.next();
+				Container  container  = iter.next();
 
 				ConInfoDto conInfoDto = null;
 
-				if (container.names().get(0).contains(orgName)) {
+				if (container.names()
+					.get(0)
+					.contains(orgName)) {
 					try {
 						conInfoDto = containerService.deleteConInfo(container.id());
 					} catch (Exception e) {
@@ -159,13 +176,20 @@ public class DockerService {
 				}
 			}
 
-		} catch (Exception e) {
-
+		}  catch (DockerException e) {
+			// 도커 관련 오류
 			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException(e.getMessage(),e);
+			throw new BrchainException(e.getMessage(), e);
 
+		} catch (InterruptedException e) {
+			// 쓰레드 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
+
+		} catch (JSchException e) {
+			// jsch 라이브러리 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success remove org", null);
@@ -212,12 +236,15 @@ public class DockerService {
 
 			}
 
-		} catch (Exception e) {
-
+		}  catch (DockerException e) {
+			// 도커 관련 오류
 			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException(e.getMessage(),e);
+			throw new BrchainException(e.getMessage(), e);
+
+		} catch (InterruptedException e) {
+			// 쓰레드 관련 오류
+			logger.error(e.getMessage());
+			throw new BrchainException(e.getMessage(), e);
 
 		}
 
@@ -236,12 +263,13 @@ public class DockerService {
 	 * 
 	 */
 
-	public JSONObject createContainer(ConInfoDto createConDto) throws DockerException, InterruptedException {
+	public JSONObject createContainer(ConInfoDto createConDto)  {
 
 		ContainerInfo info = dockerClient.createContainer(createConDto);
 
 		createConDto.setConId(info.id());
-		createConDto.setConName(info.name().replace("/", ""));
+		createConDto.setConName(info.name()
+			.replace("/", ""));
 
 		logger.info("[도커 컨테이너 생성 dto] " + createConDto);
 

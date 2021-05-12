@@ -52,33 +52,22 @@ public class AuthService {
 
 	public ResultDto<String> register(RegisterDto registerDto) {
 
-		try {
+		logger.info("this is registerDto : " + registerDto);
 
-			logger.info("this is registerDto : " + registerDto);
+		// 유저 정보 엔티티 생성
+		UserEntity userEntity = new UserEntity();
 
-			// 유저 정보 엔티티 생성
-			UserEntity userEntity = new UserEntity();
+		userEntity.setUserName(registerDto.getUserName());
+		userEntity.setUserId(registerDto.getUserId());
+		userEntity.setUserEmail(registerDto.getUserEmail());
+		userEntity.setUserPassword(passwordEncoder.encode(registerDto.getUserPassword()));
+		userEntity.setActive(true);
 
-			userEntity.setUserName(registerDto.getUserName());
-			userEntity.setUserId(registerDto.getUserId());
-			userEntity.setUserEmail(registerDto.getUserEmail());
-			userEntity.setUserPassword(passwordEncoder.encode(registerDto.getUserPassword()));
-			userEntity.setActive(true);
+		logger.info("this is userEntity : " + userEntity);
 
-			logger.info("this is userEntity : " + userEntity);
+		// 유저 정보 엔티티 저장
+		userRepository.save(userEntity);
 
-			// 유저 정보 엔티티 저장
-			userRepository.save(userEntity);
-
-		} catch (Exception e) {
-
-			logger.error(e.getMessage());
-			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException(e.getMessage(),e);
-			
-
-		}
 		return util.setResult("0000", true, "Success register", null);
 	}
 

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.brchain.common.exception.BrchainException;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -25,32 +26,32 @@ import com.spotify.docker.client.exceptions.DockerException;
 @Component
 public class SshClient {
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	private Session session = null;
-	private Channel channel = null;
+	private Logger      logger      = LoggerFactory.getLogger(this.getClass());
+	private Session     session     = null;
+	private Channel     channel     = null;
 	private ChannelSftp channelSftp = null;
 	private ChannelExec channelExec = null;
 
 	@Value("${brchain.ssh.user}")
-	private String username;
+	private String      username;
 
 	@Value("${brchain.ip}")
-	private String ip;
+	private String      ip;
 
 	@Value("${brchain.ssh.pass}")
-	private String password;
+	private String      password;
 
 	@Value("${brchain.ssh.port}")
-	private int port;
+	private int         port;
 
 	@Value("${brchain.sourcedir}")
-	private String sourceDir;
+	private String      sourceDir;
 
 	@Value("${brchain.logdir}")
-	private String logDir;
+	private String      logDir;
 
 	@Value("${brchain.datadir}")
-	private String dataDir;
+	private String      dataDir;
 
 	/**
 	 * ssh 및 sftp 연결 함수
@@ -58,7 +59,7 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
-	public void connect() throws JSchException  {
+	public void connect() throws JSchException {
 
 		JSch jsch = new JSch();
 
@@ -69,9 +70,9 @@ public class SshClient {
 		session.setConfig(config);
 		session.connect();
 
-		channel = session.openChannel("exec");
+		channel     = session.openChannel("exec");
 		channelExec = (ChannelExec) channel;
-		channel = session.openChannel("sftp");
+		channel     = session.openChannel("sftp");
 		channel.connect();
 		channelSftp = (ChannelSftp) channel;
 
@@ -88,17 +89,14 @@ public class SshClient {
 	 * @throws InterruptedException
 	 * @throws JSchException
 	 */
-	public String removeDir(String orgName, String conName)
-			throws DockerException, InterruptedException, JSchException {
+	public String removeDir(String orgName, String conName) throws DockerException, InterruptedException, JSchException {
 
 		if (channelExec == null || channelExec.isClosed()) {
 			connect();
 		}
 
-		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
-				+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName
-				+ " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin " + sourceDir
-				+ "/channel-artifacts/");
+		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir + "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
+				+ sourceDir + "/channel-artifacts/");
 		channelExec.connect();
 
 		return "";
@@ -115,16 +113,20 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
-	public void execCommand(String command) throws DockerException, InterruptedException, JSchException {
+	public void execCommand(String command) {
 
-		if (channelExec == null || channelExec.isClosed()) {
-			connect();
+		try {
+			if (channelExec == null || channelExec.isClosed()) {
+				connect();
+			}
+
+			logger.info("[커멘드 실행]" + command);
+			channelExec.setCommand(command);
+			channelExec.connect();
+			channelExec.disconnect();
+		} catch (JSchException e) {
+			throw new BrchainException("파일 업로드 에러", e);
 		}
-
-		logger.info("[커멘드 실행]" + command);
-		channelExec.setCommand(command);
-		channelExec.connect();
-		channelExec.disconnect();
 
 	}
 
@@ -153,23 +155,23 @@ public class SshClient {
 	 * 
 	 * @param path           업로드경로
 	 * @param uploadFileName 파일명
+	 * @throws FileNotFoundException
 	 * 
 	 * @throws Exception
 	 */
-	public void uploadFile(String path, String uploadFileName) throws Exception {
-
-		if (channelSftp == null) {
-			connect();
-		}
-		String dir = sourceDir + "/" + path;
-		execCommand("mkdir -p " + dir);
-
-		FileInputStream inputStream = null;
-		// 앞서 만든 접속 메서드를 사용해 접속한다.
-
-		
-		logger.info("[파일 업로드 실행]" + dir + uploadFileName);
+	public void uploadFile(String path, String uploadFileName) {
 		try {
+			if (channelSftp == null) {
+				connect();
+			}
+			String dir = sourceDir + "/" + path;
+			execCommand("mkdir -p " + dir);
+
+			FileInputStream inputStream = null;
+			// 앞서 만든 접속 메서드를 사용해 접속한다.
+
+			logger.info("[파일 업로드 실행]" + dir + uploadFileName);
+
 			// Change to output directory
 			channelSftp.cd(dir);
 
@@ -182,8 +184,8 @@ public class SshClient {
 
 			inputStream.close();
 
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (JSchException | SftpException | IOException e) {
+			throw new BrchainException("파일 업로드 에러", e);
 		}
 
 	}
@@ -199,38 +201,42 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
-	public void downloadFile(String path, String downloadFileName) throws JSchException, SftpException, IOException  {
+	public void downloadFile(String path, String downloadFileName) {
 
-		if (channelSftp == null) {
-			connect();
-		}
-
-		InputStream inputStream = null;
-		FileOutputStream outputStream = null;
-
-		String dir = sourceDir + "/" + path;
-		logger.info("[파일 다운로드 실행]" + dir + downloadFileName);
-		channelSftp.cd(dir);
-
-		inputStream = channelSftp.get(downloadFileName);
-		File file = new File(System.getProperty("user.dir") + "/" + path);
-
-		if (!file.exists()) {
-			try {
-				file.mkdirs();
-			} catch (Exception e) {
-				e.getStackTrace();
+		try {
+			if (channelSftp == null) {
+				connect();
 			}
-		} 
-		outputStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + path + downloadFileName));
-		int i;
 
-		while ((i = inputStream.read()) != -1) {
-			outputStream.write(i);
+			InputStream      inputStream  = null;
+			FileOutputStream outputStream = null;
+
+			String           dir          = sourceDir + "/" + path;
+			logger.info("[파일 다운로드 실행]" + dir + downloadFileName);
+			channelSftp.cd(dir);
+
+			inputStream = channelSftp.get(downloadFileName);
+			File file = new File(System.getProperty("user.dir") + "/" + path);
+
+			if (!file.exists()) {
+				try {
+					file.mkdirs();
+				} catch (Exception e) {
+					e.getStackTrace();
+				}
+			}
+			outputStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + path + downloadFileName));
+			int i;
+
+			while ((i = inputStream.read()) != -1) {
+				outputStream.write(i);
+			}
+
+			outputStream.close();
+			inputStream.close();
+
+		} catch (JSchException | SftpException | IOException e) {
+			throw new BrchainException("파일 다운로드 에러", e);
 		}
-
-		outputStream.close();
-		inputStream.close();
-
 	}
 }

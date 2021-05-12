@@ -88,6 +88,7 @@ import org.springframework.stereotype.Component;
 
 import com.brchain.common.exception.BrchainException;
 import com.brchain.core.fabric.dto.FabricMemberDto;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.BrchainUser;
 import com.brchain.core.util.Util;
 
@@ -152,9 +153,7 @@ public class FabricClient {
 				.discovery(false);
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new BrchainException("지갑 생성중 오류 발생", e);
+			throw new BrchainException(e, BrchainStatusCode.WALLET_CREATE_ERROR);
 		}
 		Gateway gateway = builder.connect();
 		Network network = gateway.getNetwork(channelName);
@@ -251,7 +250,8 @@ public class FabricClient {
 
 			wallet.put(memberDto.getOrgName(), user);
 		} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | CertificateException e) {
-			throw new BrchainException("지갑 생성 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.WALLET_CREATE_ERROR);
+			
 		}
 
 	}
@@ -299,7 +299,7 @@ public class FabricClient {
 
 			return client;
 		} catch (InvalidArgumentException | TransactionException | IOException e) {
-			throw new BrchainException("채널 생성 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.CHANNEL_CREATE_ERROR);
 		}
 
 	}
@@ -346,7 +346,7 @@ public class FabricClient {
 			logger.info("[채널가입] : " + peerDto.getConName() + " 컨테이너 " + channelName + " 채널 가입완료");
 			channel.shutdown(true);
 		} catch (InvalidArgumentException | TransactionException | ProposalException e) {
-			throw new BrchainException("채널 가입 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.CHANNEL_JOIN_ERROR);
 
 		}
 
@@ -383,7 +383,7 @@ public class FabricClient {
 			// 가저온 인증서 정보로 user 생성
 			return new BrchainUser(memberDto.getOrgName(), memberDto.getOrgName(), memberDto.getOrgMspId(), enrollment);
 		} catch (IOException | CertificateEncodingException e) {
-			throw new BrchainException("fabric context 생성 오류", e);
+			throw new BrchainException(e, BrchainStatusCode.FABRIC_CONTEXT_ERROR);
 		}
 
 	}
@@ -421,7 +421,7 @@ public class FabricClient {
 
 			return client;
 		} catch (CryptoException | InvalidArgumentException | ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-			throw new BrchainException("fabric client 생성 오류", e);
+			throw new BrchainException(e, BrchainStatusCode.FABRIC_CLIENT_ERROR);
 		}
 
 	}
@@ -602,7 +602,7 @@ public class FabricClient {
 			Thread.sleep(2000);
 			return (JSONObject) jsonParser.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
 		} catch (InvalidArgumentException | TransactionException | IOException | ParseException e) {
-			throw new BrchainException("채널 설정 가져오기 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.GET_CHANNEL_CONFIG_ERROR);
 		}
 
 	}
@@ -742,7 +742,7 @@ public class FabricClient {
 
 			channel.shutdown(true);
 		} catch (InvalidArgumentException | TransactionException | IOException e) {
-			throw new BrchainException("채널 설정 업데이트 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.UPDATE_CHANNEL_CONFIG_ERROR);
 		}
 
 	}
@@ -1015,7 +1015,7 @@ public class FabricClient {
 			// 체인코드 설치 함수 시작
 			installChaincodeWithLifecycle(client, peers, ccName, ccVersion);
 		} catch (InvalidArgumentException | ProposalException | IOException e) {
-			throw new BrchainException("체인코드 설치중 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.CHAINCODE_INSTALL_ERROR);
 		}
 
 	}
@@ -1123,7 +1123,7 @@ public class FabricClient {
 
 			return ccPath;
 		} catch (InvalidArgumentException | IOException e) {
-			throw new BrchainException("체인코드 패키징 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.CHAINCDOE_PACKAGE_ERROR);
 		}
 
 	}

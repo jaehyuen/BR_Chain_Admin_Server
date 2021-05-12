@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.brchain.common.exception.BrchainException;
+import com.brchain.core.util.BrchainStatusCode;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -89,17 +90,18 @@ public class SshClient {
 	 * @throws InterruptedException
 	 * @throws JSchException
 	 */
-	public String removeDir(String orgName, String conName) throws DockerException, InterruptedException, JSchException {
+	public void removeDir(String orgName, String conName) {
+		try {
+			if (channelExec == null || channelExec.isClosed()) {
+				connect();
+			}
 
-		if (channelExec == null || channelExec.isClosed()) {
-			connect();
+			channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir + "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
+					+ sourceDir + "/channel-artifacts/");
+			channelExec.connect();
+		} catch (JSchException e) {
+			throw new BrchainException(e, BrchainStatusCode.DELETE_DIR_ERROR);
 		}
-
-		channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir + "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
-				+ sourceDir + "/channel-artifacts/");
-		channelExec.connect();
-
-		return "";
 
 	}
 
@@ -125,7 +127,7 @@ public class SshClient {
 			channelExec.connect();
 			channelExec.disconnect();
 		} catch (JSchException e) {
-			throw new BrchainException("파일 업로드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.EXEC_COMMAND_ERROR);
 		}
 
 	}
@@ -185,7 +187,7 @@ public class SshClient {
 			inputStream.close();
 
 		} catch (JSchException | SftpException | IOException e) {
-			throw new BrchainException("파일 업로드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.FILE_UPLOAD_ERROR);
 		}
 
 	}
@@ -236,7 +238,7 @@ public class SshClient {
 			inputStream.close();
 
 		} catch (JSchException | SftpException | IOException e) {
-			throw new BrchainException("파일 다운로드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.FILE_DOWNLOAN_ERROR);
 		}
 	}
 }

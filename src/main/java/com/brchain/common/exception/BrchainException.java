@@ -1,21 +1,21 @@
 package com.brchain.common.exception;
 
+import com.brchain.core.util.BrchainStatusCode;
+
 public class BrchainException extends RuntimeException {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8860013712221028748L;
-	private String code;
+	private BrchainStatusCode status;
 
-	public BrchainException(String exMessage, Exception exception) {
-		super(exMessage, exception);
+	public BrchainException(Exception exception, BrchainStatusCode status) {
+		super(exception);
+		this.status = status;
 	}
 
-	public BrchainException(String exMessage) {
+	public BrchainException(String exMessage, BrchainStatusCode status) {
 		super(exMessage);
-	}
-	public BrchainException(String exMessage, Exception exception,String code) {
-		super(exMessage, exception);
-		this.code =code;
+		this.status = status;
 	}
 }

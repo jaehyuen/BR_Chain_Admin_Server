@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.brchain.common.exception.BrchainException;
 import com.brchain.core.container.dto.ConInfoDto;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.ContainerSetting;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;
@@ -69,9 +70,12 @@ public class DockerClient {
 	 * @throws DockerException
 	 * @throws InterruptedException
 	 */
-	public List<Container> loadRunningContainers() throws DockerException, InterruptedException {
-
-		return docker.listContainers(ListContainersParam.allContainers());
+	public List<Container> loadRunningContainers() {
+		try {
+			return docker.listContainers(ListContainersParam.withStatusRunning());
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
 
 	}
 
@@ -84,9 +88,13 @@ public class DockerClient {
 	 * @throws InterruptedException
 	 */
 
-	public List<Container> loadAllContainers() throws DockerException, InterruptedException {
+	public List<Container> loadAllContainers() {
 
-		return docker.listContainers(ListContainersParam.allContainers());
+		try {
+			return docker.listContainers(ListContainersParam.allContainers());
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
 
 	}
 
@@ -101,12 +109,14 @@ public class DockerClient {
 	 * @throws InterruptedException
 	 */
 
-	public String removeContainer(String conId) throws DockerException, InterruptedException {
+	public void removeContainer(String conId) {
+		try {
 
-		docker.stopContainer(conId, 1);
-		docker.removeContainer(conId);
-
-		return "";
+			docker.stopContainer(conId, 1);
+			docker.removeContainer(conId);
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
 
 	}
 
@@ -154,11 +164,11 @@ public class DockerClient {
 			try {
 				docker.createNetwork(networkConfig);
 			} catch (DockerException | InterruptedException e1) {
-				throw new BrchainException("도커 통신중 에러", e);
+				throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
 			}
 
 		} catch (DockerException | InterruptedException e) {
-			throw new BrchainException("도커 통신중 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
 		}
 		try {
 
@@ -287,7 +297,7 @@ public class DockerClient {
 			ContainerInfo info = docker.inspectContainer(id);
 			return info;
 		} catch (DockerException | InterruptedException e) {
-			throw new BrchainException("도커 통신중 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
 		}
 
 	}

@@ -49,46 +49,46 @@ public class DockerService {
 
 	public ResultDto<String> removeAllContainers() {
 
-		try {
+//		try {
 
-			List<Container> containers = dockerClient.loadAllContainers();
+		List<Container> containers = dockerClient.loadAllContainers();
 
-			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
+		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
-				Container  container  = iter.next();
+			Container  container  = iter.next();
 
-				ConInfoDto conInfoDto = null;
+			ConInfoDto conInfoDto = null;
 
-				try {
-					conInfoDto = containerService.deleteConInfo(container.id());
-				} catch (Exception e) {
-					logger.info("디비에 없는 컨테이너");
-				}
-
-				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
-				dockerClient.removeContainer(container.id());
-
-				if (conInfoDto != null) {
-					sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
-				}
-
+			try {
+				conInfoDto = containerService.deleteConInfo(container.id());
+			} catch (Exception e) {
+				logger.info("디비에 없는 컨테이너");
 			}
 
-		} catch (DockerException e) {
-			// 도커 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
+			logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
+			dockerClient.removeContainer(container.id());
 
-		} catch (InterruptedException e) {
-			// 쓰레드 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
+			if (conInfoDto != null) {
+				sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
+			}
 
-		} catch (JSchException e) {
-			// jsch 라이브러리 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
 		}
+
+//		} catch (DockerException e) {
+//			// 도커 관련 오류
+//			logger.error(e.getMessage());
+//			throw new BrchainException(e.getMessage(), e);
+//
+//		} catch (InterruptedException e) {
+//			// 쓰레드 관련 오류
+//			logger.error(e.getMessage());
+//			throw new BrchainException(e.getMessage(), e);
+//
+//		} catch (JSchException e) {
+//			// jsch 라이브러리 관련 오류
+//			logger.error(e.getMessage());
+//			throw new BrchainException(e.getMessage(), e);
+//		}
 
 		return util.setResult("0000", true, "Success remove container", null);
 
@@ -104,39 +104,21 @@ public class DockerService {
 
 	public ResultDto<String> removeContainer(String conId) {
 
+		ConInfoDto conInfoDto = null;
+
 		try {
 
-			ConInfoDto conInfoDto = null;
+			conInfoDto = containerService.deleteConInfo(conId);
 
-			try {
+		} catch (Exception e) {
 
-				conInfoDto = containerService.deleteConInfo(conId);
+			logger.info("디비에 없는 컨테이너");
 
-			} catch (Exception e) {
-
-				logger.info("디비에 없는 컨테이너");
-
-			}
-
-			logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
-			dockerClient.removeContainer(conId);
-			sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
-
-		} catch (DockerException e) {
-			// 도커 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
-
-		} catch (InterruptedException e) {
-			// 쓰레드 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
-
-		} catch (JSchException e) {
-			// jsch 라이브러리 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
 		}
+
+		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
+		dockerClient.removeContainer(conId);
+		sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
 
 		return util.setResult("0000", true, "Success remove container", null);
 
@@ -150,46 +132,28 @@ public class DockerService {
 
 	public ResultDto<String> removeOrgContainers(String orgName) {
 
-		try {
+		List<Container> containers = dockerClient.loadAllContainers();
 
-			List<Container> containers = dockerClient.loadAllContainers();
+		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
-			for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
+			Container  container  = iter.next();
 
-				Container  container  = iter.next();
+			ConInfoDto conInfoDto = null;
 
-				ConInfoDto conInfoDto = null;
-
-				if (container.names()
-					.get(0)
-					.contains(orgName)) {
-					try {
-						conInfoDto = containerService.deleteConInfo(container.id());
-					} catch (Exception e) {
-						logger.info("디비에 없는 컨테이너");
-					}
-
-					logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
-					dockerClient.removeContainer(container.id());
-					sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
-
+			if (container.names()
+				.get(0)
+				.contains(orgName)) {
+				try {
+					conInfoDto = containerService.deleteConInfo(container.id());
+				} catch (Exception e) {
+					logger.info("디비에 없는 컨테이너");
 				}
+
+				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
+				dockerClient.removeContainer(container.id());
+				sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
+
 			}
-
-		}  catch (DockerException e) {
-			// 도커 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
-
-		} catch (InterruptedException e) {
-			// 쓰레드 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
-
-		} catch (JSchException e) {
-			// jsch 라이브러리 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
 		}
 
 		return util.setResult("0000", true, "Success remove org", null);
@@ -206,45 +170,31 @@ public class DockerService {
 
 		List<DockerStatsDto> dockerStatsList = new ArrayList<DockerStatsDto>();
 
-		try {
+		List<Container>      containerList   = dockerClient.loadAllContainers();
 
-			List<Container> containerList = dockerClient.loadAllContainers();
+		for (Container container : containerList) {
 
-			for (Container container : containerList) {
+			DockerStatsDto             dockerStatsDto = new DockerStatsDto();
+			ImmutableList<PortMapping> portList       = container.ports();
 
-				DockerStatsDto             dockerStatsDto = new DockerStatsDto();
-				ImmutableList<PortMapping> portList       = container.ports();
+			for (PortMapping port : portList) {
 
-				for (PortMapping port : portList) {
+				if (!port.publicPort()
+					.equals(0)) {
 
-					if (!port.publicPort()
-						.equals(0)) {
-
-						dockerStatsDto.setConPort(port.publicPort());
-
-					}
+					dockerStatsDto.setConPort(port.publicPort());
 
 				}
 
-				dockerStatsDto.setConId(container.id());
-				dockerStatsDto.setConName(container.names()
-					.get(0));
-				dockerStatsDto.setConCreated(new Date(container.created() * 1000).toString());
-				dockerStatsDto.setConStatus(container.status());
-
-				dockerStatsList.add(dockerStatsDto);
-
 			}
 
-		}  catch (DockerException e) {
-			// 도커 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
+			dockerStatsDto.setConId(container.id());
+			dockerStatsDto.setConName(container.names()
+				.get(0));
+			dockerStatsDto.setConCreated(new Date(container.created() * 1000).toString());
+			dockerStatsDto.setConStatus(container.status());
 
-		} catch (InterruptedException e) {
-			// 쓰레드 관련 오류
-			logger.error(e.getMessage());
-			throw new BrchainException(e.getMessage(), e);
+			dockerStatsList.add(dockerStatsDto);
 
 		}
 
@@ -263,7 +213,7 @@ public class DockerService {
 	 * 
 	 */
 
-	public JSONObject createContainer(ConInfoDto createConDto)  {
+	public JSONObject createContainer(ConInfoDto createConDto) {
 
 		ContainerInfo info = dockerClient.createContainer(createConDto);
 

@@ -50,6 +50,7 @@ import com.brchain.core.container.dto.CreateOrgConInfoDto;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.container.service.DockerService;
 import com.brchain.core.fabric.dto.FabricMemberDto;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -118,7 +119,8 @@ public class FabricService {
 				}
 			} catch (ProposalException | InvalidArgumentException e) {
 
-				throw new BrchainException(channelInfoDto.getChannelName() + " 채널에 쿼리중 오류가 발생하였습니다.", e);
+				throw new BrchainException(e, BrchainStatusCode.FABRIC_QUERY_ERROR);
+
 			}
 
 			fabricClient.testRegisterEventListener(channelInfoDto.getChannelName(), createBlockListener(channelInfoDto.getChannelName()));
@@ -312,11 +314,7 @@ public class FabricService {
 			fabricClient.createWallet(fabricMemberDto.get((int) (Math.random() * fabricMemberDto.size())));
 
 		} catch (InterruptedException e) {
-
-			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException("쓰레드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.THREAD_ERROR);
 		}
 
 		logger.info("[조직생성] 종료");
@@ -459,11 +457,7 @@ public class FabricService {
 			fabricClient.testRegisterEventListener(createChannelDto.getChannelName(), createBlockListener(channelInfoDto.getChannelName()));
 
 		} catch (InterruptedException e) {
-
-			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException("쓰레드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.THREAD_ERROR);
 		}
 
 		return util.setResult("0000", true, "Success create channel", null);
@@ -758,7 +752,8 @@ public class FabricService {
 			channelHandleDto = channelService.findChannelHandleByChannel(channelName);
 
 			// 이벤트 리슨이 등록된 채널이면 에러 발생
-			throw new BrchainException("already registered event listener");
+
+			throw new BrchainException("already registered event listener", BrchainStatusCode.ALREADY_REGISTERED_LISTENER_ERROR);
 
 		} catch (IllegalArgumentException e) {
 
@@ -858,7 +853,8 @@ public class FabricService {
 //			System.out.println()
 			// 조회한 피어에 앵커피어 설정이 되어있으면 에러발샐
 			if (channelInfoPeerDto.isAnchorYn()) {
-				throw new BrchainException(conName + " is already anchor peer");
+
+				throw new BrchainException(conName + " is already anchor peer", BrchainStatusCode.ALREADY_AHCHOR_PEER_ERROR);
 			}
 
 			// 앵커피어를 등록한 FabricMemberDto(peer) 생성
@@ -891,11 +887,7 @@ public class FabricService {
 			channelService.saveChannelInfoPeer(channelInfoPeerDto);
 
 		} catch (InterruptedException e) {
-
-			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException("쓰레드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.THREAD_ERROR);
 		}
 
 		return util.setResult("0000", true, "Success update anchor", null);
@@ -1026,11 +1018,7 @@ public class FabricService {
 			chaincodeService.saveCcInfo(ccInfoDto);
 //
 		} catch (IOException e) {
-
-			logger.error(e.getMessage());
-//			e.printStackTrace();
-//			return util.setResult("9999", false, e.getMessage(), null);
-			throw new BrchainException("체인코드 업로드 에러", e);
+			throw new BrchainException(e, BrchainStatusCode.CHAINCODE_UPLOAD_ERROR);
 
 		}
 

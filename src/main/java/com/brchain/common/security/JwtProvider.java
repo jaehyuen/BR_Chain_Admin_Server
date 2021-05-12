@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import com.brchain.common.exception.BrchainException;
+import com.brchain.core.util.BrchainStatusCode;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -29,8 +30,8 @@ import io.jsonwebtoken.Jwts;
 @Service
 public class JwtProvider {
 
-	private KeyStore keyStore;
-	private final Long jwtExpirationInMillis = (long) (1000 * 3600); //테스트
+	private KeyStore   keyStore;
+	private final Long jwtExpirationInMillis = (long) (1000 * 3600); // 테스트
 //	private final Long jwtExpirationInMillis = (long) (1000);
 
 	@PostConstruct
@@ -40,34 +41,44 @@ public class JwtProvider {
 			InputStream resourceAsStream = getClass().getResourceAsStream("/brchain.jks");
 			keyStore.load(resourceAsStream, "Asdf!234".toCharArray());
 		} catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-			throw new BrchainException("Exception occurred while loading keystore", e);
+			throw new BrchainException(e, BrchainStatusCode.JWT_ERROR);
 		}
 	}
 
 	public String generateToken(Authentication authentication) {
 		User principal = (User) authentication.getPrincipal();
-		return Jwts.builder().setSubject(principal.getUsername()).setIssuedAt(from(Instant.now()))
-				.signWith(getPrivateKey()).setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis)))
-				.compact();
+		return Jwts.builder()
+			.setSubject(principal.getUsername())
+			.setIssuedAt(from(Instant.now()))
+			.signWith(getPrivateKey())
+			.setExpiration(Date.from(Instant.now()
+				.plusMillis(jwtExpirationInMillis)))
+			.compact();
 	}
 
 	public String generateTokenWithUserName(String userName) {
-		return Jwts.builder().setSubject(userName).setIssuedAt(from(Instant.now())).signWith(getPrivateKey())
-				.setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationInMillis))).compact();
+		return Jwts.builder()
+			.setSubject(userName)
+			.setIssuedAt(from(Instant.now()))
+			.signWith(getPrivateKey())
+			.setExpiration(Date.from(Instant.now()
+				.plusMillis(jwtExpirationInMillis)))
+			.compact();
 	}
 
 	private PrivateKey getPrivateKey() {
 		try {
 			return (PrivateKey) keyStore.getKey("brchain", "Asdf!234".toCharArray());
 		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-			throw new BrchainException("Exception occured while retrieving public key from keystore", e);
+			throw new BrchainException(e, BrchainStatusCode.JWT_ERROR);
 		}
 	}
 
 	public boolean validateToken(String jwt) {
 
 		try {
-			parser().setSigningKey(getPublickey()).parseClaimsJws(jwt);
+			parser().setSigningKey(getPublickey())
+				.parseClaimsJws(jwt);
 			return true;
 		} catch (Exception e) {
 
@@ -78,14 +89,17 @@ public class JwtProvider {
 
 	private PublicKey getPublickey() {
 		try {
-			return keyStore.getCertificate("brchain").getPublicKey();
+			return keyStore.getCertificate("brchain")
+				.getPublicKey();
 		} catch (KeyStoreException e) {
-			throw new BrchainException("Exception occured while retrieving public key from keystore", e);
+			throw new BrchainException(e, BrchainStatusCode.JWT_ERROR);
 		}
 	}
 
 	public String getUsernameFromJwt(String token) {
-		Claims claims = parser().setSigningKey(getPublickey()).parseClaimsJws(token).getBody();
+		Claims claims = parser().setSigningKey(getPublickey())
+			.parseClaimsJws(token)
+			.getBody();
 
 		return claims.getSubject();
 	}

@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.brchain.account.service.UserDetailsServiceImpl;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				response.setStatus(401);
 				response.setContentType("application/json;charset=UTF-8");
 				response.getWriter()
-					.write(mapper.writeValueAsString(util.setResult("9999", false, "JWT 토큰값을 확인해주십시오", null)));
+					.write(mapper.writeValueAsString(util.setResult(BrchainStatusCode.INVALID_JWT, "JWT 토큰값을 확인해주십시오")));
 			}
 		} else {
 			filterChain.doFilter(request, response);

@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.brchain.account.entity.RefreshTokenEntity;
 import com.brchain.account.repository.RefreshTokenRepository;
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.BrchainException;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 
 import lombok.AllArgsConstructor;
@@ -48,7 +50,7 @@ public class RefreshTokenService {
 
 	public void validateRefreshToken(String refreshToken) {
 		refreshTokenRepository.findByToken(refreshToken)
-			.orElseThrow(() -> new EntityNotFoundException("Invalid refresh Token"));
+			.orElseThrow(() -> new BrchainException("Invalid refresh Token",BrchainStatusCode.INVALID_REFRESH_TOKEN));
 	}
 
 	/**

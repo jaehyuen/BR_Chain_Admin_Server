@@ -63,56 +63,54 @@ public class Util {
 	 */
 
 	@SuppressWarnings({ "unchecked" })
-	public JSONObject createFabrcSetting(String channelName, List<FabricMemberDto> ordererDtoArr,
-			List<FabricMemberDto> peerDtoArr, List<String> orgs) {
+	public JSONObject createFabrcSetting(String channelName, List<FabricMemberDto> ordererDtoArr, List<FabricMemberDto> peerDtoArr, List<String> orgs) {
 
-		JSONObject fabricJson        = new JSONObject();
+		JSONObject        fabricJson        = new JSONObject();
 
-		JSONObject clientJson        = new JSONObject();
+		JSONObject        clientJson        = new JSONObject();
 
-		JSONObject orgJson1          = new JSONObject();
+		JSONObject        orgJson1          = new JSONObject();
 
-		JSONObject channelJson1      = new JSONObject();
-		JSONObject channelJson2      = new JSONObject();
+		JSONObject        channelJson1      = new JSONObject();
+		JSONObject        channelJson2      = new JSONObject();
 
-		JSONObject peerJson          = new JSONObject();
-		JSONObject peerMemberJson    = new JSONObject();
-		JSONObject ordererMemberJson = new JSONObject();
+		JSONObject        peerJson          = new JSONObject();
+		JSONObject        peerMemberJson    = new JSONObject();
+		JSONObject        ordererMemberJson = new JSONObject();
 
-		JSONObject caJson1           = new JSONObject();
+		JSONObject        caJson1           = new JSONObject();
 
-		ArrayList<String> ordererArr = new ArrayList<String>();
+		ArrayList<String> ordererArr        = new ArrayList<String>();
 
-		clientJson.put("organization", peerDtoArr.get(0).getOrgName());
+		clientJson.put("organization", peerDtoArr.get(0)
+			.getOrgName());
 
 		// 오더러 관련 변수 생성
 		for (FabricMemberDto dto : ordererDtoArr) {
 			ordererArr.add(dto.getConName());
-			ordererMemberJson.put(dto.getConName(),
-					createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
+			ordererMemberJson.put(dto.getConName(), createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
 
 		}
 
 		// 피어 관련 변수 생성
 
 		for (String org : orgs) {
-			
-			JSONObject orgJson2  = new JSONObject();
-			List<String> peerArr = new ArrayList<String>();
-			
+
+			JSONObject   orgJson2 = new JSONObject();
+			List<String> peerArr  = new ArrayList<String>();
+
 			for (FabricMemberDto dto : peerDtoArr) {
 
 				if (org.equals(dto.getOrgName())) {
-					
-					JSONObject caJson2 = new JSONObject();
-					List<String> caArr = new ArrayList<String>();
+
+					JSONObject   caJson2 = new JSONObject();
+					List<String> caArr   = new ArrayList<String>();
 
 					caArr.add("ca.org" + dto.getOrgName() + ".com");
 
 					peerJson.put(dto.getConName(), new JSONObject());
 					peerArr.add(dto.getConName());
-					peerMemberJson.put(dto.getConName(),
-							createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
+					peerMemberJson.put(dto.getConName(), createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
 
 					orgJson2.put("mspid", dto.getOrgMspId());
 					orgJson2.put("certificateAuthorities", caArr);
@@ -143,7 +141,8 @@ public class Util {
 		fabricJson.put("peers", peerMemberJson);
 		fabricJson.put("certificateAuthorities", caJson1);
 
-		System.out.println("[fabric 설정 json 생성]" + fabricJson.toString().replace("\\", ""));
+		System.out.println("[fabric 설정 json 생성]" + fabricJson.toString()
+			.replace("\\", ""));
 
 		return fabricJson;
 	}
@@ -161,12 +160,12 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public JSONObject createMemberJson(String orgName, String hostName, String url) {
 
-		JSONObject memberJson = new JSONObject();
+		JSONObject memberJson      = new JSONObject();
 
 		JSONObject grpcOptionsJson = new JSONObject();
-		JSONObject tlsCACertsJson = new JSONObject();
+		JSONObject tlsCACertsJson  = new JSONObject();
 
-		String certPath = "crypto-config/ca-certs/ca.org" + orgName + ".com-cert.pem";
+		String     certPath        = "crypto-config/ca-certs/ca.org" + orgName + ".com-cert.pem";
 
 		grpcOptionsJson.put("hostnameOverride", hostName);
 		grpcOptionsJson.put("ssl-target-name-override", hostName);
@@ -193,10 +192,11 @@ public class Util {
 
 	public JSONObject modifyConsoConfig(JSONObject json, JSONObject addjson, String parentsKey, String peerOrg) {
 
-		String key = "";
+		String     key        = "";
 		JSONObject resultJson = new JSONObject();
 
-		Iterator iter = json.keySet().iterator();
+		Iterator   iter       = json.keySet()
+			.iterator();
 		while (iter.hasNext()) {
 			key = (String) iter.next();
 
@@ -231,31 +231,27 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public JSONObject createOrgJson(FabricMemberDto memberDto) {
 
-		JSONObject orgJson = new JSONObject();
+		JSONObject        orgJson          = new JSONObject();
 
-		JSONObject policiesJson = new JSONObject();
-		JSONObject polJson = new JSONObject();
+		JSONObject        policiesJson     = new JSONObject();
+		JSONObject        polJson          = new JSONObject();
 
-		JSONObject cryptoConfigJson = new JSONObject();
-		JSONObject configJson = new JSONObject();
-		JSONObject valueJson = new JSONObject();
-		JSONObject mspJson = new JSONObject();
-		JSONObject valuesJson = new JSONObject();
+		JSONObject        cryptoConfigJson = new JSONObject();
+		JSONObject        configJson       = new JSONObject();
+		JSONObject        valueJson        = new JSONObject();
+		JSONObject        mspJson          = new JSONObject();
+		JSONObject        valuesJson       = new JSONObject();
 
-		PolicyDto policyDto = new PolicyDto();
+		PolicyDto         policyDto        = new PolicyDto();
 
-		ArrayList<String> orgMspArr = new ArrayList<String>();
-		ArrayList<String> adminsArr = new ArrayList<String>();
-		ArrayList<String> rootCertsArr = new ArrayList<String>();
-		ArrayList<String> tlsRootCertsArr = new ArrayList<String>();
+		ArrayList<String> orgMspArr        = new ArrayList<String>();
+		ArrayList<String> adminsArr        = new ArrayList<String>();
+		ArrayList<String> rootCertsArr     = new ArrayList<String>();
+		ArrayList<String> tlsRootCertsArr  = new ArrayList<String>();
 
-		adminsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/" + memberDto.getOrgType()
-				+ "Organizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName()
-				+ ".com/msp/signcerts/cert.pem"));
-		rootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org"
-				+ memberDto.getOrgName() + ".com-cert.pem"));
-		tlsRootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org"
-				+ memberDto.getOrgName() + ".com-cert.pem"));
+		adminsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/" + memberDto.getOrgType() + "Organizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem"));
+		rootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem"));
+		tlsRootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem"));
 
 		orgMspArr.add(memberDto.getOrgMspId());
 
@@ -305,7 +301,8 @@ public class Util {
 		orgJson.put("groups", new JSONObject());
 		orgJson.put("values", valuesJson);
 
-		System.out.println("[org json 생성]" + orgJson.toString().replace("\\", ""));
+		System.out.println("[org json 생성]" + orgJson.toString()
+			.replace("\\", ""));
 
 		return orgJson;
 	}
@@ -321,18 +318,18 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public JSONObject createPolicyJson(PolicyDto policyDto) {
 
-		JSONObject returnJson = new JSONObject();
+		JSONObject returnJson        = new JSONObject();
 
-		JSONObject policyJson = new JSONObject();
+		JSONObject policyJson        = new JSONObject();
 
-		JSONObject valueJson = new JSONObject();
+		JSONObject valueJson         = new JSONObject();
 
-		JSONArray identitiesJsonArr = new JSONArray();
+		JSONArray  identitiesJsonArr = new JSONArray();
 
-		JSONObject nOutOfJson = new JSONObject();
-		JSONObject roluJson = new JSONObject();
+		JSONObject nOutOfJson        = new JSONObject();
+		JSONObject roluJson          = new JSONObject();
 
-		JSONArray rolesJsonArr = new JSONArray();
+		JSONArray  rolesJsonArr      = new JSONArray();
 
 		// policyType이 1이면 Signature 정책
 		if (policyDto.getPolicyType() == 1) {
@@ -341,11 +338,12 @@ public class Util {
 			for (String identityMsp : policyDto.getIdentityMsps()) {
 
 				JSONObject identitiesJson = new JSONObject();
-				JSONObject principalJson = new JSONObject();
+				JSONObject principalJson  = new JSONObject();
 
-				JSONObject rolesJson = new JSONObject();
+				JSONObject rolesJson      = new JSONObject();
 
-				principalJson.put("role", (policyDto.getSubPolicy().equals("Admins")) ? "ADMIN" : "MEMBER");
+				principalJson.put("role", (policyDto.getSubPolicy()
+					.equals("Admins")) ? "ADMIN" : "MEMBER");
 				principalJson.put("msp_identifier", identityMsp);
 
 				identitiesJson.put("principal", principalJson);
@@ -361,7 +359,8 @@ public class Util {
 
 			}
 
-			nOutOfJson.put("n", (policyDto.getRule().equals("and")) ? cnt : 1);
+			nOutOfJson.put("n", (policyDto.getRule()
+				.equals("and")) ? cnt : 1);
 			nOutOfJson.put("rules", rolesJsonArr);
 
 			roluJson.put("n_out_of", nOutOfJson);
@@ -394,14 +393,14 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public JSONObject addUpdateHeader(String channelName, JSONObject dataJson) {
 
-		JSONObject configUpdateJson = new JSONObject();
+		JSONObject configUpdateJson  = new JSONObject();
 
-		JSONObject updateJson = new JSONObject();
+		JSONObject updateJson        = new JSONObject();
 
-		JSONObject payloadJson = new JSONObject();
+		JSONObject payloadJson       = new JSONObject();
 
 		JSONObject channelHeaderJson = new JSONObject();
-		JSONObject headerJson = new JSONObject();
+		JSONObject headerJson        = new JSONObject();
 
 		channelHeaderJson.put("type", 2);
 		channelHeaderJson.put("channel_id", channelName);
@@ -420,7 +419,7 @@ public class Util {
 
 	public String fileEncodeBases64(String filePath) {
 
-		File file = new File(filePath);
+		File   file = new File(filePath);
 		byte[] data = new byte[(int) file.length()];
 
 		try (FileInputStream stream = new FileInputStream(file)) {
@@ -428,7 +427,8 @@ public class Util {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-		String base64data = Base64.getEncoder().encodeToString(data);
+		String base64data = Base64.getEncoder()
+			.encodeToString(data);
 
 		return base64data;
 
@@ -447,13 +447,27 @@ public class Util {
 
 	}
 
-	public JSONObject modifyAnchorConfig(JSONObject json, JSONObject addjson, String parentsKey,
-			FabricMemberDto peerDto) {
+	public <T> ResultDto<T> setResult(BrchainStatusCode status, T data) {
 
-		String key = "";
+		ResultDto<T> resultDto = new ResultDto<T>();
+
+		resultDto.setResultCode(status.getCode());
+		resultDto.setResultFlag(status.getCode()
+			.equals("0") ? true : false);
+		resultDto.setResultMessage(status.getMessage());
+		resultDto.setResultData(data);
+
+		return resultDto;
+
+	}
+
+	public JSONObject modifyAnchorConfig(JSONObject json, JSONObject addjson, String parentsKey, FabricMemberDto peerDto) {
+
+		String     key        = "";
 		JSONObject resultJson = new JSONObject();
 
-		Iterator iter = json.keySet().iterator();
+		Iterator   iter       = json.keySet()
+			.iterator();
 		while (iter.hasNext()) {
 			key = (String) iter.next();
 
@@ -466,12 +480,12 @@ public class Util {
 				resultJson = (JSONObject) json.get(key);
 
 				if (resultJson.containsKey("AnchorPeers")) {
-					JSONObject json1 = new JSONObject();
-					JSONObject json2 = new JSONObject();
-					JSONArray jsonArr = new JSONArray();
+					JSONObject json1   = new JSONObject();
+					JSONObject json2   = new JSONObject();
+					JSONArray  jsonArr = new JSONArray();
 
-					json1 = (JSONObject) resultJson.get("AnchorPeers");
-					json2 = (JSONObject) json1.get("value");
+					json1   = (JSONObject) resultJson.get("AnchorPeers");
+					json2   = (JSONObject) json1.get("value");
 					jsonArr = (JSONArray) json2.get("anchor_peers");
 
 					JSONObject anchorPeerJson = new JSONObject();
@@ -498,10 +512,10 @@ public class Util {
 	public JSONObject createAnchorJson(FabricMemberDto peerDto) {
 
 		JSONObject anchorPeerJson = new JSONObject();
-		JSONArray anchorPeerArr = new JSONArray();
+		JSONArray  anchorPeerArr  = new JSONArray();
 
-		JSONObject resultJson = new JSONObject();
-		JSONObject valueJson = new JSONObject();
+		JSONObject resultJson     = new JSONObject();
+		JSONObject valueJson      = new JSONObject();
 
 		anchorPeerJson.put("host", peerDto.getConName());
 		anchorPeerJson.put("port", peerDto.getConPort());
@@ -520,31 +534,33 @@ public class Util {
 
 	public JSONObject createConJson(ContainerInfo info) {
 
-		JSONObject logJson = new JSONObject();
+		JSONObject            logJson   = new JSONObject();
 
-		JSONObject conJson1 = new JSONObject();
-		JSONObject conJson2 = new JSONObject();
+		JSONObject            conJson1  = new JSONObject();
+		JSONObject            conJson2  = new JSONObject();
 
-		ImmutableList<String> cmdArr = info.config().cmd();
-		String resultCmd = "";
+		ImmutableList<String> cmdArr    = info.config()
+			.cmd();
+		String                resultCmd = "";
 
 		for (String cmd : cmdArr) {
 			resultCmd = resultCmd + cmd + " ";
 
 		}
 
-		ImmutableMap<String, List<PortBinding>> portMap = info.hostConfig().portBindings();
+		ImmutableMap<String, List<PortBinding>> portMap  = info.hostConfig()
+			.portBindings();
 
-		ArrayList<String> portList = new ArrayList<String>();
+		ArrayList<String>                       portList = new ArrayList<String>();
 
 		for (Entry<String, List<PortBinding>> entry : portMap.entrySet()) {
 
-			String port1 = entry.getKey();
+			String            port1       = entry.getKey();
 
-			List<PortBinding> value = entry.getValue();
-			PortBinding portBinding = value.get(0);
+			List<PortBinding> value       = entry.getValue();
+			PortBinding       portBinding = value.get(0);
 
-			String port2 = portBinding.hostPort();
+			String            port2       = portBinding.hostPort();
 			portList.add(port1 + ":" + port2);
 		}
 		if (!portMap.isEmpty()) {
@@ -553,16 +569,20 @@ public class Util {
 
 		logJson.put("driver", "none");
 
-		conJson2.put("container_name", info.name().replace("/", ""));
+		conJson2.put("container_name", info.name()
+			.replace("/", ""));
 		conJson2.put("image", info.image());
-		conJson2.put("environment", info.config().env());
+		conJson2.put("environment", info.config()
+			.env());
 
 		conJson2.put("command", resultCmd);
 
 		conJson2.put("logging", logJson);
-		conJson2.put("volumes", info.hostConfig().binds());
+		conJson2.put("volumes", info.hostConfig()
+			.binds());
 
-		conJson2.put("networks", new String[] { info.hostConfig().networkMode() });
+		conJson2.put("networks", new String[] { info.hostConfig()
+			.networkMode() });
 
 //		conJson1.put(info.name(), conJson2);
 
@@ -572,15 +592,15 @@ public class Util {
 
 	public JSONObject createComposeJson(JSONObject conJson) {
 
-		JSONObject ipamConfigJson = new JSONObject();
+		JSONObject ipamConfigJson    = new JSONObject();
 
-		JSONArray ipamConfigJsonArr = new JSONArray();
+		JSONArray  ipamConfigJsonArr = new JSONArray();
 
-		JSONObject ipamJson = new JSONObject();
+		JSONObject ipamJson          = new JSONObject();
 
-		JSONObject networksJson2 = new JSONObject();
-		JSONObject networksJson1 = new JSONObject();
-		JSONObject composeJson = new JSONObject();
+		JSONObject networksJson2     = new JSONObject();
+		JSONObject networksJson1     = new JSONObject();
+		JSONObject composeJson       = new JSONObject();
 
 		ipamConfigJson.put("subnet", "123.123.123.0/24");
 		ipamConfigJson.put("gateway", "123.123.123.1");
@@ -623,8 +643,7 @@ public class Util {
 				}
 			}
 
-			objectMapper.writeValue(new File(System.getProperty("user.dir") + "/compose-files/" + fileName + ".yaml"),
-					createComposeJson(conJson));
+			objectMapper.writeValue(new File(System.getProperty("user.dir") + "/compose-files/" + fileName + ".yaml"), createComposeJson(conJson));
 		} catch (JsonGenerationException e) {
 			e.printStackTrace();
 		} catch (JsonMappingException e) {
@@ -635,12 +654,12 @@ public class Util {
 	}
 
 	public boolean unZip(String zipPath, String zipFileName, String zipUnzipPath) {
-		boolean isChk = false;
+		boolean         isChk    = false;
 //		zipUnzipPath = zipUnzipPath; 
-		File zipFile = new File(zipPath + zipFileName);
-		FileInputStream fis = null;
-		ZipInputStream zis = null;
-		ZipEntry zipentry = null;
+		File            zipFile  = new File(zipPath + zipFileName);
+		FileInputStream fis      = null;
+		ZipInputStream  zis      = null;
+		ZipEntry        zipentry = null;
 		try {
 			if (makeFolder(zipUnzipPath)) {
 
@@ -650,7 +669,7 @@ public class Util {
 			while ((zipentry = zis.getNextEntry()) != null) {
 				String filename = zipentry.getName();
 
-				File file = new File(zipUnzipPath, filename);
+				File   file     = new File(zipUnzipPath, filename);
 				if (zipentry.isDirectory()) {
 
 					file.mkdirs();
@@ -686,8 +705,8 @@ public class Util {
 		if (folder.length() < 0) {
 			return false;
 		}
-		String path = folder;
-		File Folder = new File(path);
+		String path   = folder;
+		File   Folder = new File(path);
 		if (!Folder.exists()) {
 			try {
 				Folder.mkdir();
@@ -710,7 +729,7 @@ public class Util {
 		try {
 			fos = new FileOutputStream(file);
 			byte[] buffer = new byte[256];
-			int size = 0;
+			int    size   = 0;
 			while ((size = zis.read(buffer)) > 0) {
 				fos.write(buffer, 0, size);
 			}
@@ -727,18 +746,19 @@ public class Util {
 	}
 
 	public void execute(String cmd) {
-		Process process = null;
-		Runtime runtime = Runtime.getRuntime();
-		StringBuffer successOutput = new StringBuffer(); // 성공 스트링 버퍼
-		StringBuffer errorOutput = new StringBuffer(); // 오류 스트링 버퍼
-		BufferedReader successBufferReader = null; // 성공 버퍼
-		BufferedReader errorBufferReader = null; // 오류 버퍼
-		String msg = null; // 메시지
+		Process        process             = null;
+		Runtime        runtime             = Runtime.getRuntime();
+		StringBuffer   successOutput       = new StringBuffer();     // 성공 스트링 버퍼
+		StringBuffer   errorOutput         = new StringBuffer();     // 오류 스트링 버퍼
+		BufferedReader successBufferReader = null;                   // 성공 버퍼
+		BufferedReader errorBufferReader   = null;                   // 오류 버퍼
+		String         msg                 = null;                   // 메시지
 
-		List<String> cmdList = new ArrayList<String>();
+		List<String>   cmdList             = new ArrayList<String>();
 
 		// 운영체제 구분 (window, window 가 아니면 무조건 linux 로 판단)
-		if (System.getProperty("os.name").indexOf("Windows") > -1) {
+		if (System.getProperty("os.name")
+			.indexOf("Windows") > -1) {
 			cmdList.add("cmd");
 			cmdList.add("/c");
 		} else {
@@ -748,14 +768,14 @@ public class Util {
 		// 명령어 셋팅
 		cmdList.add(cmd);
 		String[] array = cmdList.toArray(new String[cmdList.size()]);
-		System.out.println("command2 :"+array[0]);
-		System.out.println("command2 :"+array[1]);
-		System.out.println("command2 :"+array[2]);
+		System.out.println("command2 :" + array[0]);
+		System.out.println("command2 :" + array[1]);
+		System.out.println("command2 :" + array[2]);
 
 		try {
 
 			// 명령어 실행
-			process = runtime.exec(array);
+			process             = runtime.exec(array);
 
 			// shell 실행이 정상 동작했을 경우
 			successBufferReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "EUC-KR"));
@@ -1063,7 +1083,6 @@ public class Util {
 			.build();
 
 	}
-	
 
 	/*
 	 * ########################################################################

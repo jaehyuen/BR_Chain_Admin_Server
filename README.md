@@ -53,6 +53,47 @@ Hyperledger Fabric 네트워크를 docker 컨테이너 기반으로 쉽게 구�
         - [`GET /remove`](#GET-apicorecontainerremove)
         
 
+## Status Code
+ - 0xxx success
+   - 0000, success
+ - 9xxx server error(http 5xx)
+    - 901X
+      - 9010, docker connection error
+    - 902x
+      - 9020, wallet create error
+    - 903x
+      - 9030, channel create error
+      - 9031, channel join error
+    - 904x
+      - 9040, fabric context error
+      - 9041, fabric client error
+      - 9042, fabric query error
+    - 905x
+      - 9050, get channel config error
+      - 9051, update channel config error
+    - 906x
+      - 9060, chaincode install error
+      - 9061, chaincode package error
+      - 9062, chaincode upload error
+    - 907x
+      - 9070, file upload error
+      - 9071, file download error
+      - 9072, delete dir error
+      - 9073, exec command error
+    - 908X
+      - 9080, jwt error
+    - 909x
+      - 9020, thread error
+ - 8xxx  server error(http 4xx)
+    - 801X peer error
+      - 8010, docker already anchor peer error
+    - 802X event error
+      - 8020, already registered listener error
+    - 803x login error
+      - 8030, invalid refresh_token
+      - 8031, invalid jwt
+      - 8032, invalid password
+      - 8033, account not found
 
 ## `POST /api/auth/register`
 회원가입 API

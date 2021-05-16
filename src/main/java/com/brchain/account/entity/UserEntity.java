@@ -40,6 +40,9 @@ public class UserEntity extends BaseEntity {
 	@Email
 	@Column(name = "USER_EMAIL")
 	private String  userEmail;
+	
+	@Column(name = "USER_AUTHORITY")
+	private String  userAuthority;
 
 	@Column(name = "ACTIVE")
 	private boolean active;

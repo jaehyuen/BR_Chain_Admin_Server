@@ -61,6 +61,7 @@ public class AuthService {
 		userEntity.setUserId(registerDto.getUserId());
 		userEntity.setUserEmail(registerDto.getUserEmail());
 		userEntity.setUserPassword(passwordEncoder.encode(registerDto.getUserPassword()));
+		userEntity.setUserAuthority(registerDto.isAdminYn()?"ADMIN":"USER");
 		userEntity.setActive(true);
 
 		logger.info("this is userEntity : " + userEntity);

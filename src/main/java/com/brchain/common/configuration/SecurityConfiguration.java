@@ -2,6 +2,8 @@ package com.brchain.common.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -41,8 +43,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.permitAll()
 			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**", "/swagger-ui/**")
 			.permitAll()
-			.antMatchers("/api/core/org/create","/api/core/channel/create","/api/core/chaincode/active","/api/core/chaincode/install","/api/core/chaincode/upload").hasAnyAuthority("ADMIN","USER")
-			.antMatchers("/api/core/**").hasAuthority("USER")
+			.antMatchers("/api/core/org/create","/api/core/channel/create","/api/core/chaincode/active","/api/core/chaincode/install","/api/core/chaincode/upload").hasAnyAuthority("ADMIN")
+			.antMatchers(HttpMethod.GET,"/api/core/**").hasAuthority("USER")
 			.anyRequest()
 			.authenticated()
 			.and()

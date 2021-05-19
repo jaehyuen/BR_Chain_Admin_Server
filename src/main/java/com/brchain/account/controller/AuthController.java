@@ -18,6 +18,9 @@ import com.brchain.core.container.repository.ConInfoRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,21 +36,36 @@ public class AuthController {
 	private final ChaincodeService cc;
 	private final ConInfoRepository conInfoRepository;
 	
-	@Operation(summary = "회원가입", description = "회원가입 API")
+	@Operation(summary = "회원가입", description = "회원가입 API",responses={
+			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =ResultDto.class)))
+	})
 	@PostMapping("/register")
 	public ResponseEntity<ResultDto> register(@Parameter(description = "회원가입 정보 DTO", required = true) @RequestBody RegisterDto registerDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(authService.register(registerDto));
 	}
 
-	@Operation(summary = "로그인", description = "로그인 API")
+	@Operation(summary = "로그인", description = "로그인 API",responses={
+			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =ResultDto.class)))
+	})
 	@PostMapping("/login")
 	public ResponseEntity<ResultDto> login(@Parameter(required = true) @RequestBody LoginDto loginDto) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginDto));
 	}
 
-	@Operation(summary = "JWT 토큰 재발급", description = "JWT 토큰 재발급 API")
+	@Operation(summary = "JWT 토큰 재발급", description = "JWT 토큰 재발급 API",responses={
+			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =ResultDto.class)))
+	})
 	@PostMapping("/refresh")
 	public ResponseEntity<ResultDto> refreshToken(@Parameter(description = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
 
@@ -55,7 +73,12 @@ public class AuthController {
 
 	}
 
-	@Operation(summary = "로그아웃", description = "로그아웃 API")
+	@Operation(summary = "로그아웃", description = "로그아웃 API",responses={
+			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =ResultDto.class))),
+			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =ResultDto.class)))
+	})
 	@PostMapping("/logout")
 	public ResponseEntity<ResultDto> logout(@Parameter(description = "리프레시 토큰 정보 DTO", required = true) @RequestBody RefreshTokenDto refreshTokenDto) {
 

@@ -43,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.permitAll()
 			.antMatchers("/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**", "/swagger-ui/**")
 			.permitAll()
-			.antMatchers("/api/core/org/create","/api/core/channel/create","/api/core/chaincode/active","/api/core/chaincode/install","/api/core/chaincode/upload").hasAnyAuthority("ADMIN")
+			.antMatchers(HttpMethod.POST,"/api/core/**").hasAnyAuthority("ADMIN")
 			.antMatchers(HttpMethod.GET,"/api/core/**").hasAuthority("USER")
 			.anyRequest()
 			.authenticated()

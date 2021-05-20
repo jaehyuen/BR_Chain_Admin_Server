@@ -24,12 +24,5 @@ class BrChainApplicationTests {
     void contextLoads() {
     }
     
-    @Test
-    public void hello () throws Exception{
-        String hello = "hello";
-
-        mvc.perform(get("/hello"))
-                .andExpect(status().isOk());
-    }
-
+ 
 }

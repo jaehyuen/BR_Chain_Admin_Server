@@ -654,18 +654,16 @@ public class Util {
 	}
 
 	public boolean unZip(String zipPath, String zipFileName, String zipUnzipPath) {
-		boolean         isChk    = false;
+		boolean  isChk    = false;
 //		zipUnzipPath = zipUnzipPath; 
-		File            zipFile  = new File(zipPath + zipFileName);
-		FileInputStream fis      = null;
-		ZipInputStream  zis      = null;
-		ZipEntry        zipentry = null;
-		try {
+		File     zipFile  = new File(zipPath + zipFileName);
+
+		ZipEntry zipentry = null;
+		try (FileInputStream fis = new FileInputStream(zipFile); ZipInputStream zis = new ZipInputStream(fis, Charset.forName("EUC-KR"))) {
 			if (makeFolder(zipUnzipPath)) {
 
 			}
-			fis = new FileInputStream(zipFile);
-			zis = new ZipInputStream(fis, Charset.forName("EUC-KR"));
+
 			while ((zipentry = zis.getNextEntry()) != null) {
 				String filename = zipentry.getName();
 
@@ -684,19 +682,6 @@ public class Util {
 			isChk = true;
 		} catch (Exception e) {
 			isChk = false;
-		} finally {
-			if (zis != null) {
-				try {
-					zis.close();
-				} catch (IOException e) {
-				}
-			}
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-				}
-			}
 		}
 		return isChk;
 	}
@@ -725,9 +710,9 @@ public class Util {
 		if (!parentDir.exists()) {
 			parentDir.mkdirs();
 		}
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+
 			byte[] buffer = new byte[256];
 			int    size   = 0;
 			while ((size = zis.read(buffer)) > 0) {
@@ -735,26 +720,18 @@ public class Util {
 			}
 		} catch (Throwable e) {
 			throw e;
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException e) {
-				}
-			}
 		}
 	}
 
 	public void execute(String cmd) {
-		Process        process             = null;
-		Runtime        runtime             = Runtime.getRuntime();
-		StringBuffer   successOutput       = new StringBuffer();     // 성공 스트링 버퍼
-		StringBuffer   errorOutput         = new StringBuffer();     // 오류 스트링 버퍼
-		BufferedReader successBufferReader = null;                   // 성공 버퍼
-		BufferedReader errorBufferReader   = null;                   // 오류 버퍼
-		String         msg                 = null;                   // 메시지
+		Process      process       = null;
+		Runtime      runtime       = Runtime.getRuntime();
+		StringBuffer successOutput = new StringBuffer();     // 성공 스트링 버퍼
+		StringBuffer errorOutput   = new StringBuffer();     // 오류 스트링 버퍼
 
-		List<String>   cmdList             = new ArrayList<String>();
+		String       msg           = null;                   // 메시지
+
+		List<String> cmdList       = new ArrayList<String>();
 
 		// 운영체제 구분 (window, window 가 아니면 무조건 linux 로 판단)
 		if (System.getProperty("os.name")
@@ -772,20 +749,24 @@ public class Util {
 		System.out.println("command2 :" + array[1]);
 		System.out.println("command2 :" + array[2]);
 
+		// 명령어 실행
 		try {
+			process = runtime.exec(array);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
-			// 명령어 실행
-			process             = runtime.exec(array);
+		try (BufferedReader successBufferReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "EUC-KR")); // 성공 버퍼
+				BufferedReader errorBufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "EUC-KR"))) {
 
 			// shell 실행이 정상 동작했을 경우
-			successBufferReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "EUC-KR"));
 
 			while ((msg = successBufferReader.readLine()) != null) {
 				successOutput.append(msg + System.getProperty("line.separator"));
 			}
 
 			// shell 실행시 에러가 발생했을 경우
-			errorBufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "EUC-KR"));
 			while ((msg = errorBufferReader.readLine()) != null) {
 				errorOutput.append(msg + System.getProperty("line.separator"));
 			}
@@ -808,16 +789,6 @@ public class Util {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				process.destroy();
-				if (successBufferReader != null)
-					successBufferReader.close();
-				if (errorBufferReader != null)
-					errorBufferReader.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
 		}
 	}
 

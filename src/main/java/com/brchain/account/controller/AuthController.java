@@ -33,8 +33,8 @@ public class AuthController {
 
 	private final AuthService         authService;
 	private final RefreshTokenService refreshTokenService;
-	private final ChaincodeService cc;
-	private final ConInfoRepository conInfoRepository;
+//	private final ChaincodeService cc;
+//	private final ConInfoRepository conInfoRepository;
 	
 	@Operation(summary = "회원가입", description = "회원가입 API",responses={
 			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),

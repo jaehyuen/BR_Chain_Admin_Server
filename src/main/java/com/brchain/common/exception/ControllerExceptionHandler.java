@@ -10,6 +10,7 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -48,6 +49,31 @@ public class ControllerExceptionHandler {
 		e.printStackTrace();
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 			.body(util.setResult(BrchainStatusCode.LOGIN_ERROR, e.getMessage()));
+	}
+	
+	public static abstract class ErrorResultDto extends ResultDto<String> {
+		@Schema(example = "errer message")
+		private String resultMessage;
+		@Schema(example = "false")
+		private boolean resultFlag;
+	}
+
+	public static class Error401ResultDto extends ErrorResultDto {
+		@Schema(example = "803X")
+		private String resultCode;
+
+	}
+
+	public static class Error403ResultDto extends ErrorResultDto {
+		@Schema(example = "8XXX")
+		private String resultCode;
+
+	}
+
+	public static class Error500ResultDto extends ErrorResultDto {
+		@Schema(example = "9XXX")
+		private String resultCode;
+
 	}
 
 }

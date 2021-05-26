@@ -26,20 +26,27 @@ public abstract class Container {
 	protected String networkMode;
 
 	protected String orgName;
-	protected String type;
 	protected String containerName;
 	protected String port;
+	protected String type;
 	protected int    num;
 
-	public abstract void initSetting(String orgName, String port, int num);
+	public void initSetting(String orgName, String type, String port, int num) {
 
-	public abstract List<String> setBinds();
+		this.type          = type;
+		this.orgName       = orgName;
+		this.port          = port;
+		this.num           = num;
+		this.containerName = type + num + ".org" + orgName + ".com";
+	}
 
-	public abstract List<String> setContainerEnv(String param, boolean couchdb);
+	public abstract List<String> getBinds();
 
-	public abstract List<String> setCmd();
+	public abstract List<String> getContainerEnv(String param, Boolean couchdbYn);
 
-	public Set<String> setExposedPort(String[] ports) {
+	public abstract List<String> getCmd();
+
+	public Set<String> getExposedPort(String[] ports) {
 		Set<String> exposedPorts = new HashSet<>();
 		if (ports != null) {
 
@@ -50,6 +57,6 @@ public abstract class Container {
 		return exposedPorts;
 	}
 
-	public abstract String setImages();
+	public abstract String getImages();
 
 }

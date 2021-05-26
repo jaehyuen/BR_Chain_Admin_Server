@@ -50,7 +50,7 @@ class ChaincodeServiceTest {
 	@Test
 	public void 체인코드_정보_저장_서비스_테스트() throws Exception {
 
-		System.out.println("************************ 체인코드_정보_저장_서비스_테스트 ************************");
+		System.out.println("************************ 체인코드_정보_저장_서비스_테스트 시작************************");
 
 		// given
 		CcInfoEntity ccInfoEntity = createCcInfoEntity();
@@ -67,32 +67,31 @@ class ChaincodeServiceTest {
 		// then
 //		assertThat(result.getResultCode()).isEqualTo("0000");
 
-		System.out.println("************************ 체인코드_정보_저장_서비스_테스트 ************************");
+		System.out.println("************************ 체인코드_정보_저장_서비스_테스트 종료 ************************");
 
 	}
-	
+
 	@Test
 	public void 체인코드_정보_조회_서비스_테스트() throws Exception {
 
-		System.out.println("************************ 체인코드_정보_조회_서비스_테스트 ************************");
+		System.out.println("************************ 체인코드_정보_조회_서비스_테스트 시작 ************************");
 
 		// given
 		CcInfoEntity ccInfoEntity = createCcInfoEntity();
 		CcInfoDto    ccInfoDto    = createCcInfoDto();
 
-		
 		when(util.toDto(ccInfoEntity)).thenReturn(ccInfoDto);
 		when(ccInfoRepository.findById(1L)).thenReturn(Optional.ofNullable(ccInfoEntity));
 
 		// when
-		
+
 		CcInfoDto result = chaincodeService.findCcInfoById(1L);
 		System.out.println("CcInfoDto : " + result);
 
 		// then
 //		assertThat(result.getId()).is(1L);
 
-		System.out.println("************************ 체인코드_정보_조회_서비스_테스트 ************************");
+		System.out.println("************************ 체인코드_정보_조회_서비스_테스트 종료 ************************");
 
 	}
 

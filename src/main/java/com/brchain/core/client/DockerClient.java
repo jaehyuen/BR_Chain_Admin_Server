@@ -14,7 +14,11 @@ import org.springframework.stereotype.Component;
 import com.brchain.common.exception.BrchainException;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.util.BrchainStatusCode;
-import com.brchain.core.util.ContainerSetting;
+import com.brchain.core.util.container.CaContainer;
+import com.brchain.core.util.container.CouchContainer;
+import com.brchain.core.util.container.OrdererContainer;
+import com.brchain.core.util.container.PeerContainer;
+import com.brchain.core.util.container.SetupContainer;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient.ListContainersParam;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -35,7 +39,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DockerClient {
 
-	private final ContainerSetting containerSetting;
+	private final CaContainer      caContainer;
+	private final PeerContainer    peerContainer;
+	private final CouchContainer   couchContainer;
+	private final OrdererContainer ordererContainer;
+	private final SetupContainer   setupContainer;
 
 	@Value("${brchain.ip}")
 	private String                 ip;
@@ -173,50 +181,59 @@ public class DockerClient {
 
 		try {
 
-			// 컨테이너 설정 객체 생성
-			if (createConDto.getConType()
-				.equals("ca")
-					|| createConDto.getConType()
-						.contains("setup")) {
+			String                                    conType           = createConDto.getConType();
+			String                                    orgName           = createConDto.getOrgName();
+			String                                    conPort           = createConDto.getConPort();
+			String                                    gossipBootAddr    = createConDto.getGossipBootAddr();
+			String                                    anchorPeerSetting = createConDto.getAnchorPeerSetting();
+			String                                    ordererPorts      = createConDto.getOrdererPorts();
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
-						createConDto.getConPort(), createConDto.getConCnt());
+			int                                       conCnt            = createConDto.getConCnt();
+			int                                       conNum            = createConDto.getConNum();
 
-			} else if (createConDto.getConType()
-				.equals("couchdb")) {
+			boolean                                   couchdbYn         = createConDto.isCouchdbYn();
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), "",
-						createConDto.getConNum());
+			com.brchain.core.util.container.Container container;
+
+			if (conType.equals("ca")) {
+				container = caContainer;
+			} else if (conType.equals("peer")) {
+				container = peerContainer;
+			} else if (conType.equals("orderer")) {
+				container = ordererContainer;
+			} else if (conType.equals("couchdb")) {
+				container = couchContainer;
+			} else {
+				container = setupContainer;
+			}
+
+			// 컨테이너 설정 객체 초기화
+			if (conType.contains("setup")) {
+
+				container.initSetting(orgName, conType, conPort, conCnt);
 
 			} else {
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
-						createConDto.getConPort(), createConDto.getConNum());
+				container.initSetting(orgName, conType, conPort, conNum);
 
 			}
 
 			// 컨테이너명 설정
-			String       containerName = containerSetting.getContainerName();
+			String       containerName = container.getContainerName();
 
 			// 볼륨설정
-			List<String> binds         = containerSetting.setBinds();
-
-			// 로깅설정
-//		LogConfig logconfig = LogConfig.create("none");
+			List<String> binds         = container.getBinds();
 
 			// 포트 오픈설정
 			String[]     ports;
 
-			if (createConDto.getConType()
-				.contains("setup")
-					|| createConDto.getConType()
-						.contains("couchdb")) {
+			if (conType.contains("setup") || conType.contains("couchdb")) {
 
 				ports = new String[] {};
 
 			} else {
 
-				ports = new String[] { containerSetting.getPort() };
+				ports = new String[] { container.getPort() };
 			}
 
 			Map<String, List<PortBinding>> portBindings = new HashMap<>();
@@ -226,55 +243,39 @@ public class DockerClient {
 				portBindings.put(portBind, hostPorts);
 			}
 
-			// extra hosts 설정 지금은 사용안함
-//		List<String> extraHosts = containerenv.setExtraHosts();
-
 			// hostconfig 빌더 생성
 			HostConfig   hostConfig   = HostConfig.builder()
 				.binds(binds)
-//				.logConfig(logconfig)
 				.networkMode(networkMode)
 				.portBindings(portBindings)
-//				.extraHosts(extraHosts)
 				.build();
 
 			// 포트 오픈 설정
-			Set<String>  exposedPorts = containerSetting.setExposedPort(ports);
+			Set<String>  exposedPorts = container.getExposedPort(ports);
 
 			// 환경변수 설정
 			List<String> containerEnv;
 
-			if (createConDto.getConType()
-				.equals("peer")) {
+			if (conType.equals("peer")) {
 
-				containerEnv = containerSetting.setContainerEnv(createConDto.getGossipBootAddr(),
-						createConDto.isCouchdbYn());
+				containerEnv = container.getContainerEnv(gossipBootAddr, couchdbYn);
 
-			} else if (createConDto.getConType()
-				.equals("setup_channel")) {
+			} else if (conType.equals("setup_channel")) {
 
-				containerEnv = containerSetting.setContainerEnv(createConDto.getAnchorPeerSetting(), false);
+				containerEnv = container.getContainerEnv(anchorPeerSetting, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
 
-			} else if (createConDto.getConType()
-				.equals("setup_orderer")) {
+			} else if (conType.equals("setup_orderer")) {
 
-				containerEnv = containerSetting.setContainerEnv(createConDto.getOrdererPorts(), false);
+				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
 
-			}
-
-			else {
-
-				containerEnv = containerSetting.setContainerEnv(createConDto.getOrdererPorts(), false);
-
+			} else {
+				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
 			}
 
 			// cmd 설정
-			List<String>        cmd             = containerSetting.setCmd();
-
-			// 볼륨 설정
-//		Map<String, Map> volumes = containerSetting.setVolumes();
+			List<String>        cmd             = container.getCmd();
 
 			// 라벨 설정
 			Map<String, String> labels          = new HashMap<String, String>();
@@ -284,11 +285,9 @@ public class DockerClient {
 				.exposedPorts(exposedPorts)
 				.env(containerEnv)
 				.cmd(cmd)
-//				.volumes(volumes)
-				.image(containerSetting.setImages())
+				.image(container.getImages())
 				.labels(labels)
 				.domainname(containerName)
-//				.workingDir(workingDir)
 				.build();
 
 			// 컨테이너 생성

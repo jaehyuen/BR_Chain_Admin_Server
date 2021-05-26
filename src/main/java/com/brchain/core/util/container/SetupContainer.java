@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CaContainer extends Container {
+public class SetupContainer extends Container {
 
 	@Override
 	public void initSetting(String orgName, String type, String port, int num) {
@@ -14,6 +14,7 @@ public class CaContainer extends Container {
 		this.type          = type;
 		this.orgName       = orgName;
 		this.port          = port;
+		this.num           = num;
 		this.containerName = type + ".org" + orgName + ".com";
 	}
 
@@ -22,11 +23,9 @@ public class CaContainer extends Container {
 
 		List<String> binds = new ArrayList<>();
 
-		binds.add(logDir + "/container_logs/ca.org" + orgName + ".com:/log:rw");
-		binds.add(dataDir + "/ca/ca.org" + orgName + ".com:/etc/hyperledger/fabric-ca:rw");
 		binds.add(sourceDir + "/crypto-config:/crypto-config:rw");
 		binds.add(sourceDir + "/scripts/container:/scripts:rw");
-		binds.add(sourceDir + "/channel-artifacts:/root/data:rw"); // setup
+		binds.add(sourceDir + "/channel-artifacts:/root/data:rw");
 
 		return binds;
 	}
@@ -44,8 +43,8 @@ public class CaContainer extends Container {
 		containerEnv.add("ORDERER_HOME=/etc/hyperledger/orderer");
 		containerEnv.add("PEER_HOME=/opt/gopath/src/github.com/hyperledger/fabric/peer");
 		containerEnv.add("FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca");
-		containerEnv.add("FABRIC_CA_SERVER_CSR_CN=" + containerName);
-		containerEnv.add("FABRIC_CA_SERVER_CSR_HOSTS=" + containerName);
+		containerEnv.add("FABRIC_CA_SERVER_CSR_CN=ca.org" + orgName + ".com");
+		containerEnv.add("FABRIC_CA_SERVER_CSR_HOSTS=ca.org" + orgName + ".com");
 		containerEnv.add("FABRIC_CA_SERVER_DEBUG=true");
 		containerEnv.add("FABRIC_CA_SERVER_CA_NAME=ca-" + orgName);
 		containerEnv.add("FABRIC_CA_SERVER_TLS_ENABLED=false");
@@ -55,6 +54,29 @@ public class CaContainer extends Container {
 		containerEnv.add("FABRIC_CA_SERVER_CSR_CA_EXPIRY=876600h");
 		containerEnv.add("FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server");
 		containerEnv.add("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
+
+		if (type.equals("setup_peer")) {
+
+			containerEnv.add("PEER_ORGS=" + orgName);
+			containerEnv.add("NUM_PEERS=" + num);
+			containerEnv.add("SETUP_TYPE=peer");
+
+		} else if (type.equals("setup_orderer")) {
+
+			containerEnv.add("ORDERER_ORGS=" + orgName);
+			containerEnv.add("NUM_ORDERERS=" + num);
+			containerEnv.add("SETUP_TYPE=orderer");
+
+			for (int i = 0; i < num; i++) {
+				String[] ordererPort = param.split(" ");
+				containerEnv.add("ORDERER_PORT_" + orgName + i + "=" + ordererPort[i]);
+
+			}
+
+		} else if (type == "setup_channel") {
+			containerEnv.add("SETUP_TYPE=channel");
+			containerEnv.add("CHANNEL_NAME=" + orgName);
+		}
 
 		return containerEnv;
 	}
@@ -66,7 +88,7 @@ public class CaContainer extends Container {
 
 		cmd.add("/bin/sh");
 		cmd.add("-c");
-		cmd.add("/scripts/start-root-ca.sh");
+		cmd.add("/scripts/setup-fabric.sh; sleep 9999");
 
 		return cmd;
 	}

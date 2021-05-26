@@ -83,7 +83,7 @@ public class ChaincodeService {
 	 * 
 	 * @return 결과 DTO (체인코드 정보)
 	 */
-	
+
 	@Transactional(readOnly = true)
 	public ResultDto<List<CcInfoDto>> getCcList() {
 
@@ -119,7 +119,8 @@ public class ChaincodeService {
 	@Transactional(readOnly = true)
 	public ResultDto<List<CcInfoPeerDto>> getCcListPeer(String conName) {
 
-		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
+		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository
+			.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
 		return util.setResult("0000", true, "Success get chaincode info", ccInfoPeerList.stream()
 			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
@@ -136,7 +137,7 @@ public class ChaincodeService {
 
 	@Transactional(readOnly = true)
 	public ResultDto<List<CcInfoPeerDto>> getCcListToActiveInChannel(String channelName) {
-		
+
 		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findCcInfoPeerToActive(channelName);
 
 		return util.setResult("0000", true, "Success get chaincode list channel", ccInfoPeerList.stream()
@@ -187,7 +188,6 @@ public class ChaincodeService {
 	 * @return 조회한 체인코드 정보 (채널) DTO
 	 */
 
-	
 	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, String ccName) {
 
 		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName));
@@ -201,7 +201,7 @@ public class ChaincodeService {
 	 * 
 	 * @return 조회한 체인코드 정보 (피어) DTO
 	 */
-	
+
 	@Transactional(readOnly = true)
 	public List<CcInfoPeerDto> findByCcInfoId(Long id) {
 
@@ -224,9 +224,9 @@ public class ChaincodeService {
 
 		return util.setResult("0000", true, "Success get cc summary", CcSummaryList);
 	}
-	
+
 //	public void test() {
 //		System.out.println(ccInfoChannelRepository.testQuery("querytestchannel", "test-cc"));
 //	}
-	
+
 }

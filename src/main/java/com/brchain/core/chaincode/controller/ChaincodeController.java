@@ -41,88 +41,90 @@ import lombok.RequiredArgsConstructor;
 public class ChaincodeController {
 
 	private final ChaincodeService chaincodeService;
-	private final FabricService fabricService;
-	
-	@Operation(summary = "Hyperledger Fabric 체인코드 조회", description = "Hyperledger Fabric 체인코드를 조회하는 API (분리예정)",responses={
-			 @ApiResponse(responseCode="200", content = {@Content(schema = @Schema(implementation =CcInfoResultDto.class)),@Content(schema = @Schema(implementation =CcInfoPeerResultDto.class))}),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	private final FabricService    fabricService;
+
+	@Operation(summary = "Hyperledger Fabric 체인코드 조회", description = "Hyperledger Fabric 체인코드를 조회하는 API (분리예정)", responses = {
+			@ApiResponse(responseCode = "200", content = {
+					@Content(schema = @Schema(implementation = CcInfoResultDto.class)),
+					@Content(schema = @Schema(implementation = CcInfoPeerResultDto.class)) }),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChaincodeList(
 			@Parameter(description = "컨테이너 이름", required = false) @RequestParam(value = "conName", required = false) String conName) {
 
 		if (conName != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListPeer(conName));
+			return ResponseEntity.status(HttpStatus.OK)
+				.body(chaincodeService.getCcListPeer(conName));
 		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcList());
+			return ResponseEntity.status(HttpStatus.OK)
+				.body(chaincodeService.getCcList());
 		}
 
 	}
-	
-	@Operation(summary = "Hyperledger Fabric 체인코드 요약 리스트 조회", description = "Hyperledger Fabric 체인코드 요약 리스트를 조회하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =CcSummaryResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+
+	@Operation(summary = "Hyperledger Fabric 체인코드 요약 리스트 조회", description = "Hyperledger Fabric 체인코드 요약 리스트를 조회하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = CcSummaryResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list/summary")
 	public ResponseEntity<ResultDto> getChannelSummaryList() {
 
-		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcSummaryList());
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(chaincodeService.getCcSummaryList());
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널에 활성화된 체인코드 조회", description = "Hyperledger Fabric 채널에 활성화된 체인코드를 조회하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =CcInfoChannelResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	@Operation(summary = "Hyperledger Fabric 채널에 활성화된 체인코드 조회", description = "Hyperledger Fabric 채널에 활성화된 체인코드를 조회하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = CcInfoChannelResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list/channel")
 	public ResponseEntity<ResultDto> getChaincodeListChannel(
 			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListActive(channelName));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(chaincodeService.getCcListActive(channelName));
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널에 활성 가능한 체인코드 조회", description = "Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	@Operation(summary = "Hyperledger Fabric 채널에 활성 가능한 체인코드 조회", description = "Hyperledger Fabric 활성 가능한 체인코드를 조회하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list/toactive")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
 			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName", required = true) String channelName) {
 
-		return ResponseEntity.status(HttpStatus.OK).body(chaincodeService.getCcListToActiveInChannel(channelName));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(chaincodeService.getCcListToActiveInChannel(channelName));
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 체인코드 설치", description = "Hyperledger Fabric 체인코드를 피어에 설치하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	@Operation(summary = "Hyperledger Fabric 체인코드 설치", description = "Hyperledger Fabric 체인코드를 피어에 설치하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@PostMapping(value = "/install")
 	public ResponseEntity<ResultDto> installChaincode(
 			@Parameter(description = "체인코드 설치 관련 DTO", required = true) @RequestBody InstallCcDto installCcDto)
 			throws IOException {
 
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.installChaincode(installCcDto));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(fabricService.installChaincode(installCcDto));
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 체인코드 업로드", description = "Hyperledger Fabric 체인코드를 서버에 업로드하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	@Operation(summary = "Hyperledger Fabric 체인코드 업로드", description = "Hyperledger Fabric 체인코드를 서버에 업로드하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@PostMapping(value = "/upload")
 	public ResponseEntity<ResultDto> uploadChaincode(
 			@Parameter(description = "체인코드 압축 파일", required = true) @RequestParam("ccFile") MultipartFile ccFile,
@@ -132,31 +134,36 @@ public class ChaincodeController {
 			@Parameter(description = "체인코드 버전", required = true) @RequestParam("ccVersion") String ccVersion)
 			throws IOException {
 
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang, ccVersion));
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(fabricService.ccFileUpload(ccFile, ccName, ccDesc, ccLang, ccVersion));
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 체인코드 활성화", description = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API",responses={
-			 @ApiResponse(responseCode="200", content = @Content(schema = @Schema(implementation =ResultDto.class))),
-			 @ApiResponse(responseCode="401", content = @Content(schema = @Schema(implementation =Error401ResultDto.class))),
-			 @ApiResponse(responseCode="403", content = @Content(schema = @Schema(implementation =Error403ResultDto.class))),
-			 @ApiResponse(responseCode="500", content = @Content(schema = @Schema(implementation =Error500ResultDto.class)))
-	})
+	@Operation(summary = "Hyperledger Fabric 체인코드 활성화", description = "Hyperledger Fabric 체인코드를 채널에 활성화 하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@PostMapping("/active")
 	public ResponseEntity<ResultDto> getChaincodeListToActiveInChannel(
-			@Parameter(description = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)throws Exception {
-			
-		return ResponseEntity.status(HttpStatus.OK).body(fabricService.activeChaincode(activeCcDto));
+			@Parameter(description = "체인코드 활성화 관련 DTO", required = true) @RequestBody ActiveCcDto activeCcDto)
+			throws Exception {
+
+		return ResponseEntity.status(HttpStatus.OK)
+			.body(fabricService.activeChaincode(activeCcDto));
 
 	}
-	
-	private static class CcInfoResultDto extends ResultDto<CcInfoDto> {
+
+	private class CcInfoResultDto extends ResultDto<CcInfoDto> {
 	}
-	private static class CcInfoPeerResultDto extends ResultDto<CcInfoPeerDto> {
+
+	private class CcInfoPeerResultDto extends ResultDto<CcInfoPeerDto> {
 	}
-	private static class CcSummaryResultDto extends ResultDto<CcSummaryDto> {
+
+	private class CcSummaryResultDto extends ResultDto<CcSummaryDto> {
 	}
-	private static class CcInfoChannelResultDto extends ResultDto<CcInfoChannelDto> {
+
+	private class CcInfoChannelResultDto extends ResultDto<CcInfoChannelDto> {
 	}
-	
+
 }

@@ -35,8 +35,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DockerClient {
 
-//	private Logger logger = LoggerFactory.getLogger(this.getClass());
-
 	private final ContainerSetting containerSetting;
 
 	@Value("${brchain.ip}")
@@ -44,97 +42,19 @@ public class DockerClient {
 
 	@Value("${brchain.networkmode}")
 	private String                 networkMode;
-//	final DockerClient docker = DefaultDockerClient.builder().uri("http://"+ip+":2375").apiVersion("v1.40")
-//			.build();
-
-//	private DefaultDockerClient docker = DefaultDockerClient.builder().uri("http://192.168.65.169:2375")
-//			.apiVersion("v1.40").build();
 
 	private DefaultDockerClient    docker;
 
 	@PostConstruct
-	public void init() {
+	public void initDocker() {
+		String url     = "http://" + ip + ":2375";
+		String version = "v1.40";
 
 		docker = DefaultDockerClient.builder()
-			.uri("http://" + ip + ":2375")
-			.apiVersion("v1.40")
+			.uri(url)
+			.apiVersion(version)
 			.build();
 
-	}
-
-	/**
-	 * 실행중인 컨테이너 조회 함수
-	 * 
-	 * @return 컨테이너 리스트
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 */
-	public List<Container> loadRunningContainers() {
-		try {
-			return docker.listContainers(ListContainersParam.withStatusRunning());
-		} catch (DockerException | InterruptedException e) {
-			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
-		}
-
-	}
-
-	/**
-	 * 모든 컨테이너 리스트 조회 함수
-	 * 
-	 * @return 컨테이너 리스트
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 */
-
-	public List<Container> loadAllContainers() {
-
-		try {
-			return docker.listContainers(ListContainersParam.allContainers());
-		} catch (DockerException | InterruptedException e) {
-			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
-		}
-
-	}
-
-	/**
-	 * 컨테이너 정지 및 삭제 함수
-	 * 
-	 * @param conId 삭제할 컨테이너 id
-	 * 
-	 * @return
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 */
-
-	public void removeContainer(String conId) {
-		try {
-
-			docker.stopContainer(conId, 1);
-			docker.removeContainer(conId);
-		} catch (DockerException | InterruptedException e) {
-			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
-		}
-
-	}
-
-	/**
-	 * 컨테이너 생성 함수
-	 * 
-	 * @param createConDto 컨테이너 생성 관련 DTO
-	 * 
-	 * @return 생성된 컨테이너 정보
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 * 
-	 */
-
-	public ContainerInfo createContainer(ConInfoDto createConDto) {
-
-		// 도커 네트워크 체크로직
 		// 네트워크 조회 에러시 네트워크 생성
 		try {
 
@@ -145,7 +65,8 @@ public class DockerClient {
 			// 도커 네트워크 설정
 			ArrayList<IpamConfig> configList = new ArrayList<IpamConfig>();
 
-			IpamConfig            config     = IpamConfig.create("123.123.123.0/24", "123.123.123.0/24", "123.123.123.1");
+			IpamConfig            config     = IpamConfig.create("123.123.123.0/24", "123.123.123.0/24",
+					"123.123.123.1");
 			configList.add(config);
 
 			Ipam          ipam          = Ipam.builder()
@@ -170,6 +91,86 @@ public class DockerClient {
 		} catch (DockerException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
 		}
+
+	}
+
+	/**
+	 * 실행중인 컨테이너 조회 함수
+	 * 
+	 * @return 컨테이너 리스트
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 */
+	public List<Container> loadRunningContainers() {
+		try {
+
+			return docker.listContainers(ListContainersParam.withStatusRunning());
+
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
+
+	}
+
+	/**
+	 * 모든 컨테이너 리스트 조회 함수
+	 * 
+	 * @return 컨테이너 리스트
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 */
+
+	public List<Container> loadAllContainers() {
+
+		try {
+
+			return docker.listContainers(ListContainersParam.allContainers());
+
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
+
+	}
+
+	/**
+	 * 컨테이너 정지 및 삭제 함수
+	 * 
+	 * @param conId 삭제할 컨테이너 id
+	 * 
+	 * @return
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 */
+
+	public void removeContainer(String conId) {
+		try {
+
+			docker.stopContainer(conId, 1);
+			docker.removeContainer(conId);
+
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
+
+	}
+
+	/**
+	 * 컨테이너 생성 함수
+	 * 
+	 * @param createConDto 컨테이너 생성 관련 DTO
+	 * 
+	 * @return 생성된 컨테이너 정보
+	 * 
+	 * @throws DockerException
+	 * @throws InterruptedException
+	 * 
+	 */
+
+	public ContainerInfo createContainer(ConInfoDto createConDto) {
+
 		try {
 
 			// 컨테이너 설정 객체 생성
@@ -178,16 +179,19 @@ public class DockerClient {
 					|| createConDto.getConType()
 						.contains("setup")) {
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), createConDto.getConPort(), createConDto.getConCnt());
+				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
+						createConDto.getConPort(), createConDto.getConCnt());
 
 			} else if (createConDto.getConType()
 				.equals("couchdb")) {
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), "", createConDto.getConNum());
+				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), "",
+						createConDto.getConNum());
 
 			} else {
 
-				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(), createConDto.getConPort(), createConDto.getConNum());
+				containerSetting.initSetting(createConDto.getOrgName(), createConDto.getConType(),
+						createConDto.getConPort(), createConDto.getConNum());
 
 			}
 
@@ -243,7 +247,8 @@ public class DockerClient {
 			if (createConDto.getConType()
 				.equals("peer")) {
 
-				containerEnv = containerSetting.setContainerEnv(createConDto.getGossipBootAddr(), createConDto.isCouchdbYn());
+				containerEnv = containerSetting.setContainerEnv(createConDto.getGossipBootAddr(),
+						createConDto.isCouchdbYn());
 
 			} else if (createConDto.getConType()
 				.equals("setup_channel")) {

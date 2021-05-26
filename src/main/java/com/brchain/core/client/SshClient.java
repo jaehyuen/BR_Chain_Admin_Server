@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,19 +62,22 @@ public class SshClient {
 	 * @throws JSchException
 	 */
 
+	@PostConstruct
 	public void connect() throws JSchException {
 
-		JSch jsch = new JSch();
+		JSch       jsch   = new JSch();
+
+		Properties config = new Properties();
+		config.put("StrictHostKeyChecking", "no");
 
 		session = jsch.getSession(username, ip, port);
 		session.setPassword(password);
-		Properties config = new Properties();
-		config.put("StrictHostKeyChecking", "no");
 		session.setConfig(config);
 		session.connect();
 
 		channel     = session.openChannel("exec");
 		channelExec = (ChannelExec) channel;
+
 		channel     = session.openChannel("sftp");
 		channel.connect();
 		channelSftp = (ChannelSftp) channel;
@@ -92,13 +97,15 @@ public class SshClient {
 	 */
 	public void removeDir(String orgName, String conName) {
 		try {
-			if (channelExec == null || channelExec.isClosed()) {
-				connect();
-			}
 
-			channelExec.setCommand("rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir + "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/" + orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
-					+ sourceDir + "/channel-artifacts/");
+			String command = "rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
+					+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/"
+					+ orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
+					+ sourceDir + "/channel-artifacts/";
+
+			channelExec.setCommand(command);
 			channelExec.connect();
+
 		} catch (JSchException e) {
 			throw new BrchainException(e, BrchainStatusCode.DELETE_DIR_ERROR);
 		}
@@ -118,14 +125,12 @@ public class SshClient {
 	public void execCommand(String command) {
 
 		try {
-			if (channelExec == null || channelExec.isClosed()) {
-				connect();
-			}
 
 			logger.info("[커멘드 실행]" + command);
 			channelExec.setCommand(command);
 			channelExec.connect();
 			channelExec.disconnect();
+
 		} catch (JSchException e) {
 			throw new BrchainException(e, BrchainStatusCode.EXEC_COMMAND_ERROR);
 		}
@@ -162,31 +167,23 @@ public class SshClient {
 	 * @throws Exception
 	 */
 	public void uploadFile(String path, String uploadFileName) {
-		try {
-			if (channelSftp == null) {
-				connect();
-			}
+
+		File file = new File(System.getProperty("user.dir") + "/" + path + "/" + uploadFileName);
+
+		try (FileInputStream inputStream = new FileInputStream(file);) {
+
 			String dir = sourceDir + "/" + path;
 			execCommand("mkdir -p " + dir);
-
-			FileInputStream inputStream = null;
-			// 앞서 만든 접속 메서드를 사용해 접속한다.
 
 			logger.info("[파일 업로드 실행]" + dir + uploadFileName);
 
 			// Change to output directory
 			channelSftp.cd(dir);
 
-			// Upload file
-			File file = new File(System.getProperty("user.dir") + "/" + path + "/" + uploadFileName);
-			// 입력 파일을 가져온다.
-			inputStream = new FileInputStream(file);
 			// 파일을 업로드한다.
 			channelSftp.put(inputStream, file.getName());
 
-			inputStream.close();
-
-		} catch (JSchException | SftpException | IOException e) {
+		} catch (SftpException | IOException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_UPLOAD_ERROR);
 		}
 
@@ -206,9 +203,6 @@ public class SshClient {
 	public void downloadFile(String path, String downloadFileName) {
 
 		try {
-			if (channelSftp == null) {
-				connect();
-			}
 
 			InputStream      inputStream  = null;
 			FileOutputStream outputStream = null;
@@ -227,7 +221,8 @@ public class SshClient {
 					e.getStackTrace();
 				}
 			}
-			outputStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + path + downloadFileName));
+			outputStream = new FileOutputStream(
+					new File(System.getProperty("user.dir") + "/" + path + downloadFileName));
 			int i;
 
 			while ((i = inputStream.read()) != -1) {
@@ -237,7 +232,7 @@ public class SshClient {
 			outputStream.close();
 			inputStream.close();
 
-		} catch (JSchException | SftpException | IOException e) {
+		} catch (SftpException | IOException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_DOWNLOAN_ERROR);
 		}
 	}

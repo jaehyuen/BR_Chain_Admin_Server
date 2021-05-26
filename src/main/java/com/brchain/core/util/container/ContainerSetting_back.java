@@ -1,4 +1,4 @@
-package com.brchain.core.util;
+package com.brchain.core.util.container;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,7 +12,7 @@ import lombok.Data;
 
 @Component
 @Data
-public class ContainerSetting {
+public class ContainerSetting_back {
 
 	@Value("${brchain.sourcedir}")
 	private String sourceDir;

@@ -125,13 +125,19 @@ public class SshClient {
 	public void execCommand(String command) {
 
 		try {
+			
+			if (channelExec.isClosed()) {
+				connect();
+			}
 
 			logger.info("[커멘드 실행]" + command);
 			channelExec.setCommand(command);
 			channelExec.connect();
 			channelExec.disconnect();
+			
+			Thread.sleep(1000);
 
-		} catch (JSchException e) {
+		} catch (JSchException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.EXEC_COMMAND_ERROR);
 		}
 
@@ -182,8 +188,9 @@ public class SshClient {
 
 			// 파일을 업로드한다.
 			channelSftp.put(inputStream, file.getName());
+			Thread.sleep(2000);
 
-		} catch (SftpException | IOException e) {
+		} catch (SftpException | IOException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_UPLOAD_ERROR);
 		}
 
@@ -231,8 +238,9 @@ public class SshClient {
 
 			outputStream.close();
 			inputStream.close();
+			Thread.sleep(1000);
 
-		} catch (SftpException | IOException e) {
+		} catch (SftpException | IOException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_DOWNLOAN_ERROR);
 		}
 	}

@@ -188,7 +188,6 @@ public class DockerClient {
 			String                                    anchorPeerSetting = createConDto.getAnchorPeerSetting();
 			String                                    ordererPorts      = createConDto.getOrdererPorts();
 
-			int                                       conCnt            = createConDto.getConCnt();
 			int                                       conNum            = createConDto.getConNum();
 
 			boolean                                   couchdbYn         = createConDto.isCouchdbYn();
@@ -207,16 +206,7 @@ public class DockerClient {
 				container = setupContainer;
 			}
 
-			// 컨테이너 설정 객체 초기화
-			if (conType.contains("setup")) {
-
-				container.initSetting(orgName, conType, conPort, conCnt);
-
-			} else {
-
-				container.initSetting(orgName, conType, conPort, conNum);
-
-			}
+			container.initSetting(orgName, conType, conPort, conNum);
 
 			// 컨테이너명 설정
 			String       containerName = container.getContainerName();
@@ -236,12 +226,7 @@ public class DockerClient {
 				ports = new String[] { container.getPort() };
 			}
 
-			Map<String, List<PortBinding>> portBindings = new HashMap<>();
-			for (String portBind : ports) {
-				List<PortBinding> hostPorts = new ArrayList<>();
-				hostPorts.add(PortBinding.of("0.0.0.0", portBind));
-				portBindings.put(portBind, hostPorts);
-			}
+			Map<String, List<PortBinding>> portBindings = createPortBinding(ports);
 
 			// hostconfig 빌더 생성
 			HostConfig   hostConfig   = HostConfig.builder()
@@ -265,13 +250,16 @@ public class DockerClient {
 				containerEnv = container.getContainerEnv(anchorPeerSetting, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
 
-			} else if (conType.equals("setup_orderer")) {
-
+			} 
+//			else if (conType.equals("setup_orderer")) {
+//
+//				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
+//				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
+//
+//			}
+			else {
 				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
-
-			} else {
-				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
 			}
 
 			// cmd 설정
@@ -304,6 +292,19 @@ public class DockerClient {
 			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
 		}
 
+	}
+
+	private Map<String, List<PortBinding>> createPortBinding(String[] ports) {
+		
+		Map<String, List<PortBinding>> portBindings = new HashMap<>();
+		
+		for (String portBind : ports) {
+			List<PortBinding> hostPorts = new ArrayList<>();
+			hostPorts.add(PortBinding.of("0.0.0.0", portBind));
+			portBindings.put(portBind, hostPorts);
+		}
+
+		return portBindings;
 	}
 
 }

@@ -57,7 +57,6 @@ public class SetupContainer extends Container {
 
 		if (type.equals("setup_peer")) {
 
-			containerEnv.add("PEER_ORGS=" + orgName);
 			containerEnv.add("NUM_PEERS=" + num);
 			containerEnv.add("SETUP_TYPE=peer");
 

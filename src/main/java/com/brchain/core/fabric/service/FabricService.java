@@ -197,6 +197,7 @@ public class FabricService {
 					setupContainer.setOrgType(conInfoDto.getOrgType());
 					setupContainer.setConPort(conInfoDto.getConPort());
 					setupContainer.setConCnt(conInfoDto.getConCnt());
+					setupContainer.setConNum(conInfoDto.getConNum());
 					setupContainer.setConType("setup_" + conInfoDto.getOrgType());
 
 					if (conInfoDto.getOrgType()
@@ -205,6 +206,8 @@ public class FabricService {
 						setupContainer.setOrdererPorts(ordererPorts);
 						setupContainer.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
 
+					}else {
+						setupContainer.setPeerOrgs(conInfoDto.getOrgName());
 					}
 
 					Thread.sleep(5000);

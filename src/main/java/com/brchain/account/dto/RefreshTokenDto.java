@@ -1,14 +1,12 @@
 package com.brchain.account.dto;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class RefreshTokenDto {
-
+	@Schema(example="access token value",description="JWT 토큰 재발급시 필요한 리프레시 토큰")
 	private String refreshToken; // JWT 토큰 재발급시 필요한 토큰
-	private String userId;       // 사용자 ID
+	@Schema(example="testid",description="사용자 ID")
+	private String userId; // 사용자 ID
 }

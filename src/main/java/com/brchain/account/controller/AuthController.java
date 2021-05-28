@@ -87,7 +87,7 @@ public class AuthController {
 		return ResponseEntity.status(HttpStatus.OK).body(refreshTokenService.deleteRefreshToken(refreshTokenDto.getRefreshToken()));
 	}
 
-	public static class TokenResultDto extends ResultDto<TokenDto> {
+	private class TokenResultDto extends ResultDto<TokenDto> {
 	}
 	
 

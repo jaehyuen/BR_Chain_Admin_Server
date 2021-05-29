@@ -14,14 +14,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description="피어에 설치된 체인코드  정보 dto")
 public class CcInfoPeerDto {
 
-	@Schema(example="1")
-	private Long          id;         // id
-	@Schema(example="1")
-	private String        ccVersion;  // 체인코드 버전
-	private ConInfoDto    conInfoDto; // 컨테이너 정보
-	private CcInfoDto     ccInfoDto;  // 체인코드 정보
-	private LocalDateTime createdAt;  // 생성 시간
+	@Schema(example = "1", description = "체인코드 정보 (피어) 시퀀스")
+	private Long id; // id
+
+	@Schema(example = "1", description = "설치된 체인코드 버전")
+	private String ccVersion; // 체인코드 버전
+
+	private ConInfoDto conInfoDto; // 컨테이너 정보
+	private CcInfoDto ccInfoDto; // 체인코드 정보
+	private LocalDateTime createdAt; // 생성 시간
 
 }

@@ -6,11 +6,12 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
+@Schema(description="체인코드 설치 요약 정보 dto")
 public class CcSummaryDto {
 
-	@Schema(example="peer0.orgtest.com")
+	@Schema(example = "peer0.orgtest.com", description = "피어 컨테이너 이름")
 	private String conName; // 컨테이너 이름
-	@Schema(example="1")
-	private Long    ccCnt;   // 체인코드 개수
+	@Schema(example = "1", description = "설치된 체인코드 개수")
+	private Long ccCnt; // 체인코드 개수
 
 }

@@ -1,5 +1,7 @@
 package com.brchain.core.channel.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,12 +13,21 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.ControllerExceptionHandler.Error401ResultDto;
+import com.brchain.common.exception.ControllerExceptionHandler.Error403ResultDto;
+import com.brchain.common.exception.ControllerExceptionHandler.Error500ResultDto;
+import com.brchain.core.channel.dto.ChannelInfoDto;
+import com.brchain.core.channel.dto.ChannelInfoPeerDto;
+import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.dto.CreateChannelDto;
 import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.fabric.service.FabricService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "*")
@@ -29,7 +40,11 @@ public class ChannelController {
 	private final ChannelService channelService;
 	private final FabricService fabricService;
 
-	@Operation(summary = "Hyperledger Fabric 채널 조회", description = "Hyperledger Fabric 채널 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널 조회", description = "Hyperledger Fabric 채널 조회하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ChannelInfoResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list")
 	public ResponseEntity<ResultDto> getChannelList(
 			@Parameter(description = "채널 이름", required = false) @RequestParam(value = "channelName", required = false) String channelName) {
@@ -42,7 +57,11 @@ public class ChannelController {
 
 	}
 	
-	@Operation(summary = "Hyperledger Fabric 채널 요약 리스트 조회", description = "Hyperledger Fabric 채널 요약 리스트를 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널 요약 리스트 조회", description = "Hyperledger Fabric 채널 요약 리스트를 조회하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ChannelSummaryResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list/summary")
 	public ResponseEntity<ResultDto> getChannelSummaryList() {
 
@@ -50,7 +69,11 @@ public class ChannelController {
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널에 가입된 컨테이너 조회", description = "컨테이너 이름 및 채널명으로 Hyperledger Fabric 채널에 가입된 컨테이너를 조회하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널에 가입된 컨테이너 조회", description = "컨테이너 이름 및 채널명으로 Hyperledger Fabric 채널에 가입된 컨테이너를 조회하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ChannelInfoPeerResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/list/peer")
 	public ResponseEntity<ResultDto> getChannelListPeer(
 			@Parameter(description = "컨테이너 이름", required = false) @RequestParam(value = "conName", required = false) String conName,
@@ -67,7 +90,11 @@ public class ChannelController {
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널 생성 및 가입", description = "HyperLedger Fabric 채널을 생성하고 가입하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널 생성 및 가입", description = "HyperLedger Fabric 채널을 생성하고 가입하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@PostMapping("/create")
 	public ResponseEntity<ResultDto> createChannel(
 			@Parameter(description = "채널 생성 관련 DTO", required = true) @RequestBody CreateChannelDto createChannelDto) {
@@ -76,7 +103,11 @@ public class ChannelController {
 
 	}
 
-	@Operation(summary = "Hyperledger Fabric 채널 이벤트 리스너 등록", description = "Hyperledger Fabric 채널 이벤트 리스너 등록하는 API")
+	@Operation(summary = "Hyperledger Fabric 채널 이벤트 리스너 등록", description = "Hyperledger Fabric 채널 이벤트 리스너 등록하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/event/register")
 	public ResponseEntity<ResultDto> registerListener(
 			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName") String channelName) {
@@ -94,7 +125,11 @@ public class ChannelController {
 //
 //	}
 
-	@Operation(summary = "Hyperledger Fabric 앵커피어 업데이트", description = "Hyperledger Fabric 앵커피어 업데이트를 하는 API")
+	@Operation(summary = "Hyperledger Fabric 앵커피어 업데이트", description = "Hyperledger Fabric 앵커피어 업데이트를 하는 API",responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@GetMapping("/update/anchor")
 	public ResponseEntity<ResultDto> setAnchorPeer(
 			@Parameter(description = "채널 이름", required = true) @RequestParam(value = "channelName") String channelName,
@@ -102,6 +137,15 @@ public class ChannelController {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.setAnchorPeer(channelName, conName));
 
+	}
+	
+	private class ChannelInfoResultDto extends ResultDto<ChannelInfoDto> {
+	}
+	
+	private class ChannelSummaryResultDto extends ResultDto<List<ChannelSummaryDto>> {
+	}
+	
+	private class ChannelInfoPeerResultDto extends ResultDto<List<ChannelInfoPeerDto>> {
 	}
 
 }

@@ -15,6 +15,10 @@ import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
 import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
 import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
 import com.brchain.core.chaincode.repository.CcInfoRepository;
+import com.brchain.core.channel.entitiy.ChannelInfoEntity;
+import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
+import com.brchain.core.channel.repository.ChannelInfoPeerRepository;
+import com.brchain.core.channel.repository.ChannelInfoRepository;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
 
@@ -24,13 +28,18 @@ import com.brchain.core.container.repository.ConInfoRepository;
 public class ChaincodeDatabaseTest {
 
 	@Autowired
-	private CcInfoRepository        ccInfoRepository;
+	private CcInfoRepository ccInfoRepository;
 	@Autowired
-	private CcInfoPeerRepository    ccInfoPeerRepository;
+	private CcInfoPeerRepository ccInfoPeerRepository;
 	@Autowired
 	private CcInfoChannelRepository ccInfoChannelRepository;
 	@Autowired
-	private ConInfoRepository       conInfoRepository;
+	private ConInfoRepository conInfoRepository;
+
+	@Autowired
+	private ChannelInfoPeerRepository channelInfoPeerRepository;
+	@Autowired
+	private ChannelInfoRepository channelInfoRepository;
 
 	@Test
 	public void 체인코드_정보_저장_조회_테스트() throws Exception {
@@ -70,6 +79,51 @@ public class ChaincodeDatabaseTest {
 
 		ConInfoEntity conInfoEntity2 = createConInfoEntity("peer1.orgtest.com", "1112");
 		conInfoEntity2 = conInfoRepository.save(conInfoEntity2);
+
+		l
+		
+		CcInfoPeerEntity ccInfoPeerEntity1 = createCcInfoPeerEntity(ccInfoEntity, conInfoEntity1);
+		CcInfoPeerEntity ccInfoPeerEntity2 = createCcInfoPeerEntity(ccInfoEntity, conInfoEntity2);
+		
+		
+
+		// when
+		ccInfoPeerEntity1 = ccInfoPeerRepository.save(ccInfoPeerEntity1);
+		ccInfoPeerEntity2 = ccInfoPeerRepository.save(ccInfoPeerEntity2);
+
+		System.out.println("ccInfoPeerEntity1 : " + ccInfoPeerEntity1);
+		System.out.println("ccInfoPeerEntity2 : " + ccInfoPeerEntity2);
+
+		List<CcInfoPeerEntity> resultList = ccInfoPeerRepository.findByCcId(ccInfoEntity.getId());
+
+//		// then
+//		assertThat(ccInfoEntity.getCcName()).isEqualTo("test-chaincode");
+//		assertThat(ccInfoEntity.getCcPath()).isEqualTo("/src/test/chaincode/test.go");
+//		assertThat(ccInfoEntity.getCcLang()).isEqualTo("golang");
+//		assertThat(ccInfoEntity.getCcDesc()).isEqualTo("this is test chaincode");
+//		assertThat(ccInfoEntity.getCcVersion()).isEqualTo("1");
+
+		System.out.println("************************ 체인코드_피어_정보_저장_조회_테스트 종료 ************************");
+
+	}
+
+	@Test
+	public void 체인코드_피어_조회_테스트() throws Exception {
+
+		System.out.println("************************ 체인코드_피어_정보_저장_조회_테스트 시작 ************************");
+
+		// given
+		CcInfoEntity ccInfoEntity = createCcInfoEntity("test-chaincode");
+		ccInfoEntity = ccInfoRepository.save(ccInfoEntity);
+
+		ConInfoEntity conInfoEntity1 = createConInfoEntity("peer0.orgtest.com", "1111");
+		conInfoEntity1 = conInfoRepository.save(conInfoEntity1);
+
+		ConInfoEntity conInfoEntity2 = createConInfoEntity("peer1.orgtest.com", "1112");
+		conInfoEntity2 = conInfoRepository.save(conInfoEntity2);
+
+		ChannelInfoEntity channelInfoEntity = createChannelInfoEntity("test-channel");
+		channelInfoEntity = channelInfoRepository.save(channelInfoEntity);
 
 		CcInfoPeerEntity ccInfoPeerEntity1 = createCcInfoPeerEntity(ccInfoEntity, conInfoEntity1);
 		CcInfoPeerEntity ccInfoPeerEntity2 = createCcInfoPeerEntity(ccInfoEntity, conInfoEntity2);
@@ -138,6 +192,42 @@ public class ChaincodeDatabaseTest {
 		ccInfoPeerEntity.setConInfoEntity(conInfoEntity);
 
 		return ccInfoPeerEntity;
+
+	}
+
+	private ChannelInfoEntity createChannelInfoEntity(String channelName) {
+
+		ChannelInfoEntity channelInfoEntity = new ChannelInfoEntity();
+
+		channelInfoEntity.setChannelName(channelName);
+		channelInfoEntity.setOrderingOrg("testorderer");
+		channelInfoEntity.setChannelTx(0);
+		channelInfoEntity.setChannelBlock(0);
+		channelInfoEntity.setAppAdminPolicyType("ImplicitMeta");
+		channelInfoEntity.setAppAdminPolicyValue("ANY Admins");
+		channelInfoEntity.setChannelAdminPolicyType("ImplicitMeta");
+		channelInfoEntity.setChannelAdminPolicyValue("ANY Admins");
+		channelInfoEntity.setOrdererAdminPolicyType("ImplicitMeta");
+		channelInfoEntity.setOrdererAdminPolicyValue("ANY Admins");
+		channelInfoEntity.setBatchTimeout("1s");
+		channelInfoEntity.setBatchSizeAbsolMax(81920);
+		channelInfoEntity.setBatchSizeMaxMsg(20);
+		channelInfoEntity.setBatchSizePreferMax(20480);
+
+		return channelInfoEntity;
+
+	}
+
+	private ChannelInfoPeerEntity createChannelInfoPeerEntity(ChannelInfoEntity channelInfoEntity, ConInfoEntity conInfoEntity) {
+
+		ChannelInfoPeerEntity channelInfoPeerEntity = new ChannelInfoPeerEntity();
+
+		channelInfoPeerEntity.setChannelInfoEntity(channelInfoEntity);
+		channelInfoPeerEntity.setConInfoEntity(conInfoEntity);
+		channelInfoPeerEntity.setAnchorYn(false);
+		//channelInfoPeerEntity.set
+
+		return channelInfoPeerEntity;
 
 	}
 

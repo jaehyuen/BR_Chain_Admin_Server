@@ -1,10 +1,9 @@
 package com.brchain.core.container.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
@@ -21,7 +20,7 @@ public interface ConInfoRepository extends JpaRepository<ConInfoEntity, String>,
 
 	List<ConInfoEntity> findByConType(String conType);
 
-	List<ConInfoEntity> findByConPort(String conPort);
+	Optional<ConInfoEntity> findByConPort(String conPort);
 
 	List<ConInfoEntity> findByOrgName(String orgName);
 

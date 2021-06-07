@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.brchain.core.chaincode.dto.CcSummaryDto;
 import com.brchain.core.chaincode.entitiy.CcInfoEntity;
 import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
 import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
@@ -133,9 +134,9 @@ public class ChaincodeDatabaseTest {
 	}
 
 	@Test
-	public void 체인코드_피어_정보_조회_테스트() throws Exception {
+	public void 체인코드_피어_정보_조회_테스트1() throws Exception {
 
-		System.out.println("************************ 체인코드_피어_정보_조회_테스트 시작 ************************");
+		System.out.println("************************ 체인코드_피어_정보_조회_테스트1 시작 ************************");
 
 		// given
 		ConInfoEntity conInfoEntity = conInfoRepository.findByConPort("1111").get();
@@ -147,7 +148,28 @@ public class ChaincodeDatabaseTest {
 		System.out.println(result);
 		assertThat(conInfoEntity.getConPort()).isEqualTo("1111");
 
-		System.out.println("************************ 체인코드_피어_정보_조회_테스트 종료 ************************");
+		System.out.println("************************ 체인코드_피어_정보_조회_테스트1 종료 ************************");
+
+	}
+	
+	@Test
+	public void 체인코드_피어_정보_조회_테스트2() throws Exception {
+
+		System.out.println("************************ 체인코드_피어_정보_조회_테스트2 시작 ************************");
+
+		// given
+//		CcInfoEntity ccInfoEntity = ccInfoRepository.findAll().get(0);
+//		
+//		ConInfoEntity conInfoEntity = conInfoRepository.findByConPort("1111").get();
+//		
+		// when
+		List<CcInfoPeerEntity> result = ccInfoPeerRepository.findByCcId(1l);
+
+		// then
+		System.out.println(result);
+//		assertThat(conInfoEntity.getConPort()).isEqualTo("1111");
+
+		System.out.println("************************ 체인코드_피어_정보_조회_테스트2 종료 ************************");
 
 	}
 
@@ -166,6 +188,24 @@ public class ChaincodeDatabaseTest {
 		assertThat(result.size()).isEqualTo(1);
 
 		System.out.println("************************ 활성화_가능한_체인코드_조회_테스트 종료 ************************");
+
+	}
+	
+	@Test
+	public void 체인코드_요약_조회_테스트() throws Exception {
+
+		System.out.println("************************ 체인코드_요약_조회_테스트 시작 ************************");
+
+		// given
+
+		// when
+		List<CcSummaryDto> result = ccInfoPeerRepository.findChaincodeSummary();
+
+		// then
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(5);
+
+		System.out.println("************************ 체인코드_요약_조회_테스트 종료 ************************");
 
 	}
 //

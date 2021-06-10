@@ -43,7 +43,6 @@ import org.hyperledger.fabric.gateway.Wallet;
 import org.hyperledger.fabric.gateway.Wallets;
 import org.hyperledger.fabric.gateway.X509Identity;
 import org.hyperledger.fabric.sdk.BlockEvent;
-import org.hyperledger.fabric.sdk.BlockListener;
 import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.ChannelConfiguration;
@@ -76,7 +75,6 @@ import org.hyperledger.fabric.sdk.exception.TransactionException;
 import org.hyperledger.fabric.sdk.identity.X509Enrollment;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.hyperledger.fabric.sdk.security.CryptoSuiteFactory;
-import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -112,8 +110,6 @@ public class FabricClient {
 	@Value("${brchain.datadir}")
 	private String               dataDir;
 
-//	private ArrayList<Channel>   channelListener = new ArrayList<Channel>();
-
 	private Map<String, Channel> channelMap = new HashMap<String, Channel>();
 	private Map<String, Network> networkMap = new HashMap<String, Network>();
 
@@ -144,8 +140,9 @@ public class FabricClient {
 		Wallet          wallet;
 		Gateway.Builder builder    = null;
 		try {
+
 			wallet  = Wallets.newFileSystemWallet(walletPath);
-			// 2.2
+
 			builder = Gateway.createBuilder();
 
 			builder.identity(wallet, orgName)
@@ -155,10 +152,11 @@ public class FabricClient {
 		} catch (IOException e) {
 			throw new BrchainException(e, BrchainStatusCode.WALLET_CREATE_ERROR);
 		}
+
 		Gateway gateway = builder.connect();
 		Network network = gateway.getNetwork(channelName);
 
-		logger.info("[FabricHelper] Connection Success!");
+		logger.info("[connectNetwork] Connection Success!");
 
 		channelMap.put(channelName, network.getChannel());
 		networkMap.put(channelName, network);
@@ -181,53 +179,49 @@ public class FabricClient {
 	public void createWallet(FabricMemberDto memberDto) {
 
 		try {
-			String         certPemFile = "crypto-config/ca-certs/ca.org" + memberDto.getOrgName()
-					+ "brord.com-cert.pem";
-			PrivateKey     key         = null;
-			String         certificate = null;
-			InputStream    isKey       = null;
-			BufferedReader brKey       = null;
-			String         path        = null;
-			Properties     props       = new Properties();
+
+			String     orgName     = memberDto.getOrgName();
+			String     orgType     = memberDto.getOrgType();
+			String     certPemFile = "crypto-config/ca-certs/ca.org" + orgName + "brord.com-cert.pem";
+			
+			
+			String     certificate = new String(
+					Files.readAllBytes(Paths.get("crypto-config/" + orgType + "Organizations/org" + orgName
+							+ ".com/users/Admin@org" + orgName + ".com/msp/signcerts/cert.pem")));
+
+			String     path        = "crypto-config/" + orgType + "Organizations/org" + orgName + ".com/users/Admin@org"
+					+ orgName + ".com/msp/keystore/server.key";
+
+			PrivateKey key         = null;
+			
+			Properties props       = new Properties();
 
 			props.put("pemFile", certPemFile);
 
-			// Wallet wallet = Wallet.createFileSystemWallet(Paths.get("wallet")); 1.4
-			Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet")); // 2.2
+			Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
 
-//		// wallet경로에 인증서 체크 1.4
-//		boolean walletExists = wallet.exists(memberDto.getOrgName());
-//
-//		if (walletExists) {
-//			return;
-//		}
-
-			if (wallet.get(memberDto.getOrgName()) != null) { // 2.2
+			if (wallet.get(memberDto.getOrgName()) != null) {
 				return;
 			}
 
-			// 인증서 설정
-			if (memberDto.getOrgType()
-				.equals("peer")) {
+//			// 인증서 설정
+//			if (memberDto.getOrgType()
+//				.equals("peer")) {
+//
+//				path        = "crypto-config/" + memberDto.getOrgType() + "Organizations/org" + orgName
+//						+ ".com/users/Admin@org" + orgName + ".com/msp/keystore/server.key";
+//				certificate = new String(Files.readAllBytes(Paths.get("crypto-config/peerOrganizations/org" + orgName
+//						+ ".com/users/Admin@org" + orgName + ".com/msp/signcerts/cert.pem")));
+//			} else {
+//
+//				path        = "crypto-config/ordererOrganizations/org" + orgName + ".com/users/Admin@org" + orgName
+//						+ ".com/msp/keystore/server.key";
+//				certificate = 
+//			}
 
-				path        = "crypto-config/peerOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org"
-						+ memberDto.getOrgName() + ".com/msp/keystore/server.key";
-				certificate = new String(
-						Files.readAllBytes(Paths.get("crypto-config/peerOrganizations/org" + memberDto.getOrgName()
-								+ ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
-			} else {
+			try (FileInputStream isKey = new FileInputStream(path);
+					BufferedReader brKey = new BufferedReader(new InputStreamReader(isKey));) {
 
-				path        = "crypto-config/ordererOrganizations/org" + memberDto.getOrgName() + ".com/users/Admin@org"
-						+ memberDto.getOrgName() + ".com/msp/keystore/server.key";
-				certificate = new String(
-						Files.readAllBytes(Paths.get("crypto-config/ordererOrganizations/org" + memberDto.getOrgName()
-								+ ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem")));
-			}
-
-			try {
-
-				isKey = new FileInputStream(path);
-				brKey = new BufferedReader(new InputStreamReader(isKey));
 				StringBuilder keyBuilder = new StringBuilder();
 
 				for (String line = brKey.readLine(); line != null; line = brKey.readLine()) {
@@ -241,21 +235,14 @@ public class FabricClient {
 				KeyFactory          kf      = KeyFactory.getInstance("EC");
 				key = kf.generatePrivate(keySpec);
 
-			} finally {
-
-				isKey.close();
-				brKey.close();
-
 			}
 
 			X509Enrollment enrollment = new X509Enrollment(key, certificate);
 
-			// 인증서를 wallet형식으로 변환
-//		Identity user = Identity.createIdentity(memberDto.getOrgMspId(), enrollment.getCert(), enrollment.getKey()); //1.4
-
 			Identity       user       = Identities.newX509Identity(memberDto.getOrgMspId(), enrollment); // 2.2
 
 			wallet.put(memberDto.getOrgName(), user);
+
 		} catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | CertificateException e) {
 			throw new BrchainException(e, BrchainStatusCode.WALLET_CREATE_ERROR);
 

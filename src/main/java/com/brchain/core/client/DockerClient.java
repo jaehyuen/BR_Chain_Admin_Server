@@ -229,17 +229,17 @@ public class DockerClient {
 			Map<String, List<PortBinding>> portBindings = createPortBinding(ports);
 
 			// hostconfig 빌더 생성
-			HostConfig   hostConfig   = HostConfig.builder()
+			HostConfig                     hostConfig   = HostConfig.builder()
 				.binds(binds)
 				.networkMode(networkMode)
 				.portBindings(portBindings)
 				.build();
 
 			// 포트 오픈 설정
-			Set<String>  exposedPorts = container.getExposedPort(ports);
+			Set<String>                    exposedPorts = container.getExposedPort(ports);
 
 			// 환경변수 설정
-			List<String> containerEnv;
+			List<String>                   containerEnv;
 
 			if (conType.equals("peer")) {
 
@@ -250,14 +250,7 @@ public class DockerClient {
 				containerEnv = container.getContainerEnv(anchorPeerSetting, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
 
-			} 
-//			else if (conType.equals("setup_orderer")) {
-//
-//				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
-//				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
-//
-//			}
-			else {
+			} else {
 				containerEnv = container.getContainerEnv(ordererPorts, couchdbYn);
 				containerEnv.add("PEER_ORGS=" + createConDto.getPeerOrgs());
 			}
@@ -295,9 +288,9 @@ public class DockerClient {
 	}
 
 	private Map<String, List<PortBinding>> createPortBinding(String[] ports) {
-		
+
 		Map<String, List<PortBinding>> portBindings = new HashMap<>();
-		
+
 		for (String portBind : ports) {
 			List<PortBinding> hostPorts = new ArrayList<>();
 			hostPorts.add(PortBinding.of("0.0.0.0", portBind));

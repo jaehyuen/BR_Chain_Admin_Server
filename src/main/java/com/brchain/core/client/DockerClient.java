@@ -35,6 +35,12 @@ import com.spotify.docker.client.messages.PortBinding;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Docker와 연결을 위한 클라이언트 클래스
+ * 
+ * @author jaehyeon
+ *
+ */
 @Component
 @RequiredArgsConstructor
 public class DockerClient {

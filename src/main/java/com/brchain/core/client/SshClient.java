@@ -26,6 +26,12 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.spotify.docker.client.exceptions.DockerException;
 
+/**
+ * ssh/sftp 연결을 위한 클라이언트 클래스
+ * 
+ * @author jaehyeon
+ *
+ */
 @Component
 public class SshClient {
 

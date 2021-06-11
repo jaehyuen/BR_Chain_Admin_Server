@@ -113,8 +113,6 @@ public class DockerClient {
 	 * 
 	 * @return 컨테이너 리스트
 	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
 	 */
 	public List<Container> loadRunningContainers() {
 		try {
@@ -132,8 +130,6 @@ public class DockerClient {
 	 * 
 	 * @return 컨테이너 리스트
 	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
 	 */
 
 	public List<Container> loadAllContainers() {
@@ -152,11 +148,7 @@ public class DockerClient {
 	 * 컨테이너 정지 및 삭제 함수
 	 * 
 	 * @param conId 삭제할 컨테이너 id
-	 * 
-	 * @return
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
+	 *  
 	 */
 
 	public void removeContainer(String conId) {
@@ -177,9 +169,6 @@ public class DockerClient {
 	 * @param createConDto 컨테이너 생성 관련 DTO
 	 * 
 	 * @return 생성된 컨테이너 정보
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
 	 * 
 	 */
 

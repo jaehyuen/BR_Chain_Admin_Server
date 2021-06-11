@@ -93,13 +93,8 @@ public class SshClient {
 	/**
 	 * 폴더 삭제 함수
 	 * 
-	 * @param orgName 조직명
+	 * @param orgName 조직 이름
 	 * 
-	 * @return
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 * @throws JSchException
 	 */
 	public void removeDir(String orgName, String conName) {
 		try {
@@ -123,9 +118,6 @@ public class SshClient {
 	 * 
 	 * @param command 커맨드
 	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
-	 * @throws JSchException
 	 */
 
 	public void execCommand(String command) {
@@ -136,12 +128,12 @@ public class SshClient {
 				connect();
 			}
 
-			logger.info("[커멘드 실행]" + command);
+			logger.debug("[커멘드 실행]" + command);
 			channelExec.setCommand(command);
 			channelExec.connect();
 			channelExec.disconnect();
 			
-			Thread.sleep(1000);
+			Thread.sleep(500);
 
 		} catch (JSchException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.EXEC_COMMAND_ERROR);
@@ -176,7 +168,6 @@ public class SshClient {
 	 * @param uploadFileName 파일명
 	 * @throws FileNotFoundException
 	 * 
-	 * @throws Exception
 	 */
 	public void uploadFile(String path, String uploadFileName) {
 
@@ -187,14 +178,14 @@ public class SshClient {
 			String dir = sourceDir + "/" + path;
 			execCommand("mkdir -p " + dir);
 
-			logger.info("[파일 업로드 실행]" + dir + uploadFileName);
+			logger.debug("[파일 업로드 실행]" + dir + uploadFileName);
 
 			// Change to output directory
 			channelSftp.cd(dir);
 
 			// 파일을 업로드한다.
 			channelSftp.put(inputStream, file.getName());
-			Thread.sleep(2000);
+			Thread.sleep(500);
 
 		} catch (SftpException | IOException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_UPLOAD_ERROR);
@@ -205,23 +196,19 @@ public class SshClient {
 	/**
 	 * 파일 다운로드 함수
 	 * 
-	 * @param path             파일경로
-	 * @param downloadFileName 파일명
+	 * @param path             파일 경로
+	 * @param downloadFileName 파일 이름
 	 * 
-	 * @throws SftpException
-	 * @throws IOException
-	 * @throws JSchException
 	 */
 
 	public void downloadFile(String path, String downloadFileName) {
 
+		InputStream      inputStream  = null;
+		FileOutputStream outputStream = null;
 		try {
 
-			InputStream      inputStream  = null;
-			FileOutputStream outputStream = null;
-
-			String           dir          = sourceDir + "/" + path;
-			logger.info("[파일 다운로드 실행]" + dir + downloadFileName);
+			String dir = sourceDir + "/" + path;
+			logger.debug("[파일 다운로드 실행]" + dir + downloadFileName);
 			channelSftp.cd(dir);
 
 			inputStream = channelSftp.get(downloadFileName);
@@ -242,12 +229,18 @@ public class SshClient {
 				outputStream.write(i);
 			}
 
-			outputStream.close();
-			inputStream.close();
-			Thread.sleep(1000);
+			Thread.sleep(500);
 
 		} catch (SftpException | IOException | InterruptedException e) {
 			throw new BrchainException(e, BrchainStatusCode.FILE_DOWNLOAN_ERROR);
+		} finally {
+			try {
+				outputStream.close();
+				inputStream.close();
+			} catch (IOException e) {
+				throw new BrchainException(e, BrchainStatusCode.FILE_DOWNLOAN_ERROR);
+			}
+
 		}
 	}
 }

@@ -240,6 +240,24 @@ public class ChaincodeDatabaseTest {
 		System.out.println("************************ 체인코드_채널_조회_테스트1 종료 ************************");
 
 	}
+	
+	@Test
+	public void 체인코드_채널_조회_테스트2() throws Exception {
+
+		System.out.println("************************ 체인코드_채널_조회_테스트2 시작 ************************");
+
+		// given
+
+		// when
+		CcInfoChannelEntity result = ccInfoChannelRepository.findByChannelNameAndCcName("test-channel","test-chaincode").get();
+
+		// then
+		System.out.println(result);
+		//assertThat(result.size()).isEqualTo(3);
+
+		System.out.println("************************ 체인코드_채널_조회_테스트2 종료 ************************");
+
+	}
 
 	private CcInfoEntity createCcInfoEntity(String param) {
 

@@ -1,6 +1,7 @@
 package com.brchain.core.chaincode.repository.custom;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.query.Param;
 
@@ -10,6 +11,6 @@ public interface CcInfoChannelCustomRepository {
 
 	List<CcInfoChannelEntity> findByChannelName(@Param("channelName") String channelName);
 
-	CcInfoChannelEntity findByChannelNameAndCcName(@Param("channelName") String channelName,@Param("ccName") String ccName);
+	Optional<CcInfoChannelEntity> findByChannelNameAndCcName(@Param("channelName") String channelName,@Param("ccName") String ccName);
 
 }

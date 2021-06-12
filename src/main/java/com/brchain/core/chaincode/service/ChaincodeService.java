@@ -190,7 +190,7 @@ public class ChaincodeService {
 
 	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, String ccName) {
 
-		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName));
+		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName).get());
 
 	}
 

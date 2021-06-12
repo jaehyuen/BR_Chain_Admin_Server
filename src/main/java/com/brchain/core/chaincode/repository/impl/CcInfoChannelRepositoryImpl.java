@@ -1,6 +1,7 @@
 package com.brchain.core.chaincode.repository.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +31,11 @@ public class CcInfoChannelRepositoryImpl extends QuerydslRepositorySupport imple
 	}
 
 	@Override
-	public CcInfoChannelEntity findByChannelNameAndCcName(String channelName, String ccName) {
+	public Optional<CcInfoChannelEntity> findByChannelNameAndCcName(String channelName, String ccName) {
 		
-		return from(ccInfoChannelEntity).where(ccInfoChannelEntity.ccInfoEntity.ccName.eq(ccName)
+		return Optional.ofNullable(from(ccInfoChannelEntity).where(ccInfoChannelEntity.ccInfoEntity.ccName.eq(ccName)
 			.and(ccInfoChannelEntity.channelInfoEntity.channelName.eq(channelName)))
-			.fetchOne();
+			.fetchOne());
 
 	}
 

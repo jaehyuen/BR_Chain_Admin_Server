@@ -3,7 +3,7 @@ package com.brchain.core.fabric.dto;
 import lombok.Data;
 
 @Data
-public class FabricMemberDto {
+public class FabricNodeDto {
 
 	private String orgName;  // 조직명
 	private String orgType;  // 조직 타입 (ca, setup, peer, couchdb, orderer)

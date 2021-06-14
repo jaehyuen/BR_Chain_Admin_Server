@@ -24,7 +24,7 @@ public enum BrchainStatusCode {
 	 * 05 = 채널 설정 에러
 	 * 06 = 체인코드 에러
 	 * 07 = 파일 관련 에러
-	 * 08 = jwt 에
+	 * 08 = jwt 에러
 	 * 09 = 서버 에러
 	 * 
 	 * 
@@ -50,6 +50,7 @@ public enum BrchainStatusCode {
 	CHAINCODE_INSTALL_ERROR("9060","chaincode_install_error"),
 	CHAINCDOE_PACKAGE_ERROR("9061","chaincode_package_error"),
 	CHAINCODE_UPLOAD_ERROR("9062","chaincode_upload_error"),
+	CHAINCODE_ACTIVE_ERROR("9063","chaincode_active_error"),
 	
 	FILE_UPLOAD_ERROR("9070","file_upload_error"),
 	FILE_DOWNLOAN_ERROR("9071","file_download_error"),

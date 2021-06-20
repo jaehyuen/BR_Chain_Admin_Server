@@ -1,8 +1,10 @@
 package com.brchain.database;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.hibernate.query.criteria.internal.path.SetAttributeJoin.TreatedSetAttributeJoin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,10 @@ import com.brchain.core.channel.repository.ChannelInfoPeerRepository;
 import com.brchain.core.channel.repository.ChannelInfoRepository;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
+import com.brchain.core.fabric.entity.BlockEntity;
+import com.brchain.core.fabric.entity.TransactionEntity;
+import com.brchain.core.fabric.repository.BlockRepository;
+import com.brchain.core.fabric.repository.TransactionRepository;
 
 @DataJpaTest(showSql = false)
 //@Transactional
@@ -41,6 +47,11 @@ public class ChannalDatabaseTest {
 	private CcInfoChannelRepository ccInfoChannelRepository;
 	@Autowired
 	private ConInfoRepository conInfoRepository;
+
+	@Autowired
+	private BlockRepository blockRepository;
+	@Autowired
+	private TransactionRepository transactionRepository;
 
 	@BeforeEach
 	public void setup() {
@@ -144,9 +155,21 @@ public class ChannalDatabaseTest {
 		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity2, ccInfoEntity1);
 		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
 
+		// 블록, 트랜잭션 등록
+		for (int i = 0; i < 10; i++) {
+			createBlockAndTx(channelInfoEntity1, i + 1);
+		}
+		
+		for (int i = 0; i < 25; i++) {
+			createBlockAndTx(channelInfoEntity2, i + 1);
+		}
+		for (int i = 0; i < 2; i++) {
+			createBlockAndTx(channelInfoEntity3, i + 1);
+		}
+
 	}
 
-	//트렌젝션, 블록 데이터 추가 해야됨
+	// 트렌젝션, 블록 데이터 추가 해야됨
 	@Test
 	public void 채널_요약_조회_테스트() throws Exception {
 
@@ -215,14 +238,10 @@ public class ChannalDatabaseTest {
 
 		ChannelInfoEntity channelInfoEntity = new ChannelInfoEntity();
 
-		Random random = new Random();
-
-		int txCnt = random.nextInt(1000);
-
 		channelInfoEntity.setChannelName(channelName);
 		channelInfoEntity.setOrderingOrg("testorderer");
-		channelInfoEntity.setChannelTx(txCnt);
-		channelInfoEntity.setChannelBlock(txCnt / 2);
+		channelInfoEntity.setChannelTx(0);
+		channelInfoEntity.setChannelBlock(0);
 		channelInfoEntity.setAppAdminPolicyType("ImplicitMeta");
 		channelInfoEntity.setAppAdminPolicyValue("ANY Admins");
 		channelInfoEntity.setChannelAdminPolicyType("ImplicitMeta");
@@ -262,6 +281,46 @@ public class ChannalDatabaseTest {
 		ccInfoChannelEntity.setCcVersion("1");
 
 		return ccInfoChannelEntity;
+
+	}
+
+	private void createBlockAndTx(ChannelInfoEntity channelInfoEntity, int blockNum) {
+		Random random = new Random();
+		int txCount = random.nextInt(10);
+
+		channelInfoEntity.setChannelTx(channelInfoEntity.getChannelTx() + txCount);
+		channelInfoEntity.setChannelBlock(channelInfoEntity.getChannelBlock() + 1);
+
+		channelInfoEntity = channelInfoRepository.save(channelInfoEntity);
+
+		BlockEntity blockEntity = new BlockEntity();
+
+		blockEntity.setBlockDataHash(channelInfoEntity.getChannelName()+blockNum);
+		blockEntity.setBlockNum(blockNum);
+		blockEntity.setTxCount(txCount);
+		blockEntity.setTimestamp(new Date());
+		blockEntity.setPrevDataHash("test prev data hash");
+		blockEntity.setChannelInfoEntity(channelInfoEntity);
+
+		blockEntity = blockRepository.save(blockEntity);
+
+		
+		for (int i = 0; i < txCount; i++) {
+			TransactionEntity transactionEntity = new TransactionEntity();
+
+			transactionEntity.setTxId(channelInfoEntity.getChannelName() + i);
+			transactionEntity.setCreatorId("testMSP");
+			transactionEntity.setTxType("test tx type");
+			transactionEntity.setTimestamp(new Date());
+			transactionEntity.setCcName("zz test cc");
+			transactionEntity.setCcVersion("1");
+			transactionEntity.setCcArgs("test cc args");
+			transactionEntity.setBlockEntity(blockEntity);
+			transactionEntity.setChannelInfoEntity(channelInfoEntity);
+
+			transactionRepository.save(transactionEntity);
+		}
+		System.out.println();
 
 	}
 

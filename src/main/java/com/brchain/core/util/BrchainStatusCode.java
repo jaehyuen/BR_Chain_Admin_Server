@@ -56,6 +56,7 @@ public enum BrchainStatusCode {
 	FILE_DOWNLOAN_ERROR("9071","file_download_error"),
 	DELETE_DIR_ERROR("9072","delete_dir_error"),
 	EXEC_COMMAND_ERROR("9073","exec_command_error"),
+	FILE_IO_ERROR("9074","file_io_error"),
 	
 	JWT_ERROR("9080","jwt_error"),
 	

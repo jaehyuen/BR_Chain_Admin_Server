@@ -3,6 +3,7 @@ package com.brchain.core.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,9 +18,12 @@ import java.util.zip.ZipInputStream;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.common.exception.BrchainException;
 import com.brchain.core.chaincode.dto.CcInfoChannelDto;
 import com.brchain.core.chaincode.dto.CcInfoDto;
 import com.brchain.core.chaincode.dto.CcInfoPeerDto;
@@ -35,7 +39,7 @@ import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.fabric.dto.BlockDto;
-import com.brchain.core.fabric.dto.FabricMemberDto;
+import com.brchain.core.fabric.dto.FabricNodeDto;
 import com.brchain.core.fabric.dto.PolicyDto;
 import com.brchain.core.fabric.dto.TransactionDto;
 import com.brchain.core.fabric.entity.BlockEntity;
@@ -51,6 +55,8 @@ import com.spotify.docker.client.messages.PortBinding;
 
 @Component
 public class Util {
+	
+	private Logger               logger     = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * connection.json 생성 함수
@@ -63,7 +69,7 @@ public class Util {
 	 */
 
 	@SuppressWarnings({ "unchecked" })
-	public JSONObject createFabrcSetting(String channelName, List<FabricMemberDto> ordererDtoArr, List<FabricMemberDto> peerDtoArr, List<String> orgs) {
+	public JSONObject createFabrcSetting(String channelName, List<FabricNodeDto> ordererDtoArr, List<FabricNodeDto> peerDtoArr, List<String> orgs) {
 
 		JSONObject        fabricJson        = new JSONObject();
 
@@ -82,24 +88,22 @@ public class Util {
 
 		ArrayList<String> ordererArr        = new ArrayList<String>();
 
-		clientJson.put("organization", peerDtoArr.get(0)
-			.getOrgName());
+		clientJson.put("organization", peerDtoArr.get(0).getOrgName());
 
 		// 오더러 관련 변수 생성
-		for (FabricMemberDto dto : ordererDtoArr) {
+		for (FabricNodeDto dto : ordererDtoArr) {
 			ordererArr.add(dto.getConName());
 			ordererMemberJson.put(dto.getConName(), createMemberJson(dto.getOrgName(), dto.getConName(), dto.getConUrl()));
 
 		}
 
 		// 피어 관련 변수 생성
-
 		for (String org : orgs) {
 
 			JSONObject   orgJson2 = new JSONObject();
 			List<String> peerArr  = new ArrayList<String>();
 
-			for (FabricMemberDto dto : peerDtoArr) {
+			for (FabricNodeDto dto : peerDtoArr) {
 
 				if (org.equals(dto.getOrgName())) {
 
@@ -141,8 +145,7 @@ public class Util {
 		fabricJson.put("peers", peerMemberJson);
 		fabricJson.put("certificateAuthorities", caJson1);
 
-		System.out.println("[fabric 설정 json 생성]" + fabricJson.toString()
-			.replace("\\", ""));
+		logger.debug("[fabric 설정 json 생성]" + fabricJson.toString().replace("\\", ""));
 
 		return fabricJson;
 	}
@@ -158,7 +161,7 @@ public class Util {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public JSONObject createMemberJson(String orgName, String hostName, String url) {
+	private JSONObject createMemberJson(String orgName, String hostName, String url) {
 
 		JSONObject memberJson      = new JSONObject();
 
@@ -195,19 +198,16 @@ public class Util {
 		String     key        = "";
 		JSONObject resultJson = new JSONObject();
 
-		Iterator   iter       = json.keySet()
-			.iterator();
+		Iterator   iter       = json.keySet().iterator();
 		while (iter.hasNext()) {
 			key = (String) iter.next();
 
 			if (key.equals("groups") && parentsKey.equals("SampleConsortium")) {
-				System.out.println("현재키 :" + key + " 부모 키 :" + parentsKey);
-				System.out.println("찾았다!!!!11");
-				System.out.println("찾았다!!!!22");
-				System.out.println("찾았다!!!!33");
-				resultJson = (JSONObject) json.get(key);
+				logger.debug("현재키 :" + key + " 부모 키 :" + parentsKey);
 
+				resultJson = (JSONObject) json.get(key);
 				resultJson.put(peerOrg, addjson);
+				
 				return resultJson;
 
 			} else if (json.get(key) instanceof JSONObject) {
@@ -223,13 +223,13 @@ public class Util {
 	/**
 	 * 조직 정보 json 생성 함수
 	 * 
-	 * @param memberDto 조직정보 Json
+	 * @param fabricNodeDto 조직정보 Json
 	 * 
 	 * @return 조직 정보 Json
 	 */
 
 	@SuppressWarnings("unchecked")
-	public JSONObject createOrgJson(FabricMemberDto memberDto) {
+	public JSONObject createOrgJson(FabricNodeDto fabricNodeDto) {
 
 		JSONObject        orgJson          = new JSONObject();
 
@@ -249,11 +249,11 @@ public class Util {
 		ArrayList<String> rootCertsArr     = new ArrayList<String>();
 		ArrayList<String> tlsRootCertsArr  = new ArrayList<String>();
 
-		adminsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/" + memberDto.getOrgType() + "Organizations/org" + memberDto.getOrgName() + ".com/users/Admin@org" + memberDto.getOrgName() + ".com/msp/signcerts/cert.pem"));
-		rootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem"));
-		tlsRootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + memberDto.getOrgName() + ".com-cert.pem"));
+		adminsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/" + fabricNodeDto.getOrgType() + "Organizations/org" + fabricNodeDto.getOrgName() + ".com/users/Admin@org" + fabricNodeDto.getOrgName() + ".com/msp/signcerts/cert.pem"));
+		rootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + fabricNodeDto.getOrgName() + ".com-cert.pem"));
+		tlsRootCertsArr.add(fileEncodeBases64(System.getProperty("user.dir") + "/crypto-config/ca-certs/ca.org" + fabricNodeDto.getOrgName() + ".com-cert.pem"));
 
-		orgMspArr.add(memberDto.getOrgMspId());
+		orgMspArr.add(fabricNodeDto.getOrgMspId());
 
 		policyDto.setPolicyType(1);
 		policyDto.setSubPolicy("Writers");
@@ -280,7 +280,7 @@ public class Util {
 		configJson.put("root_certs", rootCertsArr);
 		configJson.put("revocation_list", new ArrayList<String>());
 		configJson.put("organizational_unit_identifiers", new ArrayList<String>());
-		configJson.put("name", memberDto.getOrgMspId());
+		configJson.put("name", fabricNodeDto.getOrgMspId());
 		configJson.put("intermediate_certs", new ArrayList<String>());
 		configJson.put("fabric_node_ous", null);
 		configJson.put("crypto_config", cryptoConfigJson);
@@ -301,8 +301,7 @@ public class Util {
 		orgJson.put("groups", new JSONObject());
 		orgJson.put("values", valuesJson);
 
-		System.out.println("[org json 생성]" + orgJson.toString()
-			.replace("\\", ""));
+		logger.debug("[org json 생성]" + orgJson.toString().replace("\\", ""));
 
 		return orgJson;
 	}
@@ -316,7 +315,7 @@ public class Util {
 	 */
 
 	@SuppressWarnings("unchecked")
-	public JSONObject createPolicyJson(PolicyDto policyDto) {
+	private JSONObject createPolicyJson(PolicyDto policyDto) {
 
 		JSONObject returnJson        = new JSONObject();
 
@@ -390,6 +389,16 @@ public class Util {
 
 	}
 
+	/**
+	 * 업데이트 헤더 json 추가 함수
+	 * 
+	 * @param channelName 채널 이름
+	 * @param dataJson 업데이트 json
+	 * 
+	 * @return 헤더를 추가한 업데이트 json
+	 * 
+	 */
+	
 	@SuppressWarnings("unchecked")
 	public JSONObject addUpdateHeader(String channelName, JSONObject dataJson) {
 
@@ -417,6 +426,15 @@ public class Util {
 		return updateJson;
 	}
 
+	/**
+	 * 파일 base64 인코딩 함수
+	 * 
+	 * @param filePath 파일 경로
+	 * 
+	 * @return base64로 인코딩된 파일 내용
+	 * 
+	 */
+	
 	public String fileEncodeBases64(String filePath) {
 
 		File   file = new File(filePath);
@@ -427,13 +445,25 @@ public class Util {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-		String base64data = Base64.getEncoder()
-			.encodeToString(data);
+		String base64data = Base64.getEncoder().encodeToString(data);
 
 		return base64data;
 
 	}
 
+	/**
+	 * 결과 DTO 생성 함수
+	 * 
+	 * @param <T>     data 필드 변수형
+	 * @param code    결과 코드
+	 * @param flag    결과 플래그
+	 * @param message 결과 메시지
+	 * @param data    결과 데이터
+	 * 
+	 * @return 생성한 결과 DTO
+	 * 
+	 */
+	
 	public <T> ResultDto<T> setResult(String code, boolean flag, String message, T data) {
 
 		ResultDto<T> resultDto = new ResultDto<T>();
@@ -447,13 +477,23 @@ public class Util {
 
 	}
 
+	/**
+	 * 결과 DTO 생성 함수
+	 * 
+	 * @param <T>     data 필드 변수형
+	 * @param status  결과 상태
+	 * @param data    결과 데이터
+	 * 
+	 * @return 생성한 결과 DTO
+	 * 
+	 */
+	
 	public <T> ResultDto<T> setResult(BrchainStatusCode status, T data) {
 
 		ResultDto<T> resultDto = new ResultDto<T>();
 
 		resultDto.setResultCode(status.getCode());
-		resultDto.setResultFlag(status.getCode()
-			.equals("0") ? true : false);
+		resultDto.setResultFlag(status.getCode().equals("0") ? true : false);
 		resultDto.setResultMessage(status.getMessage());
 		resultDto.setResultData(data);
 
@@ -461,22 +501,31 @@ public class Util {
 
 	}
 
-	public JSONObject modifyAnchorConfig(JSONObject json, JSONObject addjson, String parentsKey, FabricMemberDto peerDto) {
+	/**
+	 * 앵커 피어 설정 추가 함수
+	 * 
+	 * @param json       수정할 json
+	 * @param addjson    추가할 json
+	 * @param parentsKey 부모키
+	 * @param peerDto    피어 정보 DTO
+	 * 
+	 * @return 수정된 json
+	 * 
+	 */
+	
+	public JSONObject addAnchorConfig(JSONObject json, JSONObject addjson, String parentsKey, FabricNodeDto peerDto) {
 
 		String     key        = "";
 		JSONObject resultJson = new JSONObject();
 
-		Iterator   iter       = json.keySet()
-			.iterator();
+		Iterator   iter       = json.keySet().iterator();
+		
 		while (iter.hasNext()) {
 			key = (String) iter.next();
 
 			if (key.equals("values") && parentsKey.equals(peerDto.getOrgName())) {
-				System.out.println("현재키 :" + key + " 부모 키 :" + parentsKey);
-
-				System.out.println("찾았다!!!!11");
-				System.out.println("찾았다!!!!22");
-				System.out.println("찾았다!!!!33");
+				
+				logger.debug("현재키 :" + key + " 부모 키 :" + parentsKey);
 				resultJson = (JSONObject) json.get(key);
 
 				if (resultJson.containsKey("AnchorPeers")) {
@@ -501,7 +550,7 @@ public class Util {
 
 			} else if (json.get(key) instanceof JSONObject) {
 
-				resultJson = modifyAnchorConfig((JSONObject) json.get(key), addjson, key, peerDto);
+				resultJson = addAnchorConfig((JSONObject) json.get(key), addjson, key, peerDto);
 			}
 
 		}
@@ -509,7 +558,16 @@ public class Util {
 		return json;
 	}
 
-	public JSONObject createAnchorJson(FabricMemberDto peerDto) {
+	/**
+	 * 앵커 피어 설정 생성 함수
+	 * 
+	 * @param peerDto 피어 정보 DTO
+	 * 
+	 * @return 생성한 DTO
+	 * 
+	 */
+	
+	public JSONObject createAnchorJson(FabricNodeDto peerDto) {
 
 		JSONObject anchorPeerJson = new JSONObject();
 		JSONArray  anchorPeerArr  = new JSONArray();
@@ -532,6 +590,15 @@ public class Util {
 
 	}
 
+	/**
+	 * 컨테이너 정보 json 생성 함수
+	 * 
+	 * @param info 컨테이너 정보
+	 *  
+	 * @return 생성된 컨테이너 정보 json
+	 * 
+	 */
+	
 	public JSONObject createConJson(ContainerInfo info) {
 
 		JSONObject            logJson   = new JSONObject();
@@ -548,19 +615,17 @@ public class Util {
 
 		}
 
-		ImmutableMap<String, List<PortBinding>> portMap  = info.hostConfig()
-			.portBindings();
+		ImmutableMap<String, List<PortBinding>> portMap  = info.hostConfig().portBindings();
 
 		ArrayList<String>                       portList = new ArrayList<String>();
 
 		for (Entry<String, List<PortBinding>> entry : portMap.entrySet()) {
 
 			String            port1       = entry.getKey();
-
 			List<PortBinding> value       = entry.getValue();
 			PortBinding       portBinding = value.get(0);
-
 			String            port2       = portBinding.hostPort();
+			
 			portList.add(port1 + ":" + port2);
 		}
 		if (!portMap.isEmpty()) {
@@ -578,18 +643,23 @@ public class Util {
 		conJson2.put("command", resultCmd);
 
 		conJson2.put("logging", logJson);
-		conJson2.put("volumes", info.hostConfig()
-			.binds());
+		conJson2.put("volumes", info.hostConfig().binds());
 
-		conJson2.put("networks", new String[] { info.hostConfig()
-			.networkMode() });
-
-//		conJson1.put(info.name(), conJson2);
+		conJson2.put("networks", new String[] { info.hostConfig().networkMode() });
 
 		return conJson2;
 
 	}
 
+	/**
+	 * docker-compose 생성용 json 생성 함수
+	 * 
+	 * @param conJson 컨테이너 정보 json
+	 * 
+	 * @return 생성한 json
+	 * 
+	 */
+	
 	public JSONObject createComposeJson(JSONObject conJson) {
 
 		JSONObject ipamConfigJson    = new JSONObject();
@@ -618,6 +688,7 @@ public class Util {
 		composeJson.put("services", conJson);
 		composeJson.put("networks", networksJson1);
 		composeJson.put("version", "2.1");
+		
 		return composeJson;
 
 	}
@@ -629,6 +700,7 @@ public class Util {
 	 * @param conJson  컨테이너 JSON
 	 * 
 	 */
+	
 	public void createYamlFile(String fileName, JSONObject conJson) {
 		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 		try {
@@ -644,93 +716,121 @@ public class Util {
 			}
 
 			objectMapper.writeValue(new File(System.getProperty("user.dir") + "/compose-files/" + fileName + ".yaml"), createComposeJson(conJson));
-		} catch (JsonGenerationException e) {
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			e.printStackTrace();
+			
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			throw new BrchainException(e, BrchainStatusCode.FILE_IO_ERROR);
+		
+		} 
 	}
 
+	/**
+	 * 압축 해제 함수
+	 * 
+	 * @param zipPath      압축 파일 경로
+	 * @param zipFileName  압축 파일 이름
+	 * @param zipUnzipPath 압축을 해제할 경로
+	 * 
+	 * @return
+	 * 
+	 */
+	
 	public boolean unZip(String zipPath, String zipFileName, String zipUnzipPath) {
+		
 		boolean  isChk    = false;
-//		zipUnzipPath = zipUnzipPath; 
 		File     zipFile  = new File(zipPath + zipFileName);
 
 		ZipEntry zipentry = null;
 		try (FileInputStream fis = new FileInputStream(zipFile); ZipInputStream zis = new ZipInputStream(fis, Charset.forName("EUC-KR"))) {
-			if (makeFolder(zipUnzipPath)) {
+			if (createFolder(zipUnzipPath)) {
 
 			}
 
 			while ((zipentry = zis.getNextEntry()) != null) {
+				
 				String filename = zipentry.getName();
-
 				File   file     = new File(zipUnzipPath, filename);
+				
 				if (zipentry.isDirectory()) {
 
 					file.mkdirs();
 				} else {
-					try {
-						createFile(file, zis);
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
+
+					createFile(file, zis);
+
 				}
 			}
+			
 			isChk = true;
 		} catch (Exception e) {
 			isChk = false;
 		}
 		return isChk;
 	}
+	
 
-	public boolean makeFolder(String folder) {
-		if (folder.length() < 0) {
+	/**
+	 * 폴더 생성 함수
+	 * 
+	 * @param folderPath 생성할 폴더 경로
+	 * 
+	 * @return 폴더 생성 여부
+	 * 
+	 */
+	
+	public boolean createFolder(String folderPath) {
+		if (folderPath.length() < 0) {
 			return false;
 		}
-		String path   = folder;
-		File   Folder = new File(path);
-		if (!Folder.exists()) {
-			try {
-				Folder.mkdir();
+		File folder = new File(folderPath);
 
-			} catch (Exception e) {
-				e.getStackTrace();
-			}
-		} else {
-
+		if (!folder.exists()) {
+			folder.mkdir();
 		}
+
 		return true;
 	}
 
-	private void createFile(File file, ZipInputStream zis) throws Throwable {
+	/**
+	 * 파일 생성 함수
+	 * 
+	 * @param file 파일
+	 * @param zis  압축 inputstream
+	 * 
+	 */
+	private void createFile(File file, ZipInputStream zis) {
 		File parentDir = new File(file.getParent());
 		if (!parentDir.exists()) {
 			parentDir.mkdirs();
 		}
 
-		try (FileOutputStream fos = new FileOutputStream(file)) {
+		
+		try(FileOutputStream fos = new FileOutputStream(file)) {
+			
 
 			byte[] buffer = new byte[256];
 			int    size   = 0;
+
 			while ((size = zis.read(buffer)) > 0) {
 				fos.write(buffer, 0, size);
 			}
-		} catch (Throwable e) {
-			throw e;
+		} catch (IOException e) {
+			throw new BrchainException(e, BrchainStatusCode.FILE_IO_ERROR);
 		}
+
 	}
 
+	/**
+	 * 커맨드 실행 함수
+	 * 
+	 * @param cmd 실행할 커맨드
+	 * 
+	 */
+	
 	public void execute(String cmd) {
 		Process      process       = null;
 		Runtime      runtime       = Runtime.getRuntime();
-		StringBuffer successOutput = new StringBuffer();     // 성공 스트링 버퍼
-		StringBuffer errorOutput   = new StringBuffer();     // 오류 스트링 버퍼
-
+		StringBuffer resultOutput  = new StringBuffer();     // 결과 스트링 버퍼
 		String       msg           = null;                   // 메시지
-
 		List<String> cmdList       = new ArrayList<String>();
 
 		// 운영체제 구분 (window, window 가 아니면 무조건 linux 로 판단)
@@ -745,50 +845,50 @@ public class Util {
 		// 명령어 셋팅
 		cmdList.add(cmd);
 		String[] array = cmdList.toArray(new String[cmdList.size()]);
-		System.out.println("command2 :" + array[0]);
-		System.out.println("command2 :" + array[1]);
-		System.out.println("command2 :" + array[2]);
+		logger.debug("[커멘드 실행]" + cmd);
 
 		// 명령어 실행
 		try {
 			process = runtime.exec(array);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (IOException e) {
+			throw new BrchainException(e, BrchainStatusCode.FILE_IO_ERROR);
 		}
 
-		try (BufferedReader successBufferReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "EUC-KR")); // 성공 버퍼
-				BufferedReader errorBufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "EUC-KR"))) {
+		try (BufferedReader resultBufferReader = new BufferedReader(new InputStreamReader(process.getInputStream(), "EUC-KR")); // 성공 버퍼
+//				BufferedReader errorBufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream(), "EUC-KR"))
+						) {
 
 			// shell 실행이 정상 동작했을 경우
 
-			while ((msg = successBufferReader.readLine()) != null) {
-				successOutput.append(msg + System.getProperty("line.separator"));
+			while ((msg = resultBufferReader.readLine()) != null) {
+				resultOutput.append(msg + System.getProperty("line.separator"));
 			}
 
-			// shell 실행시 에러가 발생했을 경우
-			while ((msg = errorBufferReader.readLine()) != null) {
-				errorOutput.append(msg + System.getProperty("line.separator"));
-			}
+//			// shell 실행시 에러가 발생했을 경우
+//			while ((msg = errorBufferReader.readLine()) != null) {
+//				errorOutput.append(msg + System.getProperty("line.separator"));
+//			}
 
 			// 프로세스의 수행이 끝날때까지 대기
 			process.waitFor();
+			
+			logger.debug("[커멘드 실행 결과]" + resultBufferReader.toString());
 
-			// shell 실행이 정상 종료되었을 경우
-			if (process.exitValue() == 0) {
-				System.out.println("성공");
-				System.out.println(successOutput.toString());
-			} else {
-				// shell 실행이 비정상 종료되었을 경우
-				System.out.println("비정상 종료");
-				System.out.println(successOutput.toString());
-				System.out.println(errorOutput.toString());
-			}
+//			// shell 실행이 정상 종료되었을 경우
+//			if (process.exitValue() == 0) {
+//				System.out.println("성공");
+//				System.out.println(successOutput.toString());
+//			} else {
+//				// shell 실행이 비정상 종료되었을 경우
+//				System.out.println("비정상 종료");
+//				System.out.println(successOutput.toString());
+//				System.out.println(errorOutput.toString());
+//			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new BrchainException(e, BrchainStatusCode.FILE_IO_ERROR);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			throw new BrchainException(e, BrchainStatusCode.THREAD_ERROR);
 		}
 	}
 

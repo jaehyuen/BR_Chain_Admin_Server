@@ -32,7 +32,7 @@ public enum BrchainStatusCode {
 	 * 
 	 */
 
-	SUCCESS("0","success"),
+	SUCCESS("0000","success"),
 	
 	DOCKER_CONNECTION_ERROR("9010","docker_connection_error"),
 	WALLET_CREATE_ERROR("9020","wallet_create_error"),

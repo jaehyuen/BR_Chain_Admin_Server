@@ -12,7 +12,7 @@ import com.brchain.common.dto.ResultDto;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
-import com.brchain.core.fabric.dto.FabricMemberDto;
+import com.brchain.core.fabric.dto.FabricNodeDto;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -146,18 +146,18 @@ public class ContainerService {
 	}
 
 	/**
-	 * FabricMemberDTO 생성 서비스
+	 * FabricNodeDto 생성 서비스
 	 * 
 	 * @param orgType 조직 타입
 	 * @param orgName 조직명
 	 * 
-	 * @return FabricMemberDTO 배열
+	 * @return FabricNodeDto 배열
 	 */
 
 	@Transactional(readOnly = true)
-	public ArrayList<FabricMemberDto> createMemberDtoArr(String orgType, String orgName) {
+	public ArrayList<FabricNodeDto> createfabricNodeDtoArr(String orgType, String orgName) {
 
-		ArrayList<FabricMemberDto> resultList  = new ArrayList<FabricMemberDto>();
+		ArrayList<FabricNodeDto> resultList  = new ArrayList<FabricNodeDto>();
 		List<ConInfoEntity>        conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType, orgName);
 
 		String                     caUrl       = "http://" + ip + ":" + conInfoList.get(0).getConPort();
@@ -165,18 +165,18 @@ public class ContainerService {
 		conInfoList = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
 
 		for (ConInfoEntity conInfo : conInfoList) {
-			FabricMemberDto memberDto = new FabricMemberDto();
+			FabricNodeDto fabricNodeDto = new FabricNodeDto();
 
-			memberDto.setConName(conInfo.getConName());
-			memberDto.setConNum(conInfo.getConNum());
-			memberDto.setConPort(conInfo.getConPort());
-			memberDto.setConUrl("grpcs://" + ip + ":" + conInfo.getConPort());
-			memberDto.setOrgMspId(conInfo.getOrgName() + "MSP");
-			memberDto.setOrgName(conInfo.getOrgName());
-			memberDto.setOrgType(conInfo.getOrgType());
-			memberDto.setCaUrl(caUrl);
+			fabricNodeDto.setConName(conInfo.getConName());
+			fabricNodeDto.setConNum(conInfo.getConNum());
+			fabricNodeDto.setConPort(conInfo.getConPort());
+			fabricNodeDto.setConUrl("grpcs://" + ip + ":" + conInfo.getConPort());
+			fabricNodeDto.setOrgMspId(conInfo.getOrgName() + "MSP");
+			fabricNodeDto.setOrgName(conInfo.getOrgName());
+			fabricNodeDto.setOrgType(conInfo.getOrgType());
+			fabricNodeDto.setCaUrl(caUrl);
 
-			resultList.add(memberDto);
+			resultList.add(fabricNodeDto);
 		}
 
 		return resultList;

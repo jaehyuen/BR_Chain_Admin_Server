@@ -32,9 +32,6 @@ public class ChannelService {
 	private final ChannelInfoPeerRepository channelInfoPeerRepository;
 	private final ChannelHandleRepository   channelHandleRepository;
 
-	// 서비스
-//	private final ContainerService containerService;
-
 	private final Util                      util;
 
 	/**
@@ -61,8 +58,7 @@ public class ChannelService {
 
 	public ChannelInfoDto findChannelInfoByChannelName(String channelName) {
 
-		return util.toDto(channelInfoRepository.findById(channelName)
-			.orElseThrow(IllegalArgumentException::new));
+		return util.toDto(channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new));
 	}
 
 	/**
@@ -250,7 +246,7 @@ public class ChannelService {
 	public ResultDto<List<ChannelSummaryDto>> getChannelSummaryList() {
 
 		Calendar cal = Calendar.getInstance();
-		cal.add(cal.MONTH, -1);
+		cal.add(Calendar.MONTH, -1);
 
 		// 이번달, 지난달 변수 선언
 		SimpleDateFormat        dateFormat         = new SimpleDateFormat("yyyyMM");

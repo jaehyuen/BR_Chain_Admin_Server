@@ -33,10 +33,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.brchain.common.dto.ResultDto;
 import com.brchain.common.exception.BrchainException;
 import com.brchain.core.chaincode.dto.ActiveCcDto;
-import com.brchain.core.chaincode.dto.CcInfoChannelDto;
 import com.brchain.core.chaincode.dto.CcInfoDto;
 import com.brchain.core.chaincode.dto.CcInfoPeerDto;
 import com.brchain.core.chaincode.dto.InstallCcDto;
+import com.brchain.core.chaincode.entitiy.CcInfoChannelEntity;
+import com.brchain.core.chaincode.entitiy.CcInfoEntity;
+import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
 import com.brchain.core.chaincode.service.ChaincodeService;
 import com.brchain.core.channel.dto.ChannelHandleDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
@@ -282,57 +284,44 @@ public class FabricService {
 			}
 
 			// 생성된 조직의 docker-compose yaml file 생성
-			util.createYamlFile(conInfoDtoArr.get(0)
-				.getOrgName(), conJson);
+			util.createYamlFile(conInfoDtoArr.get(0).getOrgName(), conJson);
 
 			String path = null;
 
 			// 로컬 개발시 실서버에서 생성된 인증서,트렌젝션 다운로드
 			if (environment.getActiveProfiles()[0].equals("local")) {
 
-				if (conInfoDtoArr.get(0)
-					.getOrgType()
-					.equals("peer")) {
+				if (conInfoDtoArr.get(0).getOrgType().equals("peer")) {
 
-					path = "crypto-config/peerOrganizations/org" + conInfoDtoArr.get(0)
-						.getOrgName() + ".com/users/Admin@org"
-							+ conInfoDtoArr.get(0)
-								.getOrgName()
-							+ ".com/msp/keystore/";
+					path = "crypto-config/peerOrganizations/org" + conInfoDtoArr.get(0).getOrgName() + ".com/users/Admin@org"
+							+ conInfoDtoArr.get(0).getOrgName() + ".com/msp/keystore/";
+					
 					sshClient.downloadFile(path, "server.key");
 
-					path = "crypto-config/peerOrganizations/org" + conInfoDtoArr.get(0)
-						.getOrgName() + ".com/users/Admin@org"
-							+ conInfoDtoArr.get(0)
-								.getOrgName()
-							+ ".com/msp/signcerts/";
+					path = "crypto-config/peerOrganizations/org" + conInfoDtoArr.get(0).getOrgName() + ".com/users/Admin@org"
+							+ conInfoDtoArr.get(0).getOrgName() + ".com/msp/signcerts/";
+					
 					sshClient.downloadFile(path, "cert.pem");
 
 				} else {
 
-					path = "crypto-config/ordererOrganizations/org" + conInfoDtoArr.get(0)
-						.getOrgName() + ".com/users/Admin@org"
-							+ conInfoDtoArr.get(0)
-								.getOrgName()
-							+ ".com/msp/keystore/";
+					path = "crypto-config/ordererOrganizations/org" + conInfoDtoArr.get(0).getOrgName() + ".com/users/Admin@org"
+							+ conInfoDtoArr.get(0).getOrgName() + ".com/msp/keystore/";
+					
 					sshClient.downloadFile(path, "server.key");
-					path = "crypto-config/ordererOrganizations/org" + conInfoDtoArr.get(0)
-						.getOrgName() + ".com/users/Admin@org"
-							+ conInfoDtoArr.get(0)
-								.getOrgName()
-							+ ".com/msp/signcerts/";
+					
+					path = "crypto-config/ordererOrganizations/org" + conInfoDtoArr.get(0).getOrgName() + ".com/users/Admin@org"
+							+ conInfoDtoArr.get(0).getOrgName() + ".com/msp/signcerts/";
+					
 					sshClient.downloadFile(path, "cert.pem");
 
 				}
+				
 				path = "crypto-config/ca-certs/";
-				sshClient.downloadFile(path, "ca.org" + conInfoDtoArr.get(0)
-					.getOrgName() + ".com-cert.pem");
+				sshClient.downloadFile(path, "ca.org" + conInfoDtoArr.get(0).getOrgName() + ".com-cert.pem");
 			}
 
-			ArrayList<FabricNodeDto> FabricNodeDto = containerService.createfabricNodeDtoArr(conInfoDtoArr.get(0)
-				.getOrgType(),
-					conInfoDtoArr.get(0)
-						.getOrgName());
+			ArrayList<FabricNodeDto> FabricNodeDto = containerService.createfabricNodeDtoArr(conInfoDtoArr.get(0).getOrgType(), conInfoDtoArr.get(0).getOrgName());
 			fabricClient.createWallet(FabricNodeDto.get((int) (Math.random() * FabricNodeDto.size())));
 
 		} catch (InterruptedException e) {
@@ -564,107 +553,106 @@ public class FabricService {
 		// 체인코드 설치
 		fabricClient.installChaincode(peerDto, installCcDto.getCcName(), installCcDto.getCcVersion());
 
-		CcInfoPeerDto ccInfoPeerDto = new CcInfoPeerDto();
+		CcInfoPeerEntity ccInfoPeerEntity = new CcInfoPeerEntity();
 
 		// 설치한 체인코드 정보 조회
-		CcInfoDto     ccInfoDto     = chaincodeService.findCcInfoById(installCcDto.getId());
+		CcInfoEntity ccInfoEntity     = chaincodeService.findCcInfoById(installCcDto.getId());
 
 		// 체인코드를 설치한 컨테이너 정보 조회
 		ConInfoDto    conInfoDto    = containerService.findConInfoByConName(peerDto.getConName());
 
-		ccInfoPeerDto.setCcVersion(installCcDto.getCcVersion());
-		ccInfoPeerDto.setCcInfoDto(ccInfoDto);
-		ccInfoPeerDto.setConInfoDto(conInfoDto);
+		ccInfoPeerEntity.setCcVersion(installCcDto.getCcVersion());
+		ccInfoPeerEntity.setCcInfoEntity(ccInfoEntity);
+		ccInfoPeerEntity.setConInfoEntity(util.toEntity(conInfoDto));
 
 		// 체인코드 설치한 피어정보 저장
-		chaincodeService.saveCcnInfoPeer(ccInfoPeerDto);
+		chaincodeService.saveCcInfoPeer(ccInfoPeerEntity);
 
 		logger.info("[체인코드 설치] 종료");
 
 		return util.setResult("0000", true, "Success install chaincode", null);
 	}
 
-	public ResultDto<?> activeChaincode(ActiveCcDto activeCcDto) throws Exception {
-
-		logger.info("[체인코드 활성화] 시작");
-		logger.info("[체인코드 활성화] activeCcDto : " + activeCcDto);
-
-		logger.info("[체인코드 활성화] activeCcDto.getChannelName() : " + activeCcDto.getChannelName());
-
-		CcInfoDto             ccInfoDto         = chaincodeService.findCcInfoById(activeCcDto.getId());
-		ChannelInfoDto        channelInfoDto    = channelService
-			.findChannelInfoByChannelName(activeCcDto.getChannelName());
-		List<String>          orgs              = containerService.findOrgsInChannel(activeCcDto.getChannelName());
-		List<FabricNodeDto> peerDtoArr        = new ArrayList<FabricNodeDto>();
-		List<CcInfoPeerDto>   ccInfoPeerDtoList = new ArrayList<CcInfoPeerDto>();
-		List<FabricNodeDto> ordererDtoArr     = new ArrayList<FabricNodeDto>();
-
-		for (String org : orgs) {
-			peerDtoArr.addAll(containerService.createfabricNodeDtoArr("peer", org));
-		}
-
-		ccInfoPeerDtoList.addAll(chaincodeService.findByCcInfoId(activeCcDto.getId()));
-		ordererDtoArr.addAll(containerService.createfabricNodeDtoArr("orderer", channelInfoDto.getOrderingOrg()));
-		System.out.println(ccInfoPeerDtoList);
-
-		for (FabricNodeDto peerDto : peerDtoArr) {
-			boolean flag = false;
-			for (CcInfoPeerDto ccInfoPeerDto : ccInfoPeerDtoList) {
-				if (peerDto.getConName()
-					.equals(ccInfoPeerDto.getConInfoDto()
-						.getConName())) {
-					flag = true;
-				}
-
-			}
-
-			if (!flag) {
-				System.out.println(peerDto.getConName() + " 여기에 체인코드 설치 안됨");
-				InstallCcDto installCcDto = new InstallCcDto();
-
-				installCcDto.setCcName(activeCcDto.getCcName());
-				installCcDto.setCcVersion(activeCcDto.getCcVersion());
-				installCcDto.setId(activeCcDto.getId());
-				installCcDto.setOrgName(peerDto.getOrgName());
-				installCcDto.setConNum(peerDto.getConNum());
-
-				installChaincode(installCcDto);
-
-			}
-		}
-
-		CcInfoChannelDto ccInfoChannelDto;
-
-		fabricClient.activeChaincode(peerDtoArr, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
-				activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
-		logger.info("[체인코드 인스턴스화] 종료");
-
+	public ResultDto<?> activeChaincode(ActiveCcDto activeCcDto)  {
+		
 		try {
 
-			// 이미 인스턴스화가 진행된 체인코드인지 조회
-//				ccInfoChannelDto = chaincodeService.findCcInfoChannelByChannelInfoAndCcInfo(channelInfoDto, ccInfoDto);
-			ccInfoChannelDto = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(),
-					activeCcDto.getCcName());
+			logger.info("[체인코드 활성화] 시작");
+			logger.info("[체인코드 활성화] activeCcDto : " + activeCcDto);
+
+			logger.info("[체인코드 활성화] activeCcDto.getChannelName() : " + activeCcDto.getChannelName());
+
+			CcInfoEntity           ccInfoEntity         = chaincodeService.findCcInfoById(activeCcDto.getId());
+			ChannelInfoDto         channelInfoDto       = channelService.findChannelInfoByChannelName(activeCcDto.getChannelName());
+			List<String>           orgs                 = containerService.findOrgsInChannel(activeCcDto.getChannelName());
+			List<FabricNodeDto>    peerDtoArr           = new ArrayList<FabricNodeDto>();
+			List<CcInfoPeerEntity> ccInfoPeerEntityList = new ArrayList<CcInfoPeerEntity>();
+			List<FabricNodeDto>    ordererDtoArr        = new ArrayList<FabricNodeDto>();
+
+			for (String org : orgs) {
+				peerDtoArr.addAll(containerService.createfabricNodeDtoArr("peer", org));
+			}
+
+			ccInfoPeerEntityList.addAll(chaincodeService.findByCcInfoId(activeCcDto.getId()));
+			ordererDtoArr.addAll(containerService.createfabricNodeDtoArr("orderer", channelInfoDto.getOrderingOrg()));
+			System.out.println(ccInfoPeerEntityList);
+
+			for (FabricNodeDto peerDto : peerDtoArr) {
+				boolean flag = false;
+				for (CcInfoPeerEntity ccInfoPeerEntity : ccInfoPeerEntityList) {
+					if (peerDto.getConName().equals(ccInfoPeerEntity.getConInfoEntity().getConName())) {
+						flag = true;
+					}
+
+				}
+
+				if (!flag) {
+					logger.debug(peerDto.getConName() + " 여기에 체인코드 설치 안됨");
+					InstallCcDto installCcDto = new InstallCcDto();
+
+					installCcDto.setCcName(activeCcDto.getCcName());
+					installCcDto.setCcVersion(activeCcDto.getCcVersion());
+					installCcDto.setId(activeCcDto.getId());
+					installCcDto.setOrgName(peerDto.getOrgName());
+					installCcDto.setConNum(peerDto.getConNum());
+
+					installChaincode(installCcDto);
+
+				}
+			}
+
+			CcInfoChannelEntity ccInfoChannelEntity;
+
 			fabricClient.activeChaincode(peerDtoArr, ordererDtoArr.get((int) (Math.random() * ordererDtoArr.size())),
 					activeCcDto.getChannelName(), orgs, activeCcDto.getCcName(), activeCcDto.getCcVersion());
+			logger.info("[체인코드 인스턴스화] 종료");
 
-			ccInfoChannelDto.setCcVersion(activeCcDto.getCcVersion());
+			try {
 
-			// 채널에 활성화된 체인코드정보 업데이트
-			chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
+				// 이미 인스턴스화가 진행된 체인코드인지 조회
+				ccInfoChannelEntity = chaincodeService.findByChannelNameAndCcName(activeCcDto.getChannelName(), activeCcDto.getCcName());
 
-		} catch (Exception e) {
+				ccInfoChannelEntity.setCcVersion(activeCcDto.getCcVersion());
 
-			ccInfoChannelDto = new CcInfoChannelDto();
-			ccInfoChannelDto.setCcInfoDto(ccInfoDto);
-			ccInfoChannelDto.setChannelInfoDto(channelInfoDto);
-			ccInfoChannelDto.setCcVersion(activeCcDto.getCcVersion());
+				// 채널에 활성화된 체인코드정보 업데이트
+				chaincodeService.saveCcInfoChannel(ccInfoChannelEntity);
 
-			// 채널에 활성화된 체인코드정보 저장
-			chaincodeService.saveCcInfoChannel(ccInfoChannelDto);
+			} catch (IllegalArgumentException e) {
+
+				ccInfoChannelEntity = new CcInfoChannelEntity();
+				ccInfoChannelEntity.setCcInfoEntity(ccInfoEntity);
+				ccInfoChannelEntity.setChannelInfoEntity(util.toEntity(channelInfoDto));
+				ccInfoChannelEntity.setCcVersion(activeCcDto.getCcVersion());
+
+				// 채널에 활성화된 체인코드정보 저장
+				chaincodeService.saveCcInfoChannel(ccInfoChannelEntity);
+			}
+
+			return util.setResult("0000", true, "Success instantiate chaincode", null);
+		} catch ( InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.THREAD_ERROR);
+
 		}
-
-		return util.setResult("0000", true, "Success instantiate chaincode", null);
 
 	}
 
@@ -1054,15 +1042,15 @@ public class FabricService {
 			String    ccPath    = fabricClient.packageChaincodeWithLifecycle(ccName, ccVersion);
 
 			// 디비에 저장(CCINFO)
-			CcInfoDto ccInfoDto = new CcInfoDto();
+			CcInfoEntity ccInfoEntity = new CcInfoEntity();
 
-			ccInfoDto.setCcName(ccName);
-			ccInfoDto.setCcDesc(ccDesc);
-			ccInfoDto.setCcLang(ccLang);
-			ccInfoDto.setCcPath(ccPath);
-			ccInfoDto.setCcVersion(ccVersion);
+			ccInfoEntity.setCcName(ccName);
+			ccInfoEntity.setCcDesc(ccDesc);
+			ccInfoEntity.setCcLang(ccLang);
+			ccInfoEntity.setCcPath(ccPath);
+			ccInfoEntity.setCcVersion(ccVersion);
 
-			chaincodeService.saveCcInfo(ccInfoDto);
+			chaincodeService.saveCcInfo(ccInfoEntity);
 //
 		} catch (IOException e) {
 			throw new BrchainException(e, BrchainStatusCode.CHAINCODE_UPLOAD_ERROR);

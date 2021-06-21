@@ -26,6 +26,7 @@ import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
 import com.brchain.core.chaincode.repository.CcInfoRepository;
 import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.container.service.ContainerService;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -51,14 +52,14 @@ public class ChaincodeService {
 	/**
 	 * 체인코드 정보 저장 서비스
 	 * 
-	 * @param ccInfoDto 체인코드 정보 관련 DTO
+	 * @param ccInfoEntity 체인코드 정보 관련 Entity
 	 * 
-	 * @return 저장한 체인코드 정보 DTO
+	 * @return 저장한 체인코드 정보 Entity
 	 */
 
-	public CcInfoDto saveCcInfo(CcInfoDto ccInfoDto) {
+	public CcInfoEntity saveCcInfo(CcInfoEntity ccInfoEntity) {
 
-		return util.toDto(ccInfoRepository.save(util.toEntity(ccInfoDto)));
+		return ccInfoRepository.save(ccInfoEntity);
 
 	}
 
@@ -67,14 +68,12 @@ public class ChaincodeService {
 	 * 
 	 * @param ccName 체인코드 이름
 	 * 
-	 * @return 조죄한 체인코드 정보 DTO
+	 * @return 조죄한 체인코드 정보 Entity
 	 */
 
-//	@Transactional(readOnly = true)
-	public CcInfoDto findCcInfoById(Long id) {
+	public CcInfoEntity findCcInfoById(Long id) {
 
-		return util.toDto(ccInfoRepository.findById(id)
-			.orElseThrow(IllegalArgumentException::new));
+		return ccInfoRepository.findById(id).orElseThrow(IllegalArgumentException::new);
 
 	}
 
@@ -89,7 +88,8 @@ public class ChaincodeService {
 
 		List<CcInfoEntity> ccInfoList = ccInfoRepository.findAll();
 
-		return util.setResult("0000", true, "Success get chaincode info", ccInfoList.stream()
+		// Success get chaincode info
+		return util.setResult(BrchainStatusCode.SUCCESS, ccInfoList.stream()
 			.map(ccInfo -> util.toDto(ccInfo))
 			.collect(Collectors.toList()));
 
@@ -98,14 +98,14 @@ public class ChaincodeService {
 	/**
 	 * 체인코드 정보 (피어) 저장 서비스
 	 * 
-	 * @param ccInfoPeerDto 체인코드 정보 (피어) 관련 DTO
+	 * @param ccInfoPeerEntity 체인코드 정보 (피어) 관련 Entity
 	 * 
-	 * @return 저장한 체인코드 정보 DTO
+	 * @return 저장한 체인코드 정보 Entity
 	 */
 
-	public CcInfoPeerDto saveCcnInfoPeer(CcInfoPeerDto ccInfoPeerDto) {
+	public CcInfoPeerEntity saveCcInfoPeer(CcInfoPeerEntity ccInfoPeerEntity) {
 
-		return util.toDto(ccInfoPeerRepository.save(util.toEntity(ccInfoPeerDto)));
+		return ccInfoPeerRepository.save(ccInfoPeerEntity);
 
 	}
 
@@ -122,7 +122,8 @@ public class ChaincodeService {
 		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository
 			.findByConInfoEntity(util.toEntity(containerService.findConInfoByConName(conName)));
 
-		return util.setResult("0000", true, "Success get chaincode info", ccInfoPeerList.stream()
+		//Success get chaincode peer info list
+		return util.setResult(BrchainStatusCode.SUCCESS, ccInfoPeerList.stream()
 			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
 			.collect(Collectors.toList()));
 	}
@@ -140,7 +141,8 @@ public class ChaincodeService {
 
 		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findCcInfoPeerToActive(channelName);
 
-		return util.setResult("0000", true, "Success get chaincode list channel", ccInfoPeerList.stream()
+		//Success get chaincode channel info list 
+		return util.setResult(BrchainStatusCode.SUCCESS, ccInfoPeerList.stream()
 			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
 			.collect(Collectors.toList()));
 
@@ -149,14 +151,14 @@ public class ChaincodeService {
 	/**
 	 * 체인코드 정보 (채널) 저장 서비스
 	 * 
-	 * @param CcInfoChannelDto 체인코드 정보 (채널) DTO
+	 * @param ccInfoChannelEntity 체인코드 정보 (채널) Entity
 	 * 
-	 * @return 저장한 체인코드 정보 (채널) DTO
+	 * @return 저장한 체인코드 정보 (채널) Entity
 	 */
 
-	public CcInfoChannelDto saveCcInfoChannel(CcInfoChannelDto ccInfoChannelDto) {
+	public CcInfoChannelEntity saveCcInfoChannel(CcInfoChannelEntity ccInfoChannelEntity) {
 
-		return util.toDto(ccInfoChannelRepository.save(util.toEntity(ccInfoChannelDto)));
+		return ccInfoChannelRepository.save(ccInfoChannelEntity);
 
 	}
 
@@ -173,24 +175,26 @@ public class ChaincodeService {
 
 		List<CcInfoChannelEntity> ccInfoChannelList = ccInfoChannelRepository.findByChannelName(channelName);
 
-		return util.setResult("0000", true, "Success get actived chaincode list channel ", ccInfoChannelList.stream()
+		//Success get actived chaincode channel list  
+		return util.setResult(BrchainStatusCode.SUCCESS, ccInfoChannelList.stream()
 			.map(ccInfoChannel -> util.toDto(ccInfoChannel))
 			.collect(Collectors.toList()));
 
 	}
 
+
 	/**
 	 * 채널 정보, 체인코드 정보로 체인코드 정보 (채널) 조회 서비스
 	 * 
-	 * @param channelInfoDto 채널 정보 DTO
-	 * @param ccInfoDto      체인코드 정보 DTO
+	 * @param channelName 채널 이름
+	 * @param ccName      체인코드 이름
 	 * 
-	 * @return 조회한 체인코드 정보 (채널) DTO
+	 * @return 조회한 체인코드 정보 (채널) Entity
 	 */
 
-	public CcInfoChannelDto findByChannelNameAndCcName(String channelName, String ccName) {
+	public CcInfoChannelEntity findByChannelNameAndCcName(String channelName, String ccName) {
 
-		return util.toDto(ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName).get());
+		return ccInfoChannelRepository.findByChannelNameAndCcName(channelName, ccName).orElseThrow(IllegalArgumentException::new);
 
 	}
 
@@ -199,17 +203,14 @@ public class ChaincodeService {
 	 * 
 	 * @param id 체인코드 id
 	 * 
-	 * @return 조회한 체인코드 정보 (피어) DTO
+	 * @return 조회한 체인코드 정보 (피어) Entity
 	 */
 
 	@Transactional(readOnly = true)
-	public List<CcInfoPeerDto> findByCcInfoId(Long id) {
+	public List<CcInfoPeerEntity> findByCcInfoId(Long id) {
 
-		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByCcId(id);
+		return ccInfoPeerRepository.findByCcId(id);
 
-		return ccInfoPeerList.stream()
-			.map(ccInfoPeer -> util.toDto(ccInfoPeer))
-			.collect(Collectors.toList());
 	}
 
 	/**
@@ -222,11 +223,8 @@ public class ChaincodeService {
 
 		List<CcSummaryDto> CcSummaryList = ccInfoPeerRepository.findChaincodeSummary();
 
-		return util.setResult("0000", true, "Success get cc summary", CcSummaryList);
+		//Success get cc summary list
+		return util.setResult(BrchainStatusCode.SUCCESS, CcSummaryList);
 	}
-
-//	public void test() {
-//		System.out.println(ccInfoChannelRepository.testQuery("querytestchannel", "test-cc"));
-//	}
 
 }

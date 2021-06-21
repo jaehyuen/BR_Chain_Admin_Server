@@ -493,7 +493,7 @@ public class Util {
 		ResultDto<T> resultDto = new ResultDto<T>();
 
 		resultDto.setResultCode(status.getCode());
-		resultDto.setResultFlag(status.getCode().equals("0") ? true : false);
+		resultDto.setResultFlag(status.getCode().equals("0000") ? true : false);
 		resultDto.setResultMessage(status.getMessage());
 		resultDto.setResultData(data);
 

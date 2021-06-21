@@ -52,8 +52,6 @@ import org.hyperledger.fabric.sdk.InstantiateProposalRequest;
 import org.hyperledger.fabric.sdk.LifecycleApproveChaincodeDefinitionForMyOrgProposalResponse;
 import org.hyperledger.fabric.sdk.LifecycleApproveChaincodeDefinitionForMyOrgRequest;
 import org.hyperledger.fabric.sdk.LifecycleChaincodePackage;
-import org.hyperledger.fabric.sdk.LifecycleCheckCommitReadinessProposalResponse;
-import org.hyperledger.fabric.sdk.LifecycleCheckCommitReadinessRequest;
 import org.hyperledger.fabric.sdk.LifecycleCommitChaincodeDefinitionProposalResponse;
 import org.hyperledger.fabric.sdk.LifecycleCommitChaincodeDefinitionRequest;
 import org.hyperledger.fabric.sdk.LifecycleInstallChaincodeProposalResponse;
@@ -136,15 +134,13 @@ public class FabricClient {
 
 		logger.info("[fabric 네트워크 연결 시작] 조직 이름 :" + orgName + ", 채널 이름 : " + channelName);
 
-		InputStream     is         = new ByteArrayInputStream(connectionJson.toString()
-			.replace("\\", "")
-			.getBytes());
+		InputStream     is         = new ByteArrayInputStream(connectionJson.toString().replace("\\", "").getBytes());
 
 		// 파라미터 설정
-
 		Path            walletPath = Paths.get("wallet");
 		Wallet          wallet;
 		Gateway.Builder builder    = null;
+		
 		try {
 
 			wallet  = Wallets.newFileSystemWallet(walletPath);
@@ -182,19 +178,13 @@ public class FabricClient {
 		try {
 
 			String     orgName     = fabricNodeDto.getOrgName();                                                                   // 조직명
-			String     orgType     = fabricNodeDto.getOrgType();                                                                   // 조직
-																																	// 타입(peer,
-																																	// orderer)
+			String     orgType     = fabricNodeDto.getOrgType();                                                                   // 조직 타입(peer, orderer)
 
-			String     certificate = new String(                                                                                   // 인증서
-																																	// 파일
-																																	// 경로
+			String     certificate = new String(                                                                                   // 인증서 파일 경로
 					Files.readAllBytes(Paths.get("crypto-config/" + orgType + "Organizations/org" + orgName
 							+ ".com/users/Admin@org" + orgName + ".com/msp/signcerts/cert.pem")));
 
-			String     keyPath     = "crypto-config/" + orgType + "Organizations/org" + orgName + ".com/users/Admin@org"           // 키
-																																	// 파일
-																																	// 경로
+			String     keyPath     = "crypto-config/" + orgType + "Organizations/org" + orgName + ".com/users/Admin@org"           // 키 파일 경로
 					+ orgName + ".com/msp/keystore/server.key";
 
 			PrivateKey key         = null;
@@ -223,6 +213,7 @@ public class FabricClient {
 				byte[]              encoded = DatatypeConverter.parseBase64Binary(keyBuilder.toString());
 				PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
 				KeyFactory          kf      = KeyFactory.getInstance("EC");
+				
 				key = kf.generatePrivate(keySpec);
 
 			}
@@ -360,8 +351,7 @@ public class FabricClient {
 			X509Enrollment enrollment = new X509Enrollment(identity.getPrivateKey(), sw.toString());
 
 			// 가저온 인증서 정보로 user 생성
-			return new BrchainUser(fabricNodeDto.getOrgName(), fabricNodeDto.getOrgName(), fabricNodeDto.getOrgMspId(),
-					enrollment);
+			return new BrchainUser(fabricNodeDto.getOrgName(), fabricNodeDto.getOrgName(), fabricNodeDto.getOrgMspId(), enrollment);
 
 		} catch (IOException | CertificateEncodingException e) {
 			throw new BrchainException(e, BrchainStatusCode.FABRIC_CONTEXT_ERROR);
@@ -381,8 +371,7 @@ public class FabricClient {
 	public HFClient createClient(FabricNodeDto fabricNodeDto) {
 
 		try {
-			CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault()
-				.getCryptoSuite();
+			CryptoSuite cryptoSuite = CryptoSuiteFactory.getDefault().getCryptoSuite();
 
 			// 클라이언트 생성
 			HFClient    client      = HFClient.createNewInstance();
@@ -431,8 +420,7 @@ public class FabricClient {
 			byte[]     configBlock;
 
 			// 설정 파일 가져오기(Byte Array)
-			if (fabricNodeDto.getOrgType()
-				.equals("peer")) {
+			if (fabricNodeDto.getOrgType().equals("peer")) {
 
 				Peer peer = client.newPeer(fabricNodeDto.getConName(), fabricNodeDto.getConUrl(), props);
 
@@ -488,8 +476,7 @@ public class FabricClient {
 
 			logger.info("[fabric 채널 설정 가져오기 완료]");
 
-			return (JSONObject) jsonParser
-				.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
+			return (JSONObject) jsonParser.parse(new FileReader(System.getProperty("user.dir") + "/" + path + fileName + ".json"));
 
 		} catch (InvalidArgumentException | TransactionException | IOException | ParseException e) {
 			throw new BrchainException(e, BrchainStatusCode.GET_CHANNEL_CONFIG_ERROR);
@@ -625,8 +612,8 @@ public class FabricClient {
 			BrchainUser                user                       = createContext(fabricNodeDto);
 
 			// 업데이트 승인
-			byte[]                     signers                    = channel
-				.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
+			byte[]                     signers                    = channel.getUpdateChannelConfigurationSignature(updateChannelConfiguration, user);
+			
 			user = createContext(ordererDto);
 
 			// 업데이트 리퀘스트 전송
@@ -847,7 +834,7 @@ public class FabricClient {
 		logger.debug("[앵커피어 설정] 기존 설정 : " + genesisJson);
 
 		// 앵커피어 설정 추가
-		JSONObject modifiedJson = util.modifyAnchorConfig(genesisJson, util.createAnchorJson(peerDto), "", peerDto);
+		JSONObject modifiedJson = util.addAnchorConfig(genesisJson, util.createAnchorJson(peerDto), "", peerDto);
 		logger.debug("[앵커피어 설정] 변경된 설정 : " + modifiedJson.toString());
 
 		// 파일 업데이트

@@ -11,14 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.brchain.common.dto.ResultDto;
-import com.brchain.common.exception.BrchainException;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.dto.DockerStatsDto;
+import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
-import com.jcraft.jsch.JSchException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
@@ -57,10 +56,10 @@ public class DockerService {
 
 			Container  container  = iter.next();
 
-			ConInfoDto conInfoDto = null;
+			ConInfoEntity conInfoEntity = null;
 
 			try {
-				conInfoDto = containerService.deleteConInfo(container.id());
+				conInfoEntity = containerService.deleteConInfo(container.id());
 			} catch (Exception e) {
 				logger.info("디비에 없는 컨테이너");
 			}
@@ -68,8 +67,8 @@ public class DockerService {
 			logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
 			dockerClient.removeContainer(container.id());
 
-			if (conInfoDto != null) {
-				sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
+			if (conInfoEntity != null) {
+				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
 			}
 
 		}
@@ -104,11 +103,11 @@ public class DockerService {
 
 	public ResultDto<String> removeContainer(String conId) {
 
-		ConInfoDto conInfoDto = null;
+		ConInfoEntity conInfoEntity = null;
 
 		try {
 
-			conInfoDto = containerService.deleteConInfo(conId);
+			conInfoEntity = containerService.deleteConInfo(conId);
 
 		} catch (Exception e) {
 
@@ -118,7 +117,7 @@ public class DockerService {
 
 		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
 		dockerClient.removeContainer(conId);
-		sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
+		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
 
 		return util.setResult("0000", true, "Success remove container", null);
 
@@ -138,20 +137,18 @@ public class DockerService {
 
 			Container  container  = iter.next();
 
-			ConInfoDto conInfoDto = null;
+			ConInfoEntity conInfoEntity = null;
 
-			if (container.names()
-				.get(0)
-				.contains(orgName)) {
+			if (container.names().get(0).contains(orgName)) {
 				try {
-					conInfoDto = containerService.deleteConInfo(container.id());
+					conInfoEntity = containerService.deleteConInfo(container.id());
 				} catch (Exception e) {
 					logger.info("디비에 없는 컨테이너");
 				}
 
 				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
 				dockerClient.removeContainer(container.id());
-				sshClient.removeDir(conInfoDto.getOrgName(), conInfoDto.getConName());
+				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
 
 			}
 		}
@@ -218,12 +215,11 @@ public class DockerService {
 		ContainerInfo info = dockerClient.createContainer(createConDto);
 
 		createConDto.setConId(info.id());
-		createConDto.setConName(info.name()
-			.replace("/", ""));
+		createConDto.setConName(info.name().replace("/", ""));
 
 		logger.info("[도커 컨테이너 생성 dto] " + createConDto);
 
-		containerService.saveConInfo(createConDto);
+		containerService.saveConInfo(util.toEntity(createConDto));
 
 		return util.createConJson(info);
 

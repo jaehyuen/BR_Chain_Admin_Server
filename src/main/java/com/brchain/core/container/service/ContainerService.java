@@ -13,6 +13,7 @@ import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
 import com.brchain.core.fabric.dto.FabricNodeDto;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,14 @@ public class ContainerService {
 	/**
 	 * 컨테이너 정보 저장 서비스
 	 * 
-	 * @param conInfoDto 컨테이너 정보 DTO
+	 * @param conInfoEntity 컨테이너 정보 Entity
 	 * 
-	 * @return 저장한 컨테이너 정보 DTO
+	 * @return 저장한 컨테이너 정보 Entity
 	 */
 
-	public ConInfoDto saveConInfo(ConInfoDto conInfoDto) {
+	public ConInfoEntity saveConInfo(ConInfoEntity conInfoEntity) {
 
-		return util.toDto(conInfoRepository.save(util.toEntity(conInfoDto)));
+		return conInfoRepository.save(conInfoEntity);
 
 	}
 
@@ -48,16 +49,16 @@ public class ContainerService {
 	 * 
 	 * @param conId 삭제할 컨테이너 ID
 	 * 
-	 * @return 삭제한 컨테이너 정보 DTO
+	 * @return 삭제한 컨테이너 정보 Entity
 	 */
 
-	public ConInfoDto deleteConInfo(String conId) {
+	public ConInfoEntity deleteConInfo(String conId) {
 
 		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId);
 
 		conInfoRepository.deleteById(conInfoEntity.getConName());
 
-		return util.toDto(conInfoEntity);
+		return conInfoEntity;
 
 	}
 
@@ -66,12 +67,12 @@ public class ContainerService {
 	 * 
 	 * @param conName 컨테이너 이름
 	 * 
-	 * @return 컨테이너 정보 DTO
+	 * @return 컨테이너 정보 Entity
 	 */
 
-	public ConInfoDto findConInfoByConName(String conName) {
+	public ConInfoEntity findConInfoByConName(String conName) {
 
-		return util.toDto(conInfoRepository.findById(conName).orElseThrow(IllegalArgumentException::new));
+		return conInfoRepository.findById(conName).orElseThrow(IllegalArgumentException::new);
 
 	}
 
@@ -121,7 +122,8 @@ public class ContainerService {
 
 		}
 
-		return util.setResult("0000", true, "Success get container info", conInfoList.stream()
+		//Success get container info list
+		return util.setResult(BrchainStatusCode.SUCCESS, conInfoList.stream()
 			.map(conInfo -> util.toDto(conInfo))
 			.collect(Collectors.toList()));
 	}
@@ -139,7 +141,8 @@ public class ContainerService {
 
 		List<ConInfoEntity> conInfoList = conInfoRepository.findMemberByOrgName(orgName);
 
-		return util.setResult("0000", true, "Success get " + orgName + " member info list", conInfoList.stream()
+		//Success get " + orgName + " member info list
+		return util.setResult(BrchainStatusCode.SUCCESS, conInfoList.stream()
 			.map(conInfo -> util.toDto(conInfo))
 			.collect(Collectors.toList()));
 
@@ -157,7 +160,7 @@ public class ContainerService {
 	@Transactional(readOnly = true)
 	public ArrayList<FabricNodeDto> createfabricNodeDtoArr(String orgType, String orgName) {
 
-		ArrayList<FabricNodeDto> resultList  = new ArrayList<FabricNodeDto>();
+		ArrayList<FabricNodeDto> resultList    = new ArrayList<FabricNodeDto>();
 		List<ConInfoEntity>        conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType, orgName);
 
 		String                     caUrl       = "http://" + ip + ":" + conInfoList.get(0).getConPort();

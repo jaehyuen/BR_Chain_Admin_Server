@@ -47,6 +47,7 @@ import com.brchain.core.client.FabricClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.dto.CreateOrgConInfoDto;
+import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.container.service.DockerService;
 import com.brchain.core.fabric.dto.FabricNodeDto;
@@ -515,7 +516,7 @@ public class FabricService {
 
 			channelInfoPeerEntity.setAnchorYn(false);
 			channelInfoPeerEntity.setChannelInfoEntity(channelService.findChannelInfoByChannelName(channelName));
-			channelInfoPeerEntity.setConInfoEntity(util.toEntity(containerService.findConInfoByConName(peerDto.getConName())));
+			channelInfoPeerEntity.setConInfoEntity(containerService.findConInfoByConName(peerDto.getConName()));
 
 			// 채널 가입한 피어정보 저장
 			channelService.saveChannelInfoPeer(channelInfoPeerEntity);
@@ -554,14 +555,14 @@ public class FabricService {
 		CcInfoPeerEntity ccInfoPeerEntity = new CcInfoPeerEntity();
 
 		// 설치한 체인코드 정보 조회
-		CcInfoEntity ccInfoEntity     = chaincodeService.findCcInfoById(installCcDto.getId());
+		CcInfoEntity     ccInfoEntity     = chaincodeService.findCcInfoById(installCcDto.getId());
 
 		// 체인코드를 설치한 컨테이너 정보 조회
-		ConInfoDto    conInfoDto    = containerService.findConInfoByConName(peerDto.getConName());
+		ConInfoEntity    conInfoEntity    = containerService.findConInfoByConName(peerDto.getConName());
 
 		ccInfoPeerEntity.setCcVersion(installCcDto.getCcVersion());
 		ccInfoPeerEntity.setCcInfoEntity(ccInfoEntity);
-		ccInfoPeerEntity.setConInfoEntity(util.toEntity(conInfoDto));
+		ccInfoPeerEntity.setConInfoEntity(conInfoEntity);
 
 		// 체인코드 설치한 피어정보 저장
 		chaincodeService.saveCcInfoPeer(ccInfoPeerEntity);
@@ -861,15 +862,15 @@ public class FabricService {
 		try {
 
 			// 앵커피어를 등록할 컨테이너 정보 조회
-			ConInfoDto         conInfoDto         = containerService.findConInfoByConName(conName);
+			ConInfoEntity         conInfoEntity         = containerService.findConInfoByConName(conName);
 
 			// 앵커피어를 등록할 채널정보 조회
-			ChannelInfoEntity  channelInfoEntity  = channelService.findChannelInfoByChannelName(channelName);
+			ChannelInfoEntity     channelInfoEntity     = channelService.findChannelInfoByChannelName(channelName);
 
 			// 앵커피어를 등록할 채널에 피어 정보 조회??
 //			ChannelInfoPeerDto channelInfoPeerDto = channelService.findChannelInfoPeerByChannelNameAndConName(channelInfoDto, conInfoDto).get(0);
 			ChannelInfoPeerEntity channelInfoPeerEntity = channelService
-				.findChannelInfoPeerByChannelNameAndConName(channelInfoEntity.getChannelName(), conInfoDto.getConName())
+				.findChannelInfoPeerByChannelNameAndConName(channelInfoEntity.getChannelName(), conInfoEntity.getConName())
 				.get(0);
 
 //			System.out.println()
@@ -881,7 +882,7 @@ public class FabricService {
 			}
 
 			// 앵커피어를 등록한 FabricNodeDto(peer) 생성
-			ArrayList<FabricNodeDto> peerDtoArr = containerService.createfabricNodeDtoArr(conInfoDto.getOrgType(),conInfoDto.getOrgName());
+			ArrayList<FabricNodeDto> peerDtoArr = containerService.createfabricNodeDtoArr(conInfoEntity.getOrgType(),conInfoEntity.getOrgName());
 			FabricNodeDto            peerDto    = null;
 
 			for (FabricNodeDto peerDto2 : peerDtoArr) {

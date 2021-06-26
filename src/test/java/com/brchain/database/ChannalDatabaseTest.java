@@ -1,5 +1,7 @@
 package com.brchain.database;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -188,6 +190,64 @@ public class ChannalDatabaseTest {
 		System.out.println("************************ 채널_요약_조회_테스트 종료 ************************");
 
 	}
+	
+	@Test
+	public void 채널정보_피어_조회_테스트1() throws Exception {
+
+		System.out.println("************************ 채널정보_피어_조회_테스트1 시작 ************************");
+
+		// given
+
+		// when
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel", null);
+
+		// then
+
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(5);
+
+		System.out.println("************************ 채널정보_피어_조회_테스트1 종료 ************************");
+
+	}
+	
+	/**
+	 * TODO 해당 메소드이 이상함
+	 */
+	@Test
+	public void 채널정보_피어_조회_테스트2() throws Exception {
+
+		System.out.println("************************ 채널정보_피어_조회_테스트2 시작 ************************");
+
+		// given
+
+		// when
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName(null, "peer0.orgtest.com");
+
+		// then
+
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(2);
+
+		System.out.println("************************ 채널정보_피어_조회_테스트2 종료 ************************");
+
+	}
+	@Test
+	public void 채널정보_피어_조회_테스트3() throws Exception {
+
+		System.out.println("************************ 채널정보_피어_조회_테스트3 시작 ************************");
+
+		// given
+
+		// when
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel", "peer0.orgtest.com");
+
+		// then
+
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(1);
+		System.out.println("************************ 채널정보_피어_조회_테스트3 종료 ************************");
+	}
+
 
 	private CcInfoEntity createCcInfoEntity(String param) {
 

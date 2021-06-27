@@ -10,6 +10,9 @@ import com.brchain.core.container.entitiy.ConInfoEntity;
 
 public interface CcInfoPeerRepository extends JpaRepository<CcInfoPeerEntity, Long>, CcInfoPeerCustomRepository {
 
+	/**
+	 * TODO 수정 예정
+	 */
 	List<CcInfoPeerEntity> findByConInfoEntity(ConInfoEntity conInfoEntity);
 
 }

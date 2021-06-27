@@ -42,12 +42,6 @@ public class ChannalDatabaseTest {
 	private ChannelInfoRepository channelInfoRepository;
 
 	@Autowired
-	private CcInfoRepository ccInfoRepository;
-	@Autowired
-	private CcInfoPeerRepository ccInfoPeerRepository;
-	@Autowired
-	private CcInfoChannelRepository ccInfoChannelRepository;
-	@Autowired
 	private ConInfoRepository conInfoRepository;
 
 	@Autowired
@@ -57,15 +51,6 @@ public class ChannalDatabaseTest {
 
 	@BeforeEach
 	public void setup() {
-		// 체인코드 등록
-		CcInfoEntity ccInfoEntity1 = createCcInfoEntity("test-chaincode");
-		ccInfoEntity1 = ccInfoRepository.save(ccInfoEntity1);
-
-		CcInfoEntity ccInfoEntity2 = createCcInfoEntity("abc-chaincode");
-		ccInfoEntity2 = ccInfoRepository.save(ccInfoEntity2);
-
-		CcInfoEntity ccInfoEntity3 = createCcInfoEntity("zzzcc");
-		ccInfoEntity3 = ccInfoRepository.save(ccInfoEntity3);
 
 		// 피어 등록, 체인코드
 		ConInfoEntity conInfoEntity1 = createConInfoEntity("test", "1111", "peer", 0);
@@ -82,30 +67,6 @@ public class ChannalDatabaseTest {
 
 		ConInfoEntity conInfoEntity5 = createConInfoEntity("lalala", "1115", "peer", 2);
 		conInfoEntity5 = conInfoRepository.save(conInfoEntity5);
-
-		// 체인코드 피어 등록
-		CcInfoPeerEntity ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity1, conInfoEntity1);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity1, conInfoEntity2);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity1, conInfoEntity3);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity1, conInfoEntity4);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity1, conInfoEntity5);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity2, conInfoEntity1);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity2, conInfoEntity2);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity2, conInfoEntity3);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity3, conInfoEntity1);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
-		ccInfoPeerEntity = createCcInfoPeerEntity(ccInfoEntity3, conInfoEntity2);
-		ccInfoPeerEntity = ccInfoPeerRepository.save(ccInfoPeerEntity);
 
 		// 채널 등록
 		ChannelInfoEntity channelInfoEntity1 = createChannelInfoEntity("test-channel");
@@ -141,27 +102,11 @@ public class ChannalDatabaseTest {
 		channelInfoPeerEntity = createChannelInfoPeerEntity(channelInfoEntity3, conInfoEntity5);
 		channelInfoPeerEntity = channelInfoPeerRepository.save(channelInfoPeerEntity);
 
-		// 체인코드 채널 등록
-		CcInfoChannelEntity ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity1, ccInfoEntity1);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity1, ccInfoEntity2);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity1, ccInfoEntity3);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-
-		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity2, ccInfoEntity1);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity2, ccInfoEntity2);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-
-		ccInfoChannelEntity = createCcInfoChannelEntity(channelInfoEntity2, ccInfoEntity1);
-		ccInfoChannelEntity = ccInfoChannelRepository.save(ccInfoChannelEntity);
-
 		// 블록, 트랜잭션 등록
 		for (int i = 0; i < 10; i++) {
 			createBlockAndTx(channelInfoEntity1, i + 1);
 		}
-		
+
 		for (int i = 0; i < 25; i++) {
 			createBlockAndTx(channelInfoEntity2, i + 1);
 		}
@@ -190,7 +135,7 @@ public class ChannalDatabaseTest {
 		System.out.println("************************ 채널_요약_조회_테스트 종료 ************************");
 
 	}
-	
+
 	@Test
 	public void 채널정보_피어_조회_테스트1() throws Exception {
 
@@ -209,10 +154,7 @@ public class ChannalDatabaseTest {
 		System.out.println("************************ 채널정보_피어_조회_테스트1 종료 ************************");
 
 	}
-	
-	/**
-	 * TODO 해당 메소드이 이상함
-	 */
+
 	@Test
 	public void 채널정보_피어_조회_테스트2() throws Exception {
 
@@ -221,7 +163,8 @@ public class ChannalDatabaseTest {
 		// given
 
 		// when
-		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName(null, "peer0.orgtest.com");
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName(null,
+				"peer0.orgtest.com");
 
 		// then
 
@@ -231,6 +174,7 @@ public class ChannalDatabaseTest {
 		System.out.println("************************ 채널정보_피어_조회_테스트2 종료 ************************");
 
 	}
+
 	@Test
 	public void 채널정보_피어_조회_테스트3() throws Exception {
 
@@ -239,28 +183,14 @@ public class ChannalDatabaseTest {
 		// given
 
 		// when
-		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel", "peer0.orgtest.com");
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel",
+				"peer0.orgtest.com");
 
 		// then
 
 		System.out.println(result);
 		assertThat(result.size()).isEqualTo(1);
 		System.out.println("************************ 채널정보_피어_조회_테스트3 종료 ************************");
-	}
-
-
-	private CcInfoEntity createCcInfoEntity(String param) {
-
-		CcInfoEntity ccInfoEntity = new CcInfoEntity();
-
-		ccInfoEntity.setCcName(param);
-		ccInfoEntity.setCcPath("/src/test/chaincode/test.go");
-		ccInfoEntity.setCcLang("golang");
-		ccInfoEntity.setCcDesc("this is test chaincode");
-		ccInfoEntity.setCcVersion("1");
-
-		return ccInfoEntity;
-
 	}
 
 	private ConInfoEntity createConInfoEntity(String orgName, String port, String orgType, int conNum) {
@@ -279,18 +209,6 @@ public class ChannalDatabaseTest {
 		conInfoEntity.setGossipBootAddr("gossip addr");
 
 		return conInfoEntity;
-
-	}
-
-	private CcInfoPeerEntity createCcInfoPeerEntity(CcInfoEntity ccInfoEntity, ConInfoEntity conInfoEntity) {
-
-		CcInfoPeerEntity ccInfoPeerEntity = new CcInfoPeerEntity();
-
-		ccInfoPeerEntity.setCcVersion("1");
-		ccInfoPeerEntity.setCcInfoEntity(ccInfoEntity);
-		ccInfoPeerEntity.setConInfoEntity(conInfoEntity);
-
-		return ccInfoPeerEntity;
 
 	}
 
@@ -331,19 +249,6 @@ public class ChannalDatabaseTest {
 
 	}
 
-	private CcInfoChannelEntity createCcInfoChannelEntity(ChannelInfoEntity channelInfoEntity,
-			CcInfoEntity ccInfoEntity) {
-
-		CcInfoChannelEntity ccInfoChannelEntity = new CcInfoChannelEntity();
-
-		ccInfoChannelEntity.setCcInfoEntity(ccInfoEntity);
-		ccInfoChannelEntity.setChannelInfoEntity(channelInfoEntity);
-		ccInfoChannelEntity.setCcVersion("1");
-
-		return ccInfoChannelEntity;
-
-	}
-
 	private void createBlockAndTx(ChannelInfoEntity channelInfoEntity, int blockNum) {
 		Random random = new Random();
 		int txCount = random.nextInt(10);
@@ -355,7 +260,7 @@ public class ChannalDatabaseTest {
 
 		BlockEntity blockEntity = new BlockEntity();
 
-		blockEntity.setBlockDataHash(channelInfoEntity.getChannelName()+blockNum);
+		blockEntity.setBlockDataHash(channelInfoEntity.getChannelName() + blockNum);
 		blockEntity.setBlockNum(blockNum);
 		blockEntity.setTxCount(txCount);
 		blockEntity.setTimestamp(new Date());
@@ -364,7 +269,6 @@ public class ChannalDatabaseTest {
 
 		blockEntity = blockRepository.save(blockEntity);
 
-		
 		for (int i = 0; i < txCount; i++) {
 			TransactionEntity transactionEntity = new TransactionEntity();
 

@@ -287,7 +287,8 @@ public class ChannelService {
 
 		}
 
-		return util.setResult("0000", true, "Success get channel info by channel name", channelSummaryList);
+		// Success get channel info by channel name
+		return util.setResult(BrchainStatusCode.SUCCESS, channelSummaryList);
 	}
 
 }

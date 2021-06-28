@@ -54,7 +54,7 @@ public class ContainerService {
 
 	public ConInfoEntity deleteConInfo(String conId) {
 
-		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId);
+		ConInfoEntity conInfoEntity = conInfoRepository.findByConId(conId).orElseThrow(IllegalArgumentException::new);
 
 		conInfoRepository.deleteById(conInfoEntity.getConName());
 
@@ -235,6 +235,8 @@ public class ContainerService {
 	}
 
 	/**
+	 * TODO 리턴 결과 수정해야됨 
+	 * 
 	 * 컨테이너 포트 확인 서비스
 	 * 
 	 * @param port 포트
@@ -251,6 +253,13 @@ public class ContainerService {
 
 	}
 
+	/**
+	 * 채널에 가입되어있는 조직 조회
+	 * 
+	 * @param channelName 채널 이름
+	 * 
+	 * @return 조회한 조직 리스트
+	 */
 	public List<String> findOrgsInChannel(String channelName) {
 
 		return conInfoRepository.findOrgsByChannelName(channelName);

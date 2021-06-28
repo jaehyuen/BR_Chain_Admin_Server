@@ -10,7 +10,7 @@ import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
 
 public interface ConInfoRepository extends JpaRepository<ConInfoEntity, String>, ConInfoCustomRepository {
 
-	ConInfoEntity findByConId(String conId);
+	Optional<ConInfoEntity> findByConId(String conId);
 
 	List<ConInfoEntity> findByConTypeAndOrgType(String conType, String orgType);
 

@@ -16,6 +16,7 @@ import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.dto.DockerStatsDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.exceptions.DockerException;
@@ -41,6 +42,8 @@ public class DockerService {
 	private Logger                 logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
+	 * @deprecated 아직 미완성 서비스
+	 * 
 	 * 모든 컨테이너 삭제 서비스
 	 * 
 	 * @return 결과 DTO(삭제 결과)
@@ -89,11 +92,15 @@ public class DockerService {
 //			throw new BrchainException(e.getMessage(), e);
 //		}
 
-		return util.setResult("0000", true, "Success remove container", null);
+		
+		// Success remove container
+		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove container");
 
 	}
 
 	/**
+	 * @deprecated 아직 미완성 서비스
+	 * 
 	 * 특정 컨테이너 삭제 서비스
 	 * 
 	 * @param conId 컨테이너 ID
@@ -109,7 +116,7 @@ public class DockerService {
 
 			conInfoEntity = containerService.deleteConInfo(conId);
 
-		} catch (Exception e) {
+		} catch (IllegalArgumentException e) {
 
 			logger.info("디비에 없는 컨테이너");
 
@@ -119,12 +126,14 @@ public class DockerService {
 		dockerClient.removeContainer(conId);
 		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
 
-		return util.setResult("0000", true, "Success remove container", null);
+		// Success remove container
+		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove container");
+		
 
 	}
 
 	/**
-	 * 특정 조직 컨테이너 삭제 서비스
+	 * @deprecated 아직 미완성 서비스
 	 * 
 	 * @return 결과 DTO(삭제 결과)
 	 */
@@ -153,7 +162,9 @@ public class DockerService {
 			}
 		}
 
-		return util.setResult("0000", true, "Success remove org", null);
+
+		// Success remove org
+		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove org");
 
 	}
 
@@ -186,8 +197,7 @@ public class DockerService {
 			}
 
 			dockerStatsDto.setConId(container.id());
-			dockerStatsDto.setConName(container.names()
-				.get(0));
+			dockerStatsDto.setConName(container.names().get(0));
 			dockerStatsDto.setConCreated(new Date(container.created() * 1000).toString());
 			dockerStatsDto.setConStatus(container.status());
 
@@ -195,7 +205,8 @@ public class DockerService {
 
 		}
 
-		return util.setResult("0000", true, "Success get all containers info", dockerStatsList);
+		// Success get all containers info
+		return util.setResult(BrchainStatusCode.SUCCESS, dockerStatsList);
 	}
 
 	/**
@@ -204,9 +215,6 @@ public class DockerService {
 	 * @param createConDto 컨테이너 정보 DTO
 	 * 
 	 * @return 생성된 컨테이너 정보 JSON
-	 * 
-	 * @throws DockerException
-	 * @throws InterruptedException
 	 * 
 	 */
 

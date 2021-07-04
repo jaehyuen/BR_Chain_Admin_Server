@@ -101,7 +101,7 @@ public class ContainerDatabaseTest {
 
 	}
 
-	// 트렌젝션, 블록 데이터 추가 해야됨
+
 	@Test
 	public void 컨테이너_정보_조회_테스트() throws Exception {
 
@@ -110,17 +110,35 @@ public class ContainerDatabaseTest {
 		// given
 
 		// when
-		//List<ChannelSummaryDto> result = channelInfoRepository.findChannelSummary("202105", "202106");
+		List<ConInfoEntity> result = conInfoRepository.findMemberByOrgName("test");
 
 		// then
-
-		//System.out.println(result);
-//		assertThat(result.size()).isEqualTo(5);
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(3);
 
 		System.out.println("************************ 컨테이너_정보_조회_테스트 종료 ************************");
 
 	}
+	
+	@Test
+	public void 컨테이너_포트_체크_테스트() throws Exception {
 
+		System.out.println("************************ 컨테이너_포트_체크_테스트 시작 ************************");
+
+		// given
+
+		// when
+		boolean result = conInfoRepository.portCheck("1111");
+		System.out.println(result);
+		result = conInfoRepository.portCheck("9999");
+		
+		// then
+		System.out.println(result);
+		assertThat(result).isEqualTo(false);
+
+		System.out.println("************************ 컨테이너_포트_체크_테스트 종료 ************************");
+
+	}
 
 	private ConInfoEntity createConInfoEntity(String orgName, String port, String orgType, int conNum) {
 

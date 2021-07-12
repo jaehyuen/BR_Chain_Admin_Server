@@ -11,9 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
+import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.fabric.dto.BlockAndTxDto;
 import com.brchain.core.fabric.dto.BlockDto;
+import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.repository.BlockRepository;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -33,14 +36,14 @@ public class BlockService {
 	/**
 	 * 블록정보 저장 서비스
 	 * 
-	 * @param blockDto 블록 정보 DTO
+	 * @param blockEntity 블록 정보 Entity
 	 * 
-	 * @return 저장한 블록 정보 DTO
+	 * @return 저장한 블록 정보 Entity
 	 */
 
-	public BlockDto saveBLock(BlockDto blockDto) {
+	public BlockEntity saveBlock(BlockEntity blockEntity) {
 
-		return util.toDto(blockRepository.save(util.toEntity(blockDto)));
+		return blockRepository.save(blockEntity);
 
 	}
 
@@ -49,16 +52,16 @@ public class BlockService {
 	 * 
 	 * @param blockDataHash 블록데이터 해쉬값
 	 * 
-	 * @return 조회한 블록정보 DTO
+	 * @return 조회한 블록정보 Entity
 	 */
 
-	public BlockDto findBlockByBlockDataHash(String blockDataHash) {
+	public BlockEntity findBlockByBlockDataHash(String blockDataHash) {
 
-		return util.toDto(blockRepository.findById(blockDataHash)
-			.orElseThrow(IllegalArgumentException::new));
+		return blockRepository.findById(blockDataHash).orElseThrow(IllegalArgumentException::new);
 	}
 
 	/**
+	 * @TODO querydsl로 변경필요
 	 * 채널의 블록 개수 카운트 서비스
 	 * 
 	 * @param channelInfoDto 채널정보 DTO
@@ -66,9 +69,9 @@ public class BlockService {
 	 * @return 카운트한 채널의 블록 개수
 	 */
 
-	public int countBychannelBlock(ChannelInfoDto channelInfoDto) {
+	public int countBychannelBlock(ChannelInfoEntity channelInfoEntity) {
 
-		return blockRepository.countByChannelInfoEntity(util.toEntity(channelInfoDto));
+		return blockRepository.countByChannelInfoEntity(channelInfoEntity);
 
 	}
 
@@ -76,40 +79,40 @@ public class BlockService {
 	 * 이벤트로 받은 블록 분석후 디비에 저장하는 서비스
 	 * 
 	 * @param block          이벤트로 받은 블록
-	 * @param channelInfoDto 블록에 대한 채널 정보 DTO
+	 * @param channelInfoDto 블록에 대한 채널 정보 Entity
 	 * 
 	 * @throws InvalidProtocolBufferException
 	 */
 
-	public void inspectBlock(BlockInfo block, ChannelInfoDto channelInfoDto) {
+	public void inspectBlock(BlockInfo block, ChannelInfoEntity channelInfoEntity) {
 
-		BlockDto blockDto;
+		BlockEntity blockEntity;
 //		int      txCnt = block.getBlock()
 //			.getData()
 //			.getDataCount();
 		try {
 
 			// 이벤트로 받은 blockDataHash이 있는지 조회
-			blockDto = findBlockByBlockDataHash(Hex.encodeHexString(block.getDataHash()));
+			blockEntity = findBlockByBlockDataHash(Hex.encodeHexString(block.getDataHash()));
 
 		} catch (IllegalArgumentException e) {
 
 			// 조회가 안되면 리슨받은 블록 정보 저장
 //			block.getBlock().sh
 
-			blockDto = new BlockDto();
+			blockEntity = new BlockEntity();
 			try {
-				blockDto.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
-				blockDto.setBlockNum((int) block.getBlockNumber());
-				blockDto.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
-				blockDto.setTimestamp(block.getEnvelopeInfo(0).getTimestamp());
-				blockDto.setTxCount(block.getBlock().getData().getDataCount());
-				blockDto.setChannelInfoDto(channelInfoDto);
+				blockEntity.setBlockDataHash(Hex.encodeHexString(block.getDataHash()));
+				blockEntity.setBlockNum((int) block.getBlockNumber());
+				blockEntity.setPrevDataHash(Hex.encodeHexString(block.getPreviousHash()));
+				blockEntity.setTimestamp(block.getEnvelopeInfo(0).getTimestamp());
+				blockEntity.setTxCount(block.getBlock().getData().getDataCount());
+				blockEntity.setChannelInfoEntity(channelInfoEntity);
 				
 			} catch (InvalidProtocolBufferException e1) {
-				throw new RuntimeException(channelInfoDto.getChannelName() + " 채널의 " + blockDto.getBlockNum() + "번 블록의 프로토콜 메시지가 잘못되었습니다.");
+				throw new RuntimeException(channelInfoEntity.getChannelName() + " 채널의 " + blockEntity.getBlockNum() + "번 블록의 프로토콜 메시지가 잘못되었습니다.");
 			}
-			saveBLock(blockDto);
+			saveBlock(blockEntity);
 		}
 
 		// 디비에 저장할 데이터 테스트중...
@@ -142,7 +145,7 @@ public class BlockService {
 //		block.getTransActionsMetaData()
 		// 블록 내 트렌젝션 순회
 		for (EnvelopeInfo envelopeInfo : block.getEnvelopeInfos()) {
-			transactionService.inspectTransaction(envelopeInfo, channelInfoDto, blockDto);
+			transactionService.inspectTransaction(envelopeInfo, channelInfoEntity, blockEntity);
 
 		}
 
@@ -158,13 +161,8 @@ public class BlockService {
 
 	@Transactional(readOnly = true)
 	public ResultDto<List<BlockAndTxDto>> getBlockListByChannel(String channelName) {
-		List<BlockAndTxDto> blockAndTxList = blockRepository.findByChannelName(channelName);
-
-		if (blockAndTxList.isEmpty()) {
-			return util.setResult("0000", true, "Success get block by channel name", new ArrayList<BlockAndTxDto>());
-		} else {
-			return util.setResult("0000", true, "Success get block by channel name", blockAndTxList);
-		}
+		
+		return util.setResult(BrchainStatusCode.SUCCESS, blockRepository.findByChannelName(channelName));
 
 	}
 
@@ -179,7 +177,9 @@ public class BlockService {
 	@Transactional(readOnly = true)
 	public ResultDto<BlockDto> getBlockByBlockDataHash(String blockDataHash) {
 
-		return util.setResult("0000", true, "Success get block by channel name", findBlockByBlockDataHash(blockDataHash));
+		//return util.setResult("0000", true, "Success get block by channel name", findBlockByBlockDataHash(blockDataHash));
+		//Success get block by block data hash
+		return util.setResult(BrchainStatusCode.SUCCESS, util.toDto(findBlockByBlockDataHash(blockDataHash)));
 
 	}
 

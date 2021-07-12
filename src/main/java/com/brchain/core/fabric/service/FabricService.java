@@ -122,10 +122,10 @@ public class FabricService {
 				for (int i = channelInfoEntity.getChannelBlock(); i < channel.queryBlockchainInfo()
 					.getHeight(); i++) {
 
-					blockService.inspectBlock(channel.queryBlockByNumber(i), util.toDto(channelInfoEntity));
+					blockService.inspectBlock(channel.queryBlockByNumber(i), channelInfoEntity);
 
-					channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(util.toDto(channelInfoEntity)));
-					channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(util.toDto(channelInfoEntity)));
+					channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(channelInfoEntity));
+					channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(channelInfoEntity));
 					channelService.saveChannelInfo(channelInfoEntity);
 
 				}
@@ -933,10 +933,10 @@ public class FabricService {
 
 			// 채널 정보 조회
 			ChannelInfoEntity channelInfoEntity = channelService.findChannelInfoByChannelName(channelName);
-			blockService.inspectBlock(blockEvent, util.toDto(channelInfoEntity));
+			blockService.inspectBlock(blockEvent, channelInfoEntity);
 
-			channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(util.toDto(channelInfoEntity)));
-			channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(util.toDto(channelInfoEntity)));
+			channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(channelInfoEntity));
+			channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(channelInfoEntity));
 			channelService.saveChannelInfo(channelInfoEntity);
 
 			try {

@@ -13,11 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
-import com.brchain.core.channel.dto.ChannelInfoDto;
-import com.brchain.core.fabric.dto.BlockDto;
+import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.fabric.dto.TransactionDto;
+import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.entity.TransactionEntity;
 import com.brchain.core.fabric.repository.TransactionRepository;
+import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -33,47 +34,56 @@ public class TransactionService {
 	/**
 	 * 트렌젝션 저장 서비스
 	 * 
-	 * @param transactionDto 트렌젝션 정보 DTO
+	 * @param transactionDto 트렌젝션 정보 Entity
 	 * 
-	 * @return 저장한 트렌젝션 정보 DTO
+	 * @return 저장한 트렌젝션 정보 Entity
 	 */
-	public TransactionDto saveTransaction(TransactionDto transactionDto) {
+	public TransactionEntity saveTransaction(TransactionEntity transactionEntity) {
 
-		return util.toDto(transactionRepository.save(util.toEntity(transactionDto)));
+		return transactionRepository.save(transactionEntity);
 
 	}
 
 	/**
-	 * 트렌젝션 아이디로 트렌젝션 정보 조회 서비스
+	 * 아이디로 트렌젝션 정보 조회 서비스
 	 * 
-	 * @param txId 트렌젝션 아이디
+	 * @param id 아이디
 	 * 
-	 * @return 조회한 트렌젝션 정보 DTO
+	 * @return 조회한 트렌젝션 정보 Entity
 	 */
 
-	public TransactionDto findBlockById(Long id) {
+	public TransactionEntity findBlockById(Long id) {
 
-		return util.toDto(transactionRepository.findById(id).orElseThrow(IllegalArgumentException::new));
+		return transactionRepository.findById(id).orElseThrow(IllegalArgumentException::new);
 	}
 
-	public TransactionDto findBlockByTxId(String txId) {
+	/**
+	 * @TODO 소스 최적화 필요
+	 * 트렌젝션 아이디로 트렌젝션 정보 조회 서비스
+	 * 
+	 * @param id 아이디
+	 * 
+	 * @return 조회한 트렌젝션 정보 Entity
+	 */
+	public TransactionEntity findBlockByTxId(String txId) {
 
 		TransactionEntity transactionEntity = transactionRepository.findByTxId(txId);
 		if (transactionEntity == null) {
 			throw new IllegalArgumentException();
 		}
-		return util.toDto(transactionEntity);
+		return transactionEntity;
 	}
 
 	/**
+	 * @TODO querydsl로 변경필요
 	 * 채널의 트렌젝션 개수 카운트 서비스
 	 * 
-	 * @param channelInfoDto 채널정보 DTO
+	 * @param channelInfoEntity 채널정보 Entity
 	 * 
 	 * @return 카운트한 트렌젝션 개수
 	 */
-	public int countBychannelTransaction(ChannelInfoDto channelInfoDto) {
-		return transactionRepository.countByChannelInfoEntity(util.toEntity(channelInfoDto));
+	public int countBychannelTransaction(ChannelInfoEntity channelInfoEntity) {
+		return transactionRepository.countByChannelInfoEntity(channelInfoEntity);
 
 	}
 
@@ -81,12 +91,12 @@ public class TransactionService {
 	 * 트랜잭션 분석후 디비에 저장하는 서비스
 	 * 
 	 * @param envelopeInfo 트랜잭션 정보
-	 * @param channelInfoDto 트랜잭션에 대한 채널 정보 DTO
-	 * @param blockDto 트랜잭션에 대한 블록 정보 DTO
+	 * @param channelInfoDto 트랜잭션에 대한 채널 정보 Entity
+	 * @param blockDto 트랜잭션에 대한 블록 정보 Entity
 	 * 
 	 */
 	
-	public void inspectTransaction(EnvelopeInfo envelopeInfo, ChannelInfoDto channelInfoDto, BlockDto blockDto) {
+	public void inspectTransaction(EnvelopeInfo envelopeInfo, ChannelInfoEntity channelInfoEntity, BlockEntity blockEntity) {
 		String txId = null;
 
 		try {
@@ -100,13 +110,13 @@ public class TransactionService {
 		} catch (IllegalArgumentException e) {
 
 			// 조회가 안되면 트렌젝션 정보 저장
-			TransactionDto transactionDto = new TransactionDto();
-			transactionDto.setTxId(txId.isEmpty() ? null : txId);
-			transactionDto.setCreatorId(envelopeInfo.getCreator().getMspid());
-			transactionDto.setTxType(envelopeInfo.getType().toString());
-			transactionDto.setTimestamp(envelopeInfo.getTimestamp());
-			transactionDto.setBlockDto(blockDto);
-			transactionDto.setChannelInfoDto(channelInfoDto);
+			TransactionEntity transactionEntity = new TransactionEntity();
+			transactionEntity.setTxId(txId.isEmpty() ? null : txId);
+			transactionEntity.setCreatorId(envelopeInfo.getCreator().getMspid());
+			transactionEntity.setTxType(envelopeInfo.getType().toString());
+			transactionEntity.setTimestamp(envelopeInfo.getTimestamp());
+			transactionEntity.setBlockEntity(blockEntity);
+			transactionEntity.setChannelInfoEntity(channelInfoEntity);
 
 			if (envelopeInfo.getType() == EnvelopeType.TRANSACTION_ENVELOPE) {
 				TransactionEnvelopeInfo transactionEnvelopeInfo = (TransactionEnvelopeInfo) envelopeInfo;
@@ -114,8 +124,8 @@ public class TransactionService {
 				for (TransactionActionInfo transactionActionInfo : transactionEnvelopeInfo
 						.getTransactionActionInfos()) {
 
-					transactionDto.setCcName(transactionActionInfo.getChaincodeIDName());
-					transactionDto.setCcVersion(transactionActionInfo.getChaincodeIDVersion());
+					transactionEntity.setCcName(transactionActionInfo.getChaincodeIDName());
+					transactionEntity.setCcVersion(transactionActionInfo.getChaincodeIDVersion());
 
 					JSONObject argsJson = new JSONObject();
 
@@ -125,12 +135,12 @@ public class TransactionService {
 
 					}
 
-					transactionDto.setCcArgs(argsJson.toString());
+					transactionEntity.setCcArgs(argsJson.toString());
 
 				}
 
 			}
-			saveTransaction(transactionDto);
+			saveTransaction(transactionEntity);
 		}
 
 		
@@ -146,15 +156,13 @@ public class TransactionService {
 	
 	@Transactional(readOnly = true)
 	public ResultDto<List<TransactionDto>> getTxListByChannel(String channelName) {
-		List<TransactionEntity> transactionList = transactionRepository.findByChannelName(channelName);
-
-		if (transactionList.isEmpty()) {
-			return util.setResult("0000", true, "Success get tx by channel name", new ArrayList<TransactionDto>());
-		} else {
-			return util.setResult("0000", true, "Success get tx by channel name", transactionList.stream()
+		List<TransactionDto> transactionList = transactionRepository.findByChannelName(channelName).stream()
 				.map(transaction -> util.toDto(transaction))
-				.collect(Collectors.toList()));
-		}
+				.collect(Collectors.toList());
+
+		
+		//Success get tx by channel name 
+		return util.setResult(BrchainStatusCode.SUCCESS, transactionList);
 
 	}
 	
@@ -169,7 +177,9 @@ public class TransactionService {
 	@Transactional(readOnly = true)
 	public ResultDto<TransactionDto> getTxByTxId(String txId) {
 
-		return util.setResult("0000", true, "Success get tx by tx id", findBlockByTxId(txId));
+//		return util.setResult("0000", true, "Success get tx by tx id", findBlockByTxId(txId));
+		//Success get tx by tx id"
+		return util.setResult(BrchainStatusCode.SUCCESS, util.toDto(findBlockByTxId(txId)));
 
 	}
 

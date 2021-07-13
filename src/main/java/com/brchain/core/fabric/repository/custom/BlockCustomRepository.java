@@ -6,4 +6,5 @@ import com.brchain.core.fabric.dto.BlockAndTxDto;
 
 public interface BlockCustomRepository {
 	List<BlockAndTxDto> findByChannelName(String channelName);
+	long countByChannelName(String channelName);
 }

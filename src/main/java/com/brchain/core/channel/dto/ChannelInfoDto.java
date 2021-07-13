@@ -19,10 +19,10 @@ public class ChannelInfoDto {
 	private String channelName; // 채널 이름
 
 	@Schema(example = "10", description = "채널 블록 개수")
-	private int channelBlock; // 채널 블럭수
+	private long channelBlock; // 채널 블럭수
 
 	@Schema(example = "20", description = "채널 트렌젝션 개수")
-	private int channelTx; // 채널 트렌젝션수
+	private long channelTx; // 채널 트렌젝션수
 
 	@Schema(example = "testorderer", description = "채널을 운영중인 오더러 조직")
 	private String orderingOrg; // 운영중인 오더러 조직

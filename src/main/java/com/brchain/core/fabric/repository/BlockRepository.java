@@ -8,6 +8,6 @@ import com.brchain.core.fabric.repository.custom.BlockCustomRepository;
 
 public interface BlockRepository extends JpaRepository<BlockEntity, String>, BlockCustomRepository {
 
-	int countByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
+	//int countByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
 
 }

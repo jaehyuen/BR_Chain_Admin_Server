@@ -71,10 +71,10 @@ public class ChannelInfoEntity extends BaseEntity {
 	private String channelName;
 
 	@Column(name = "CHANNEL_BLOCK", nullable = false)
-	private int    channelBlock;
+	private long    channelBlock;
 
 	@Column(name = "CHANNEL_TX", nullable = false)
-	private int    channelTx;
+	private long    channelTx;
 
 	@Column(name = "ORDERING_ORG", nullable = false)
 	private String orderingOrg;
@@ -110,7 +110,7 @@ public class ChannelInfoEntity extends BaseEntity {
 	private long   batchSizePreferMax;
 
 	@Builder
-	public ChannelInfoEntity(String channelName, int channelBlock, int channelTx, String orderingOrg, String appAdminPolicyType, String appAdminPolicyValue, String ordererAdminPolicyType, String ordererAdminPolicyValue, String channelAdminPolicyType, String channelAdminPolicyValue,
+	public ChannelInfoEntity(String channelName, long channelBlock, long channelTx, String orderingOrg, String appAdminPolicyType, String appAdminPolicyValue, String ordererAdminPolicyType, String ordererAdminPolicyValue, String channelAdminPolicyType, String channelAdminPolicyValue,
 			String batchTimeout, long batchSizeAbsolMax, long batchSizeMaxMsg, long batchSizePreferMax, LocalDateTime createdAt) {
 
 		this.channelName             = channelName;

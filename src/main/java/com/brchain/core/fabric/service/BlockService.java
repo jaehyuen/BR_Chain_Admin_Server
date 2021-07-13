@@ -69,9 +69,9 @@ public class BlockService {
 	 * @return 카운트한 채널의 블록 개수
 	 */
 
-	public int countBychannelBlock(ChannelInfoEntity channelInfoEntity) {
+	public long countBychannelBlock(ChannelInfoEntity channelInfoEntity) {
 
-		return blockRepository.countByChannelInfoEntity(channelInfoEntity);
+		return blockRepository.countByChannelName(channelInfoEntity.getChannelName());
 
 	}
 

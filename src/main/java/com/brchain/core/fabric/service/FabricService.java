@@ -119,7 +119,7 @@ public class FabricService {
 			channel = newwork.getChannel();
 
 			try {
-				for (int i = channelInfoEntity.getChannelBlock(); i < channel.queryBlockchainInfo()
+				for (long i = channelInfoEntity.getChannelBlock(); i < channel.queryBlockchainInfo()
 					.getHeight(); i++) {
 
 					blockService.inspectBlock(channel.queryBlockByNumber(i), channelInfoEntity);

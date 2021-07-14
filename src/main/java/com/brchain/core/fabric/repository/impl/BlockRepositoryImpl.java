@@ -40,7 +40,6 @@ public class BlockRepositoryImpl extends QuerydslRepositorySupport implements Bl
 	public long countByChannelName(String channelName) {
 		// TODO Auto-generated method stub
 		return from(blockEntity)
-			.on(transactionEntity.blockEntity.blockDataHash.eq(blockEntity.blockDataHash))
 			.where(blockEntity.channelInfoEntity.channelName.eq(channelName)).fetchCount();
 	}
 

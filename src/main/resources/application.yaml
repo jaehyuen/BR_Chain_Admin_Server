@@ -45,7 +45,7 @@ spring:
         properties:
             hibernate:
                 format_sql: true
-        show-sql: false
+        show-sql: true
         database-platform: com.brchain.common.configuration.BrMariaDBDialect
     main:
         allow-bean-definition-overriding: true

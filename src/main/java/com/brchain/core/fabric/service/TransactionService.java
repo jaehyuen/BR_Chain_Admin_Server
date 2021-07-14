@@ -75,15 +75,14 @@ public class TransactionService {
 	}
 
 	/**
-	 * @TODO querydsl로 변경필요
 	 * 채널의 트렌젝션 개수 카운트 서비스
 	 * 
 	 * @param channelInfoEntity 채널정보 Entity
 	 * 
 	 * @return 카운트한 트렌젝션 개수
 	 */
-	public int countBychannelTransaction(ChannelInfoEntity channelInfoEntity) {
-		return transactionRepository.countByChannelInfoEntity(channelInfoEntity);
+	public long countByChannelName(String channelName) {
+		return transactionRepository.countByChannelName(channelName);
 
 	}
 

@@ -10,10 +10,10 @@ public class ChannelSummaryDto {
 	private String channelName; // 채널 이름
 
 	@Schema(example = "10", description = "채널 총 블록 개수")
-	private int channelBlock; // 채널 블럭수
+	private long channelBlock; // 채널 블럭수
 
 	@Schema(example = "20", description = "채널 총 트렌젝션 개수")
-	private int channelTx; // 채널 트랜잭션수
+	private long channelTx; // 채널 트랜잭션수
 
 	@Schema(example = "2", description = "지난달 채널 블록 개수")
 	private Double preBlockCnt; // 지난달 채널 블럭수
@@ -33,7 +33,7 @@ public class ChannelSummaryDto {
 	@Schema(example = "true", description = "음수 여부")
 	private boolean flag; // 증가감소 플래그
 
-	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Long preBlockCnt, Long nowBlockCnt,
+	public ChannelSummaryDto(String channelName, long channelBlock, long channelTx, Long preBlockCnt, Long nowBlockCnt,
 			Long preTxCnt, Long nowTxCnt) {
 
 		this.channelName = channelName;
@@ -46,7 +46,7 @@ public class ChannelSummaryDto {
 
 	}
 
-	public ChannelSummaryDto(String channelName, int channelBlock, int channelTx, Long preBlockCnt) {
+	public ChannelSummaryDto(String channelName, long channelBlock, long channelTx, Long preBlockCnt) {
 
 		this.channelName = channelName;
 		this.channelBlock = channelBlock;

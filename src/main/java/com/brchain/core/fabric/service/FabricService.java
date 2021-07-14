@@ -124,8 +124,8 @@ public class FabricService {
 
 					blockService.inspectBlock(channel.queryBlockByNumber(i), channelInfoEntity);
 
-					channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(channelInfoEntity));
-					channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(channelInfoEntity));
+					channelInfoEntity.setChannelBlock(blockService.countByChannelName(channelInfoEntity.getChannelName()));
+					channelInfoEntity.setChannelTx(transactionService.countByChannelName(channelInfoEntity.getChannelName()));
 					channelService.saveChannelInfo(channelInfoEntity);
 
 				}
@@ -935,8 +935,8 @@ public class FabricService {
 			ChannelInfoEntity channelInfoEntity = channelService.findChannelInfoByChannelName(channelName);
 			blockService.inspectBlock(blockEvent, channelInfoEntity);
 
-			channelInfoEntity.setChannelBlock(blockService.countBychannelBlock(channelInfoEntity));
-			channelInfoEntity.setChannelTx(transactionService.countBychannelTransaction(channelInfoEntity));
+			channelInfoEntity.setChannelBlock(blockService.countByChannelName(channelName));
+			channelInfoEntity.setChannelTx(transactionService.countByChannelName(channelInfoEntity.getChannelName()));
 			channelService.saveChannelInfo(channelInfoEntity);
 
 			try {

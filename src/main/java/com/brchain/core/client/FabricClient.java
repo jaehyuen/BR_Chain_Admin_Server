@@ -130,9 +130,11 @@ public class FabricClient {
 	 * 
 	 */
 
+	
 	public Network connectNetwork(String channelName, String orgName, JSONObject connectionJson) {
 
 		logger.info("[fabric 네트워크 연결 시작] 조직 이름 :" + orgName + ", 채널 이름 : " + channelName);
+		logger.info("[fabric 네트워크 연결 시작] connectionJson "+connectionJson.toString().replace("\\", ""));
 
 		InputStream     is         = new ByteArrayInputStream(connectionJson.toString().replace("\\", "").getBytes());
 
@@ -990,7 +992,7 @@ public class FabricClient {
 			// lifecycleChaincode 패키징
 			LifecycleChaincodePackage lifecycleChaincodePackage = LifecycleChaincodePackage.fromSource(
 					ccName + "_" + ccVersion, Paths.get(System.getProperty("user.dir") + "/chaincode/"),
-					TransactionRequest.Type.GO_LANG, "test-cc/go/", metadataSourcePath);
+					TransactionRequest.Type.GO_LANG, ccName+"/go/", metadataSourcePath);
 			String                    ccPath                    = System.getProperty("user.dir") + "/chaincode/package/"
 					+ ccName + "_v" + ccVersion + ".tar";
 

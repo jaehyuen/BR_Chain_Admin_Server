@@ -6,12 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.fabric.entity.TransactionEntity;
+import com.brchain.core.fabric.repository.custom.TransactionCustomRepository;
 
-public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
-
-	int countByChannelInfoEntity(ChannelInfoEntity channelInfoEntity);
+public interface TransactionRepository extends JpaRepository<TransactionEntity, Long>, TransactionCustomRepository {
 
 	TransactionEntity findByTxId(String txId);
 	

@@ -61,7 +61,6 @@ public class BlockService {
 	}
 
 	/**
-	 * @TODO querydsl로 변경필요
 	 * 채널의 블록 개수 카운트 서비스
 	 * 
 	 * @param channelInfoDto 채널정보 DTO
@@ -69,9 +68,9 @@ public class BlockService {
 	 * @return 카운트한 채널의 블록 개수
 	 */
 
-	public long countBychannelBlock(ChannelInfoEntity channelInfoEntity) {
+	public long countByChannelName(String channelName) {
 
-		return blockRepository.countByChannelName(channelInfoEntity.getChannelName());
+		return blockRepository.countByChannelName(channelName);
 
 	}
 

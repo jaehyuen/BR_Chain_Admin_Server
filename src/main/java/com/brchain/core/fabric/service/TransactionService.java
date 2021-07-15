@@ -58,20 +58,18 @@ public class TransactionService {
 	}
 
 	/**
-	 * @TODO 소스 최적화 필요
 	 * 트렌젝션 아이디로 트렌젝션 정보 조회 서비스
 	 * 
 	 * @param id 아이디
 	 * 
 	 * @return 조회한 트렌젝션 정보 Entity
 	 */
+	
 	public TransactionEntity findBlockByTxId(String txId) {
 
-		TransactionEntity transactionEntity = transactionRepository.findByTxId(txId);
-		if (transactionEntity == null) {
-			throw new IllegalArgumentException();
-		}
-		return transactionEntity;
+		return transactionRepository.findByTxId(txId)
+			.orElseThrow(IllegalArgumentException::new);
+
 	}
 
 	/**

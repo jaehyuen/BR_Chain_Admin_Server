@@ -1,5 +1,7 @@
 package com.brchain.core.fabric.repository.impl;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,13 @@ public class TransactionRepositoryImpl extends QuerydslRepositorySupport impleme
 		// TODO Auto-generated method stub
 		return from(transactionEntity)
 			.where(transactionEntity.channelInfoEntity.channelName.eq(channelName)).fetchCount();
+	}
+	
+	@Override
+	public List<TransactionEntity> findByChannelName(String channelName) {
+		// TODO Auto-generated method stub
+		return from(transactionEntity)
+			.where(transactionEntity.channelInfoEntity.channelName.eq(channelName)).fetch();
 	}
 
 }

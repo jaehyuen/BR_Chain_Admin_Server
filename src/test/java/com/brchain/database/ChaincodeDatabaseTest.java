@@ -158,7 +158,7 @@ public class ChaincodeDatabaseTest {
 		ConInfoEntity conInfoEntity = conInfoRepository.findByConPort("1111").get();
 
 		// when
-		CcInfoPeerEntity result = ccInfoPeerRepository.findByConInfoEntity(conInfoEntity).get(0);
+		CcInfoPeerEntity result = ccInfoPeerRepository.findByConName(conInfoEntity.getConName()).get(0);
 
 		// then
 		System.out.println(result);

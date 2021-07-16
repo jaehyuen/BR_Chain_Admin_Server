@@ -18,7 +18,7 @@ import com.querydsl.jpa.JPAExpressions;
 @Transactional(readOnly = true)
 public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implements CcInfoPeerCustomRepository {
 
-	final QCcInfoPeerEntity      ccInfoPeerEntity     = QCcInfoPeerEntity.ccInfoPeerEntity;
+	final QCcInfoPeerEntity      ccInfoPeerEntity      = QCcInfoPeerEntity.ccInfoPeerEntity;
 	final QChannelInfoPeerEntity channelInfoPeerEntity = QChannelInfoPeerEntity.channelInfoPeerEntity;
 	final QConInfoEntity         conInfoEntity         = QConInfoEntity.conInfoEntity;
 
@@ -39,9 +39,11 @@ public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implemen
 	@Override
 	public List<CcSummaryDto> findChaincodeSummary() {
 
-		return from(conInfoEntity).select(Projections.constructor(CcSummaryDto.class, conInfoEntity.conName, ExpressionUtils.as(JPAExpressions.select(ccInfoPeerEntity.count())
-			.from(ccInfoPeerEntity)
-			.where(ccInfoPeerEntity.conInfoEntity.eq(conInfoEntity)), "ccCnt")))
+		return from(conInfoEntity)
+			.select(Projections.constructor(CcSummaryDto.class, conInfoEntity.conName,
+					ExpressionUtils.as(JPAExpressions.select(ccInfoPeerEntity.count())
+						.from(ccInfoPeerEntity)
+						.where(ccInfoPeerEntity.conInfoEntity.eq(conInfoEntity)), "ccCnt")))
 			.where(conInfoEntity.conType.eq("peer"))
 			.fetch();
 	}
@@ -50,9 +52,18 @@ public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implemen
 	public List<CcInfoPeerEntity> findByCcId(Long id) {
 
 		return from(ccInfoPeerEntity).leftJoin(ccInfoPeerEntity.conInfoEntity)
-				.fetchJoin()
-				.leftJoin(ccInfoPeerEntity.ccInfoEntity)
-				.fetchJoin().fetch();
+			.fetchJoin()
+			.leftJoin(ccInfoPeerEntity.ccInfoEntity)
+			.fetchJoin()
+			.fetch();
+	}
+
+	@Override
+	public List<CcInfoPeerEntity> findByConName(String conName) {
+
+		return from(ccInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.conName.eq(conName))
+			.groupBy(ccInfoPeerEntity.ccInfoEntity)
+			.fetch();
 	}
 
 }

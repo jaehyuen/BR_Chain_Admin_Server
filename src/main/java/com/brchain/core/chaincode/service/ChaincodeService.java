@@ -119,7 +119,7 @@ public class ChaincodeService {
 	@Transactional(readOnly = true)
 	public ResultDto<List<CcInfoPeerDto>> getCcListPeer(String conName) {
 
-		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByConInfoEntity(containerService.findConInfoByConName(conName));
+		List<CcInfoPeerEntity> ccInfoPeerList = ccInfoPeerRepository.findByConName(conName);
 
 		//Success get chaincode peer info list
 		return util.setResult(BrchainStatusCode.SUCCESS, ccInfoPeerList.stream()

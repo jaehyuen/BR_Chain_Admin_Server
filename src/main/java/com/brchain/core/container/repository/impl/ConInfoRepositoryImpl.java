@@ -32,12 +32,12 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 			.fetch();
 	}
 
-	@Override
-	public List<ConInfoEntity> findByTest(String conType, String orgType, String orgName) {
-
-		return from(conInfoEntity).where(eqConType(conType), eqOrgType(orgType), eqOrgName(orgName))
-			.fetch();
-	}
+//	@Override
+//	public List<ConInfoEntity> findByTest(String conType, String orgType, String orgName) {
+//
+//		return from(conInfoEntity).where(eqConType(conType), eqOrgType(orgType), eqOrgName(orgName))
+//			.fetch();
+//	}
 
 	@Override
 	public boolean portCheck(String conPort) {

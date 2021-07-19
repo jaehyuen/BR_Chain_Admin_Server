@@ -20,44 +20,44 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@SqlResultSetMapping(
-        name="ChannelSummaryDtoMapping",
-        classes = @ConstructorResult(
-                targetClass = ChannelSummaryDto.class,
-                columns = {
-                        @ColumnResult(name="channelName", type = String.class),
-                        @ColumnResult(name="channelBlock", type = Integer.class),
-                        @ColumnResult(name="channelTx", type = Integer.class),
-                        @ColumnResult(name="preBlockCnt", type = Double.class),
-                        @ColumnResult(name="nowBlockCnt", type = Double.class),
-                        @ColumnResult(name="preTxCnt", type = Double.class),
-                        @ColumnResult(name="nowTxCnt", type = Double.class),
-                })
-)
-
-
-@NamedNativeQuery( resultSetMapping = "ChannelSummaryDtoMapping",
-							  query = "SELECT CHANNEL_NAME as channelName,\n"
-									+ "CHANNEL_TX as channelTx,\n"
-									+ "CHANNEL_BLOCK as channelBlock,\n"
-									+ "       (SELECT Count(*)\n"
-									+ "        FROM   BLOCK \n"
-									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :preMonth \n"
-									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preBlockCnt,\n"
-									+ "       (SELECT Count(*)\n"
-									+ "        FROM   BLOCK \n"
-									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :nowMonth \n"
-									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowBlockCnt,\n"
-									+ "       (SELECT Count(*)\n"
-									+ "        FROM   TRANSACTION \n"
-									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :preMonth \n"
-									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preTxCnt,\n"
-									+ "       (SELECT Count(*)\n"
-									+ "        FROM   TRANSACTION\n"
-									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :nowMonth \n"
-									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowTxCnt\n"
-									+ "FROM   CHANNELINFO c; ",
-							   name = "ChannelInfoEntity.findChannelSummary")
+//@SqlResultSetMapping(
+//        name="ChannelSummaryDtoMapping",
+//        classes = @ConstructorResult(
+//                targetClass = ChannelSummaryDto.class,
+//                columns = {
+//                        @ColumnResult(name="channelName", type = String.class),
+//                        @ColumnResult(name="channelBlock", type = Integer.class),
+//                        @ColumnResult(name="channelTx", type = Integer.class),
+//                        @ColumnResult(name="preBlockCnt", type = Double.class),
+//                        @ColumnResult(name="nowBlockCnt", type = Double.class),
+//                        @ColumnResult(name="preTxCnt", type = Double.class),
+//                        @ColumnResult(name="nowTxCnt", type = Double.class),
+//                })
+//)
+//
+//
+//@NamedNativeQuery( resultSetMapping = "ChannelSummaryDtoMapping",
+//							  query = "SELECT CHANNEL_NAME as channelName,\n"
+//									+ "CHANNEL_TX as channelTx,\n"
+//									+ "CHANNEL_BLOCK as channelBlock,\n"
+//									+ "       (SELECT Count(*)\n"
+//									+ "        FROM   BLOCK \n"
+//									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :preMonth \n"
+//									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preBlockCnt,\n"
+//									+ "       (SELECT Count(*)\n"
+//									+ "        FROM   BLOCK \n"
+//									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :nowMonth \n"
+//									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowBlockCnt,\n"
+//									+ "       (SELECT Count(*)\n"
+//									+ "        FROM   TRANSACTION \n"
+//									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :preMonth \n"
+//									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS preTxCnt,\n"
+//									+ "       (SELECT Count(*)\n"
+//									+ "        FROM   TRANSACTION\n"
+//									+ "        WHERE  Date_format(`TIMESTAMP`, '%Y%m') = :nowMonth \n"
+//									+ "               AND CHANNELINFO_CHANNEL_NAME = c.CHANNEL_NAME) AS nowTxCnt\n"
+//									+ "FROM   CHANNELINFO c; ",
+//							   name = "ChannelInfoEntity.findChannelSummary")
 
 @Data
 @EqualsAndHashCode(callSuper = false)

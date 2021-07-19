@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.ColumnResult;
-import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -13,13 +11,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.NamedNativeQuery;
-
 import com.brchain.common.entity.BaseEntity;
-import com.brchain.core.chaincode.dto.CcSummaryDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 
 import lombok.AllArgsConstructor;

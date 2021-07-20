@@ -12,11 +12,11 @@ public interface ConInfoRepository extends JpaRepository<ConInfoEntity, String>,
 
 	Optional<ConInfoEntity> findByConId(String conId);
 
-	List<ConInfoEntity> findByConTypeAndOrgType(String conType, String orgType);
+//	List<ConInfoEntity> findByConTypeAndOrgType(String conType, String orgType);
 
-	List<ConInfoEntity> findByConTypeAndOrgName(String conType, String orgName);
+//	List<ConInfoEntity> findByConTypeAndOrgName(String conType, String orgName);
 
-	List<ConInfoEntity> findByConTypeAndOrgTypeAndOrgName(String conType, String orgType, String orgName);
+//	List<ConInfoEntity> findByConTypeAndOrgTypeAndOrgName(String conType, String orgType, String orgName);
 
 	List<ConInfoEntity> findByConType(String conType);
 

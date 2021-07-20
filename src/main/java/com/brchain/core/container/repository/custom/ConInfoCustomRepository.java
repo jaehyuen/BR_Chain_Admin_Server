@@ -11,7 +11,7 @@ public interface ConInfoCustomRepository {
 
 	List<ConInfoEntity> findMemberByOrgName(@Param("orgName") String orgName);
 
-//	List<ConInfoEntity> findByTest(@Param("conType") String conType, @Param("orgType") String orgType, @Param("orgName") String orgName);
+	List<ConInfoEntity> findByConTypeAndOrgTypeAndOrgName(String conType, String orgType, String orgName);
 
 	boolean portCheck(@Param("conPort") String conPort);
 	

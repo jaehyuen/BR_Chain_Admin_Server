@@ -88,7 +88,8 @@ public class ContainerService {
 
 	public String findConInfoByConType(String conType, String orgType) {
 
-		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
+//		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName(conType, orgType,null);
 		String result = "";
 
 		for (ConInfoEntity conInfo : conInfoList) {
@@ -118,7 +119,8 @@ public class ContainerService {
 
 		} else {
 
-			conInfoList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
+//			conInfoList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
+			conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType,null);
 
 		}
 
@@ -165,7 +167,8 @@ public class ContainerService {
 
 		String                     caUrl       = "http://" + ip + ":" + conInfoList.get(0).getConPort();
 
-		conInfoList = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
+//		conInfoList = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
+		conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName(orgType,null, orgName);
 
 		for (ConInfoEntity conInfo : conInfoList) {
 			FabricNodeDto fabricNodeDto = new FabricNodeDto();
@@ -199,7 +202,8 @@ public class ContainerService {
 	@Transactional(readOnly = true)
 	public boolean isMemOfConso(String ordererOrgName, String peerOrgName) {
 
-		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+//		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("orderer",null, ordererOrgName);
 
 		String[] consoList = conInfoList.get(0).getConsoOrgs().split(" ");
 
@@ -225,7 +229,8 @@ public class ContainerService {
 
 	public void updateConsoOrgs(String ordererOrgName, String peerOrgName) {
 
-		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+//		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgName("orderer", ordererOrgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("orderer",null, ordererOrgName);
 
 		for (ConInfoEntity conInfo : conInfoList) {
 

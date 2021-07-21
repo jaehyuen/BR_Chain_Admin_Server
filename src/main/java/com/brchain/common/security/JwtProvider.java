@@ -25,6 +25,7 @@ import com.brchain.common.exception.BrchainException;
 import com.brchain.core.util.BrchainStatusCode;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 @Service
@@ -74,11 +75,13 @@ public class JwtProvider {
 		}
 	}
 
-	public boolean validateToken(String jwt) {
+	public boolean validateToken(String token) {
 
 		try {
-			parser().setSigningKey(getPublickey())
-				.parseClaimsJws(jwt);
+			Jwts.parserBuilder()
+			.setSigningKey(getPublicKey())
+			.build()
+			.parseClaimsJws(token);
 			return true;
 		} catch (Exception e) {
 
@@ -87,7 +90,7 @@ public class JwtProvider {
 
 	}
 
-	private PublicKey getPublickey() {
+	private PublicKey getPublicKey() {
 		try {
 			return keyStore.getCertificate("brchain")
 				.getPublicKey();
@@ -97,9 +100,13 @@ public class JwtProvider {
 	}
 
 	public String getUsernameFromJwt(String token) {
-		Claims claims = parser().setSigningKey(getPublickey())
-			.parseClaimsJws(token)
-			.getBody();
+		
+		Jws<Claims> jwt    = Jwts.parserBuilder()
+			.setSigningKey(getPublicKey())
+			.build()
+			.parseClaimsJws(token);
+
+		Claims      claims = jwt.getBody();
 
 		return claims.getSubject();
 	}

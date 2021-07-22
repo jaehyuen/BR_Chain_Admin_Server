@@ -116,6 +116,7 @@ public class ContainerService {
 		if (orgType.equals("")) {
 
 			conInfoList = conInfoRepository.findByConType("ca");
+			conInfoRepository.findOrgInfo(null);
 
 		} else {
 
@@ -160,7 +161,7 @@ public class ContainerService {
 	 */
 
 	@Transactional(readOnly = true)
-	public ArrayList<FabricNodeDto> createfabricNodeDtoArr(String orgType, String orgName) {
+	public ArrayList<FabricNodeDto> createFabricNodeDtoArr(String orgType, String orgName) {
 
 		ArrayList<FabricNodeDto> resultList    = new ArrayList<FabricNodeDto>();
 		List<ConInfoEntity>        conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType, orgName);

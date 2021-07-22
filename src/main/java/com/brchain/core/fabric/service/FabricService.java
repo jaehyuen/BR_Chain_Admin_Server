@@ -96,10 +96,10 @@ public class FabricService {
 			orgs.addAll(containerService.findOrgsInChannel(channelInfoEntity.getChannelName()));
 
 			for (String org : orgs) {
-				peerDtoArr.addAll(containerService.createfabricNodeDtoArr("peer", org));
+				peerDtoArr.addAll(containerService.createFabricNodeDtoArr("peer", org));
 			}
 
-			ordererDtoArr.addAll(containerService.createfabricNodeDtoArr("orderer", channelInfoEntity.getOrderingOrg()));
+			ordererDtoArr.addAll(containerService.createFabricNodeDtoArr("orderer", channelInfoEntity.getOrderingOrg()));
 
 			for (FabricNodeDto peerDto : peerDtoArr) {
 
@@ -320,7 +320,7 @@ public class FabricService {
 				sshClient.downloadFile(path, "ca.org" + conInfoDtoArr.get(0).getOrgName() + ".com-cert.pem");
 			}
 
-			ArrayList<FabricNodeDto> FabricNodeDto = containerService.createfabricNodeDtoArr(conInfoDtoArr.get(0).getOrgType(), conInfoDtoArr.get(0).getOrgName());
+			ArrayList<FabricNodeDto> FabricNodeDto = containerService.createFabricNodeDtoArr(conInfoDtoArr.get(0).getOrgType(), conInfoDtoArr.get(0).getOrgName());
 			fabricClient.createWallet(FabricNodeDto.get((int) (Math.random() * FabricNodeDto.size())));
 
 		} catch (InterruptedException e) {
@@ -378,9 +378,9 @@ public class FabricService {
 			ArrayList<FabricNodeDto> peerDtoArr = new ArrayList<FabricNodeDto>();
 
 			for (String org : createChannelDto.getPeerOrgs()) {
-				peerDtoArr.addAll(containerService.createfabricNodeDtoArr("peer", org));
+				peerDtoArr.addAll(containerService.createFabricNodeDtoArr("peer", org));
 			}
-			ArrayList<FabricNodeDto> ordererDtoArr = containerService.createfabricNodeDtoArr("orderer",
+			ArrayList<FabricNodeDto> ordererDtoArr = containerService.createFabricNodeDtoArr("orderer",
 					createChannelDto.getOrderingOrg());
 
 			logger.info("[채널생성] peerDtoArr : " + peerDtoArr);
@@ -538,7 +538,7 @@ public class FabricService {
 		logger.info("[체인코드 설치] InstallCcDto : " + installCcDto);
 
 		// 체인코드를 설치할 FabricMembetDto(peer) 생성
-		ArrayList<FabricNodeDto> peerDtoArr = containerService.createfabricNodeDtoArr("peer", installCcDto.getOrgName());
+		ArrayList<FabricNodeDto> peerDtoArr = containerService.createFabricNodeDtoArr("peer", installCcDto.getOrgName());
 
 		FabricNodeDto            peerDto    = null;
 
@@ -589,11 +589,11 @@ public class FabricService {
 			List<FabricNodeDto>    ordererDtoArr        = new ArrayList<FabricNodeDto>();
 
 			for (String org : orgs) {
-				peerDtoArr.addAll(containerService.createfabricNodeDtoArr("peer", org));
+				peerDtoArr.addAll(containerService.createFabricNodeDtoArr("peer", org));
 			}
 
 			ccInfoPeerEntityList.addAll(chaincodeService.findByCcInfoId(activeCcDto.getId()));
-			ordererDtoArr.addAll(containerService.createfabricNodeDtoArr("orderer", channelInfoEntity.getOrderingOrg()));
+			ordererDtoArr.addAll(containerService.createFabricNodeDtoArr("orderer", channelInfoEntity.getOrderingOrg()));
 			System.out.println(ccInfoPeerEntityList);
 
 			for (FabricNodeDto peerDto : peerDtoArr) {
@@ -882,7 +882,7 @@ public class FabricService {
 			}
 
 			// 앵커피어를 등록한 FabricNodeDto(peer) 생성
-			ArrayList<FabricNodeDto> peerDtoArr = containerService.createfabricNodeDtoArr(conInfoEntity.getOrgType(),conInfoEntity.getOrgName());
+			ArrayList<FabricNodeDto> peerDtoArr = containerService.createFabricNodeDtoArr(conInfoEntity.getOrgType(),conInfoEntity.getOrgName());
 			FabricNodeDto            peerDto    = null;
 
 			for (FabricNodeDto peerDto2 : peerDtoArr) {
@@ -893,7 +893,7 @@ public class FabricService {
 			}
 
 			// 앵커피어를 등록을 진행할 FabricNodeDto(orderer) 생성
-			ArrayList<FabricNodeDto> ordererDtoArr = containerService.createfabricNodeDtoArr("orderer",
+			ArrayList<FabricNodeDto> ordererDtoArr = containerService.createFabricNodeDtoArr("orderer",
 					channelInfoEntity.getOrderingOrg());
 
 			// wallet 생성

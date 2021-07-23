@@ -2,36 +2,22 @@ package com.brchain.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
-import org.hibernate.query.criteria.internal.path.SetAttributeJoin.TreatedSetAttributeJoin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import com.brchain.core.chaincode.entitiy.CcInfoChannelEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
-import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
-import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
-import com.brchain.core.chaincode.repository.CcInfoRepository;
-import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
 import com.brchain.core.channel.repository.ChannelInfoPeerRepository;
 import com.brchain.core.channel.repository.ChannelInfoRepository;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
-import com.brchain.core.fabric.entity.BlockEntity;
-import com.brchain.core.fabric.entity.TransactionEntity;
-import com.brchain.core.fabric.repository.BlockRepository;
-import com.brchain.core.fabric.repository.TransactionRepository;
 
-@DataJpaTest(showSql = false)
+@DataJpaTest(showSql = true)
 //@Transactional
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ContainerDatabaseTest {
@@ -138,6 +124,23 @@ public class ContainerDatabaseTest {
 
 		System.out.println("************************ 컨테이너_포트_체크_테스트 종료 ************************");
 
+	}
+	
+	@Test
+	public void 조직_리스트_조회_테스트() {
+		System.out.println("************************ 조직_리스트_조회_테스트 시작 ************************");
+
+		// given
+
+		// when
+		String result = conInfoRepository.findAllOrgs();
+		System.out.println(result);
+		
+		// then
+		System.out.println(result);
+		assertThat(result).isEqualTo("test lalala");
+
+		System.out.println("************************ 조직_리스트_조회_테스트 ************************");
 	}
 
 	private ConInfoEntity createConInfoEntity(String orgName, String port, String orgType, int conNum) {

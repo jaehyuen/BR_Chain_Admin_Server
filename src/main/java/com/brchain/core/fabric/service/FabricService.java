@@ -197,8 +197,7 @@ public class FabricService {
 
 			for (ConInfoDto conInfoDto : conInfoDtoArr) {
 
-				if (conInfoDto.getConType()
-					.equals("ca")) {
+				if (conInfoDto.getConType().equals("ca")) {
 
 					// 컨테이너 생성 함수 호출
 					logger.info("[조직생성] 도커 컨테이너 생성 -> " + conInfoDto.getOrgName() + " 조직의 " + conInfoDto.getConType()
@@ -216,8 +215,7 @@ public class FabricService {
 					setupContainer.setConNum(conInfoDto.getConNum());
 					setupContainer.setConType("setup_" + conInfoDto.getOrgType());
 
-					if (conInfoDto.getOrgType()
-						.equals("orderer")) {
+					if (conInfoDto.getOrgType().equals("orderer")) {
 
 						setupContainer.setOrdererPorts(ordererPorts);
 						setupContainer.setPeerOrgs(containerService.findConInfoByConType("ca", "peer"));
@@ -237,8 +235,7 @@ public class FabricService {
 
 					conInfoDtoArr.add(i + 1, setupContainer);
 
-				} else if (conInfoDto.getConType()
-					.equals("peer")) {
+				} else if (conInfoDto.getConType().equals("peer")) {
 
 					// 컨테이너 생성 함수 호출
 					conInfoDto.setGossipBootAddr(gossipBootAddress);

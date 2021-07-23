@@ -1,12 +1,12 @@
 package com.brchain.core.container.repository.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.brchain.core.chaincode.entitiy.QCcInfoPeerEntity;
 import com.brchain.core.channel.entitiy.QChannelInfoPeerEntity;
 import com.brchain.core.container.dto.OrgInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
@@ -15,6 +15,7 @@ import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 
 @Transactional(readOnly = true)
@@ -71,10 +72,41 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 					ExpressionUtils.as(JPAExpressions.select(c.count())
 						.from(c)
 						.where(conInfoEntity.orgName.eq(c.orgName)
-							.and(c.conType.in("peer", "orderer"))), "memberCnt")))
-			.where(conInfoEntity.orgType.in("peer", "orderer"))
+							.and(c.conType.in(createTypeList(orgType)))), "memberCnt")))
+			.where(conInfoEntity.orgType.in(createTypeList(orgType)))
 			.groupBy(conInfoEntity.orgName)
 			.fetch();
+	}
+
+//	@Override
+//	public String findAllOrgs() {
+//
+//		return from(conInfoEntity).distinct()
+//			.select(Expressions.stringTemplate("group_concat(DISTINCT {0} SEPARATOR ' ' )", conInfoEntity.orgName))
+//			.where(conInfoEntity.conType.eq("ca"))
+//			.fetch()
+//			.get(0);
+//	}
+
+	private List<String> createTypeList(String type) {
+
+		List<String> result = new ArrayList<String>();
+
+		result.add("peer");
+		result.add("orderer");
+
+		if (StringUtils.isEmpty(type)) {
+			return result;
+		} else if (type.equals("peer")) {
+			result.remove("orderer");
+			return result;
+		} else if (type.equals("orderer")) {
+			result.remove("peer");
+			return result;
+		} else {
+			return null;
+		}
+
 	}
 
 	private BooleanExpression eqConType(String conType) {

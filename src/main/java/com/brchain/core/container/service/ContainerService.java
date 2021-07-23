@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
 import com.brchain.core.container.dto.ConInfoDto;
+import com.brchain.core.container.dto.OrgInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.repository.ConInfoRepository;
 import com.brchain.core.fabric.dto.FabricNodeDto;
@@ -99,6 +100,19 @@ public class ContainerService {
 		return result;
 
 	}
+	
+	public String findAllOrgs(String orgType) {
+
+////		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
+//		String result = "";
+//
+//		for (ConInfoEntity conInfo : conInfoList) {
+//			result = result + conInfo.getOrgName() + " ";
+//		}
+
+		return conInfoRepository.findAllOrgs();
+
+	}
 
 	/**
 	 * 조직 리스트 조회 서비스
@@ -109,26 +123,11 @@ public class ContainerService {
 	 */
 
 	@Transactional(readOnly = true)
-	public ResultDto<List<ConInfoDto>> getOrgList(String orgType) {
+	public ResultDto<List<OrgInfoDto>> getOrgList(String orgType) {
 
-		List<ConInfoEntity> conInfoList;
-
-		if (orgType.equals("")) {
-
-			conInfoList = conInfoRepository.findByConType("ca");
-			conInfoRepository.findOrgInfo(null);
-
-		} else {
-
-//			conInfoList = conInfoRepository.findByConTypeAndOrgType("ca", orgType);
-			conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType,null);
-
-		}
-
-		//Success get container info list
-		return util.setResult(BrchainStatusCode.SUCCESS, conInfoList.stream()
-			.map(conInfo -> util.toDto(conInfo))
-			.collect(Collectors.toList()));
+			
+		//Success get org info list
+		return util.setResult(BrchainStatusCode.SUCCESS,conInfoRepository.findOrgInfo(orgType));
 	}
 
 	/**

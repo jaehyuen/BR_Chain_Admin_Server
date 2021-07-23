@@ -27,7 +27,10 @@ public class BlockRepositoryImpl extends QuerydslRepositorySupport implements Bl
 	@Override
 	public List<BlockAndTxDto> findByChannelName(String channelName) {
 		// TODO Auto-generated method stub
-		return from(blockEntity).select(Projections.constructor(BlockAndTxDto.class, blockEntity.blockDataHash, blockEntity.blockNum, blockEntity.txCount, blockEntity.timestamp, blockEntity.prevDataHash, Expressions.stringTemplate("group_concat({0})", transactionEntity.txId)))
+		return from(blockEntity)
+			.select(Projections.constructor(BlockAndTxDto.class, blockEntity.blockDataHash, blockEntity.blockNum,
+					blockEntity.txCount, blockEntity.timestamp, blockEntity.prevDataHash,
+					Expressions.stringTemplate("group_concat({0})", transactionEntity.txId)))
 			.join(transactionEntity)
 			.on(transactionEntity.blockEntity.blockDataHash.eq(blockEntity.blockDataHash))
 			.where(blockEntity.channelInfoEntity.channelName.eq(channelName))
@@ -35,12 +38,12 @@ public class BlockRepositoryImpl extends QuerydslRepositorySupport implements Bl
 			.orderBy(blockEntity.blockNum.desc())
 			.fetch();
 	}
-	
+
 	@Override
 	public long countByChannelName(String channelName) {
 		// TODO Auto-generated method stub
-		return from(blockEntity)
-			.where(blockEntity.channelInfoEntity.channelName.eq(channelName)).fetchCount();
+		return from(blockEntity).where(blockEntity.channelInfoEntity.channelName.eq(channelName))
+			.fetchCount();
 	}
 
 }

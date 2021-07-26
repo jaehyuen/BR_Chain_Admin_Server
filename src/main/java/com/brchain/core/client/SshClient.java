@@ -96,15 +96,39 @@ public class SshClient {
 	 * @param orgName 조직 이름
 	 * 
 	 */
-	public void removeDir(String orgName, String conName) {
+	public void removeDir(String orgName, String conName, String conType) {
 		try {
 
-			String command = "rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
-					+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/"
-					+ orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
-					+ sourceDir + "/channel-artifacts/";
+//			String command = "rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
+//					+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/"
+//					+ orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
+//					+ sourceDir + "/channel-artifacts/";
 
-			channelExec.setCommand(command);
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("rm -rf /svc/nhblock/logs/container_logs/" + conName);
+
+			switch (conType) {
+			case "ca":
+				sb.append(" /svc/nhblock/data/ca/" + conName);
+				sb.append(" /svc/nhblock/prod_brchain/crypto-config/ca-certs/" + conName + "*");
+				break;
+			case "peer":
+//				sb.append(" /svc/nhblock/data/producton/"+conName);
+//				sb.append(" /svc/nhblock/prod_brchain/crypto-config/"+conType+"Organizations/orgfinger.com/"+conType+"s/"+conName);
+//				break;
+			case "orderer":
+				sb.append(" /svc/nhblock/data/producton/" + conName);
+				sb.append(" /svc/nhblock/prod_brchain/crypto-config/" + conType + "Organizations/orgfinger.com/"
+						+ conType + "s/" + conName);
+				break;
+
+			default:
+				break;
+			}
+
+//			channelExec.setCommand(command);
+			channelExec.setCommand(sb.toString());
 			channelExec.connect();
 
 		} catch (JSchException e) {
@@ -123,7 +147,7 @@ public class SshClient {
 	public void execCommand(String command) {
 
 		try {
-			
+
 			if (channelExec.isClosed()) {
 				connect();
 			}
@@ -132,7 +156,7 @@ public class SshClient {
 			channelExec.setCommand(command);
 			channelExec.connect();
 			channelExec.disconnect();
-			
+
 			Thread.sleep(500);
 
 		} catch (JSchException | InterruptedException e) {

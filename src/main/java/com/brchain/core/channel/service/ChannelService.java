@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
-import com.brchain.core.channel.dto.ChannelHandleDto;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.channel.dto.ChannelInfoPeerDto;
 import com.brchain.core.channel.dto.ChannelSummaryDto;

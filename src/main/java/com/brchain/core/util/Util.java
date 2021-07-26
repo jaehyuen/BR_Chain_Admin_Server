@@ -3,7 +3,6 @@ package com.brchain.core.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,6 +12,8 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -44,8 +45,6 @@ import com.brchain.core.fabric.dto.PolicyDto;
 import com.brchain.core.fabric.dto.TransactionDto;
 import com.brchain.core.fabric.entity.BlockEntity;
 import com.brchain.core.fabric.entity.TransactionEntity;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableList;
@@ -500,6 +499,20 @@ public class Util {
 		return resultDto;
 
 	}
+//	
+//	public <T> ResultDto<T> setResult(BrchainStatusCode status, Stream<T> stream) {
+//
+//		ResultDto<T> resultDto = new ResultDto<T>();
+//
+//		resultDto.setResultCode(status.getCode());
+//		resultDto.setResultFlag(status.getCode().equals("0000") ? true : false);
+//		resultDto.setResultMessage(status.getMessage());
+//		resultDto.setResultData(stream.map(data -> toDto(data)).collect(Collectors.toList()));
+////		stream.map(a-> util.to)
+//
+//		return resultDto;
+//
+//	}
 
 	/**
 	 * 앵커 피어 설정 추가 함수

@@ -19,7 +19,6 @@ import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
-import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.Container.PortMapping;
 import com.spotify.docker.client.messages.ContainerInfo;
@@ -71,7 +70,8 @@ public class DockerService {
 			dockerClient.removeContainer(container.id());
 
 			if (conInfoEntity != null) {
-				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
 			}
 
 		}
@@ -124,7 +124,8 @@ public class DockerService {
 
 		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
 		dockerClient.removeContainer(conId);
-		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+//		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(),conInfoEntity.getConType());
 
 		// Success remove container
 		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove container");
@@ -157,7 +158,8 @@ public class DockerService {
 
 				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
 				dockerClient.removeContainer(container.id());
-				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
 
 			}
 		}

@@ -169,15 +169,13 @@ public class FabricService {
 			// 컨테이너 생성시 필요한 변수 선언
 			for (CreateOrgConInfoDto createOrgConInfoDto : createOrgConInfoDtoArr) {
 
-				if (createOrgConInfoDto.getConType()
-					.equals("orderer")) {
+				if (createOrgConInfoDto.getConType().equals("orderer")) {
 
 					ordererPorts = ordererPorts + createOrgConInfoDto.getConPort() + " ";
 
 				}
 
-				if (createOrgConInfoDto.getConType()
-					.equals("peer")) {
+				if (createOrgConInfoDto.getConType().equals("peer")) {
 
 					gossipBootAddress = gossipBootAddress + createOrgConInfoDto.getConType()
 							+ createOrgConInfoDto.getConNum() + ".org" + createOrgConInfoDto.getOrgName() + ".com:"
@@ -190,6 +188,7 @@ public class FabricService {
 					.orgType(createOrgConInfoDto.getOrgType())
 					.conNum(createOrgConInfoDto.getConNum())
 					.conCnt(createOrgConInfoDto.getConCnt())
+					.couchdbYn(createOrgConInfoDto.isCouchdbYn())
 					.build());
 			}
 

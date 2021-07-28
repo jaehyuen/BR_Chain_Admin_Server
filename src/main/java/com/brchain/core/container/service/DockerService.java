@@ -99,7 +99,6 @@ public class DockerService {
 	}
 
 	/**
-	 * @deprecated 아직 미완성 서비스
 	 * 
 	 * 특정 컨테이너 삭제 서비스
 	 * 
@@ -124,8 +123,7 @@ public class DockerService {
 
 		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
 		dockerClient.removeContainer(conId);
-//		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
-		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(),conInfoEntity.getConType());
+		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
 
 		// Success remove container
 		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove container");
@@ -152,7 +150,7 @@ public class DockerService {
 			if (container.names().get(0).contains(orgName)) {
 				try {
 					conInfoEntity = containerService.deleteConInfo(container.id());
-				} catch (Exception e) {
+				} catch (IllegalArgumentException e) {
 					logger.info("디비에 없는 컨테이너");
 				}
 

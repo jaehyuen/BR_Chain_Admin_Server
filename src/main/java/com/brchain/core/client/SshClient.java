@@ -13,10 +13,12 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.brchain.common.exception.BrchainException;
 import com.brchain.core.util.BrchainStatusCode;
+import com.brchain.core.util.Util;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -26,6 +28,8 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import com.spotify.docker.client.exceptions.DockerException;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * ssh/sftp 연결을 위한 클라이언트 클래스
  * 
@@ -33,8 +37,12 @@ import com.spotify.docker.client.exceptions.DockerException;
  *
  */
 @Component
+@RequiredArgsConstructor
 public class SshClient {
 
+	private final Environment    environment;
+	private final Util           util;
+	
 	private Logger      logger      = LoggerFactory.getLogger(this.getClass());
 	private Session     session     = null;
 	private Channel     channel     = null;
@@ -97,42 +105,48 @@ public class SshClient {
 	 * 
 	 */
 	public void removeDir(String orgName, String conName, String conType) {
-		try {
 
 //			String command = "rm -rf " + logDir + " " + dataDir + "/*/*" + conName + "* " + sourceDir
 //					+ "/crypto-config/*/*" + orgName + "* " + dataDir + "/ca " + sourceDir + "/channel-artifacts/"
 //					+ orgName + " | mkdir -p  " + sourceDir + "/channel-artifacts | cp -r " + sourceDir + "/bin "
 //					+ sourceDir + "/channel-artifacts/";
 
-			StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 
-			sb.append("rm -rf /svc/nhblock/logs/container_logs/" + conName);
+		sb.append("rm -rf " + logDir + "/container_logs/" + conName);
 
-			switch (conType) {
-			case "ca":
-				sb.append(" /svc/nhblock/data/ca/" + conName);
-				sb.append(" /svc/nhblock/prod_brchain/crypto-config/ca-certs/" + conName + "*");
-				break;
-			case "peer":
+		switch (conType) {
+		case "ca":
+			sb.append(" " + dataDir + "/ca/" + conName);
+			sb.append(" " + sourceDir + "/crypto-config/ca-certs/" + conName + "*");
+			break;
+		case "peer":
 //				sb.append(" /svc/nhblock/data/producton/"+conName);
 //				sb.append(" /svc/nhblock/prod_brchain/crypto-config/"+conType+"Organizations/orgfinger.com/"+conType+"s/"+conName);
 //				break;
-			case "orderer":
-				sb.append(" /svc/nhblock/data/producton/" + conName);
-				sb.append(" /svc/nhblock/prod_brchain/crypto-config/" + conType + "Organizations/orgfinger.com/"
-						+ conType + "s/" + conName);
-				break;
+		case "orderer":
+			sb.append(" " + dataDir + "/production/" + conName);
+			sb.append(" " + sourceDir + "/crypto-config/" + conType + "Organizations/org" + orgName + ".com/" + conType
+					+ "s/" + conName);
+			break;
+		case "couchdb":
+			sb.append(" " + dataDir + "/couchdb/" + conName);
+			break;
 
-			default:
-				break;
-			}
+		default:
+			break;
+		}
 
 //			channelExec.setCommand(command);
-			channelExec.setCommand(sb.toString());
-			channelExec.connect();
+//			channelExec.setCommand(sb.toString());
+//			channelExec.connect();
+		
+		logger.info(sb.toString());
 
-		} catch (JSchException e) {
-			throw new BrchainException(e, BrchainStatusCode.DELETE_DIR_ERROR);
+		if (environment.getActiveProfiles()[0].equals("local")) {
+			execCommand(sb.toString());
+		} else {
+			util.execute(sb.toString());
 		}
 
 	}

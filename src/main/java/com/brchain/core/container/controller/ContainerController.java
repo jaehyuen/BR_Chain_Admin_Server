@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,20 +54,17 @@ public class ContainerController {
 			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
 			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
 			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
-	@GetMapping("/remove")
-	public ResponseEntity<ResultDto> removeContainer(@Parameter(description = "삭제할 컨테이너 ID", required = false) @RequestParam(value = "conId", required = false) String conId, @Parameter(description = "삭제할 조직명", required = false) @RequestParam(value = "orgName", required = false) String orgName) {
+//	@GetMapping("/remove")
+	@DeleteMapping(value = {"/remove/{conId}","/remove"})
+	public ResponseEntity<ResultDto> removeContainer(@PathVariable("conId")  String conId) {
 
-		if (conId != null && conId.equals("")) {
-
+		if (conId == null ) {
 			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeAllContainers());
 
-		} else if (conId != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeContainer(conId));
-
 		} else {
-
-			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeOrgContainers(orgName));
+			return ResponseEntity.status(HttpStatus.OK).body(dockerService.removeContainer(conId));
 		}
+
 
 	}
 

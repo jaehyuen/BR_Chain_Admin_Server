@@ -41,7 +41,6 @@ public class DockerService {
 	private Logger                 logger = LoggerFactory.getLogger(this.getClass());
 
 	/**
-	 * @deprecated 아직 미완성 서비스
 	 * 
 	 * 모든 컨테이너 삭제 서비스
 	 * 
@@ -57,22 +56,23 @@ public class DockerService {
 		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
 
 			Container  container  = iter.next();
+			
+			removeContainer(container.id());
 
-			ConInfoEntity conInfoEntity = null;
-
-			try {
-				conInfoEntity = containerService.deleteConInfo(container.id());
-			} catch (Exception e) {
-				logger.info("디비에 없는 컨테이너");
-			}
-
-			logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
-			dockerClient.removeContainer(container.id());
-
-			if (conInfoEntity != null) {
-//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
-				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
-			}
+//			ConInfoEntity conInfoEntity = null;
+//
+//			try {
+//				conInfoEntity = containerService.deleteConInfo(container.id());
+//			} catch (Exception e) {
+//				logger.info("디비에 없는 컨테이너");
+//			}
+//
+//			logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
+//			dockerClient.removeContainer(container.id());
+//
+//			if (conInfoEntity != null) {
+//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
+//			}
 
 		}
 

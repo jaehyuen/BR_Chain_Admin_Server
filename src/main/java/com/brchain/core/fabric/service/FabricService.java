@@ -1049,5 +1049,11 @@ public class FabricService {
 
 		return util.setResult("0000", true, "Success chaincode file upload", null);
 	}
+	
+	public ResultDto<String> removeOrg(String orgName) {
+		
+		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove org");
+		
+	}
 
 }

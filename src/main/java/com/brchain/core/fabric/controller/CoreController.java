@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +68,13 @@ public class CoreController {
 	public ResponseEntity<ResultDto> createContainer(@Parameter(description = "조직 생성 관련 컨테이너 DTO 리스트", required = true) @RequestBody ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createOrg(createOrgConInfoDtoArr));
+
+	}
+	
+	@PostMapping("/org/{orgName}")
+	public ResponseEntity<ResultDto> createContainer(@PathVariable("orgName") String orgName) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(fabricService.removeOrg(orgName));
 
 	}
 

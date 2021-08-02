@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -102,11 +103,19 @@ public class ChannelService {
 	@Transactional(readOnly = true)
 	public ResultDto<ChannelInfoDto> getChannelByChannelName(String channelName) {
 
-		ChannelInfoEntity channelInfoEntity = channelInfoRepository.findById(channelName).orElseThrow(IllegalArgumentException::new);
+		ChannelInfoEntity channelInfoEntity = findChannelInfoByChannelName(channelName);
 		
 		//Success get channel info
 		return util.setResult(BrchainStatusCode.SUCCESS, util.toDto(channelInfoEntity));
 
+	}
+	
+	public List<ChannelInfoEntity> findChannelInfoPeerByOrgName(String orgName) {
+		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByOrgName(orgName);
+
+		return channelInfoPeerList.stream()
+			.map(channelInfoPeer -> channelInfoPeer.getChannelInfoEntity())
+			.collect(Collectors.toList());
 	}
 
 	/**

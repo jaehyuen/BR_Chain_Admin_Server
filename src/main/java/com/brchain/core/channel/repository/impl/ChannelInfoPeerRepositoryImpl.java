@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
 import com.brchain.core.channel.entitiy.QChannelInfoPeerEntity;
 import com.brchain.core.channel.repository.custom.ChannelInfoPeerCustomRepository;
@@ -28,6 +29,14 @@ public class ChannelInfoPeerRepositoryImpl extends QuerydslRepositorySupport imp
 			.leftJoin(channelInfoPeerEntity.channelInfoEntity)
 			.fetchJoin()
 			.where(eqChannelName(channelName), eqConName(conName))
+			.fetch();
+
+	}
+
+	@Override
+	public List<ChannelInfoPeerEntity> findByOrgName(String orgName) {
+
+		return from(channelInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.orgName.eq(orgName))
 			.fetch();
 
 	}

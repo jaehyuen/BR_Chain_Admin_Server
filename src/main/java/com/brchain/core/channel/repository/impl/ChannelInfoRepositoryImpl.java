@@ -45,6 +45,7 @@ public class ChannelInfoRepositoryImpl extends QuerydslRepositorySupport impleme
 
 	}
 
+
 	private JPQLQuery<Long> createBlockSubQuery(String month) {
 		return JPAExpressions.select(blockEntity.count()).from(blockEntity)
 			.where(Expressions.stringTemplate("DATE_FORMAT({0}, {1})", blockEntity.timestamp, ConstantImpl.create("%Y%m"))

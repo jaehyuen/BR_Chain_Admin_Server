@@ -17,6 +17,7 @@ import com.brchain.core.container.dto.ConInfoDto;
 import com.brchain.core.container.dto.DockerStatsDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.util.BrchainStatusCode;
+import com.brchain.core.util.JsonUtil;
 import com.brchain.core.util.Util;
 import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.messages.Container;
@@ -37,6 +38,7 @@ public class DockerService {
 	private final ContainerService containerService;
 
 	private final Util             util;
+	private final JsonUtil         jsonUtil;
 
 	private Logger                 logger = LoggerFactory.getLogger(this.getClass());
 
@@ -229,7 +231,7 @@ public class DockerService {
 
 		containerService.saveConInfo(util.toEntity(createConDto));
 
-		return util.createConJson(info);
+		return jsonUtil.createConJson(info);
 
 	}
 

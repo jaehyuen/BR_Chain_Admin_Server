@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,14 +66,14 @@ public class CoreController {
 			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
 			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 	@PostMapping("/org/create")
-	public ResponseEntity<ResultDto> createContainer(@Parameter(description = "조직 생성 관련 컨테이너 DTO 리스트", required = true) @RequestBody ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
+	public ResponseEntity<ResultDto> createOrg(@Parameter(description = "조직 생성 관련 컨테이너 DTO 리스트", required = true) @RequestBody ArrayList<CreateOrgConInfoDto> createOrgConInfoDtoArr) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.createOrg(createOrgConInfoDtoArr));
 
 	}
 	
-	@PostMapping("/org/{orgName}")
-	public ResponseEntity<ResultDto> createContainer(@PathVariable("orgName") String orgName) {
+	@DeleteMapping("/org/{orgName}")
+	public ResponseEntity<ResultDto> removeOrg(@PathVariable("orgName") String orgName) {
 
 		return ResponseEntity.status(HttpStatus.OK).body(fabricService.removeOrg(orgName));
 

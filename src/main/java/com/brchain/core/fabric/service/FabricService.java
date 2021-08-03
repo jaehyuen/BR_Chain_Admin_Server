@@ -52,6 +52,7 @@ import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.container.service.DockerService;
 import com.brchain.core.fabric.dto.FabricNodeDto;
 import com.brchain.core.util.BrchainStatusCode;
+import com.brchain.core.util.JsonUtil;
 import com.brchain.core.util.Util;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -76,6 +77,7 @@ public class FabricService {
 	private final Environment           environment;
 
 	private final Util                  util;
+	private final JsonUtil              jsonUtil;
 
 	private Logger                      logger = LoggerFactory.getLogger(this.getClass());
 
@@ -114,7 +116,7 @@ public class FabricService {
 			Network newwork;
 
 			newwork = fabricClient.connectNetwork(channelInfoEntity.getChannelName(), orgs.get(0),
-					util.createFabrcSetting(channelInfoEntity.getChannelName(), ordererDtoArr, peerDtoArr, orgs));
+					jsonUtil.createFabrcSetting(channelInfoEntity.getChannelName(), ordererDtoArr, peerDtoArr, orgs));
 
 			channel = newwork.getChannel();
 
@@ -279,7 +281,7 @@ public class FabricService {
 			}
 
 			// 생성된 조직의 docker-compose yaml file 생성
-			util.createYamlFile(conInfoDtoArr.get(0).getOrgName(), conJson);
+			jsonUtil.createYamlFile(conInfoDtoArr.get(0).getOrgName(), conJson);
 
 			String path = null;
 
@@ -406,14 +408,14 @@ public class FabricService {
 				if (!containerService.isMemOfConso(ordererDto.getOrgName(), peerDto.getOrgName())) {
 
 					JSONObject genesisJson = fabricClient.getChannelConfig(ordererDto, "testchainid");
-					JSONObject testJson    = util.createOrgJson(peerDto);
+					JSONObject testJson    = jsonUtil.createOrgJson(peerDto);
 
 					logger.info(genesisJson.toString());
 					logger.info(testJson.toString());
 
 					// 시스템 채널 컨소시움 추가
 
-					JSONObject modifiedJson = util.modifyConsoConfig(genesisJson, testJson, "", peerDto.getOrgName());
+					JSONObject modifiedJson = jsonUtil.modifyConsoConfig(genesisJson, testJson, "", peerDto.getOrgName());
 
 					File       updateFile   = fabricClient.createUpdateFile(ordererDto, "testchainid", genesisJson,
 							modifiedJson);
@@ -448,7 +450,7 @@ public class FabricService {
 			channelInfoEntity.setBatchSizePreferMax(20480);
 			channelService.saveChannelInfo(channelInfoEntity);
 
-			util.createYamlFile(createChannelDto.getChannelName(), conJson);
+			jsonUtil.createYamlFile(createChannelDto.getChannelName(), conJson);
 
 			logger.info("[채널생성] 종료");
 
@@ -462,7 +464,7 @@ public class FabricService {
 
 			fabricClient.connectNetwork(channelInfoEntity.getChannelName(), createChannelDto.getPeerOrgs()
 				.get(0),
-					util.createFabrcSetting(channelInfoEntity.getChannelName(), ordererDtoArr, peerDtoArr,
+				jsonUtil.createFabrcSetting(channelInfoEntity.getChannelName(), ordererDtoArr, peerDtoArr,
 							createChannelDto.getPeerOrgs()));
 
 			fabricClient.registerEventListener(createChannelDto.getChannelName(),
@@ -1051,6 +1053,9 @@ public class FabricService {
 	}
 	
 	public ResultDto<String> removeOrg(String orgName) {
+		
+		List<ChannelInfoEntity> channelInfoList = channelService.findChannelInfoPeerByOrgName(orgName);
+		
 		
 		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove org");
 		

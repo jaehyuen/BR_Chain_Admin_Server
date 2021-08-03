@@ -86,6 +86,7 @@ import com.brchain.common.exception.BrchainException;
 import com.brchain.core.fabric.dto.FabricNodeDto;
 import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.BrchainUser;
+import com.brchain.core.util.JsonUtil;
 import com.brchain.core.util.Util;
 
 import lombok.RequiredArgsConstructor;
@@ -104,6 +105,7 @@ public class FabricClient {
 	private final SshClient      sshClient;
 
 	private final Util           util;
+	private final JsonUtil       jsonUtil;
 
 	@Value("${brchain.sourcedir}")
 	private String               sourceDir;
@@ -836,7 +838,7 @@ public class FabricClient {
 		logger.debug("[앵커피어 설정] 기존 설정 : " + genesisJson);
 
 		// 앵커피어 설정 추가
-		JSONObject modifiedJson = util.addAnchorConfig(genesisJson, util.createAnchorJson(peerDto), "", peerDto);
+		JSONObject modifiedJson = jsonUtil.addAnchorConfig(genesisJson, jsonUtil.createAnchorJson(peerDto), "", peerDto);
 		logger.debug("[앵커피어 설정] 변경된 설정 : " + modifiedJson.toString());
 
 		// 파일 업데이트
@@ -1317,6 +1319,10 @@ public class FabricClient {
 		// 생성한 리퀘스트 전송
 		return channel.sendLifecycleCommitChaincodeDefinitionProposal(lifecycleCommitChaincodeDefinitionRequest, channel.getPeers());
 
+	}
+	
+	public void removeOrg() {
+		
 	}
 
 };

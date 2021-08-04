@@ -11,17 +11,28 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.brchain.core.fabric.service.FabricService;
+
 @AutoConfigureMockMvc
 @SpringBootTest
 @RunWith(SpringRunner.class)
 //@WebMvcTest(controllers =AuthController.class)
 class BrChainApplicationTests {
+//	@Autowired
+//    private MockMvc mvc;
+	
 	@Autowired
-    private MockMvc mvc;
+	private FabricService fabricService;
 
 	
     @Test
     void contextLoads() {
+    }
+    
+    @Test
+    void removeOrgTest() {
+    	
+    	fabricService.removeOrg("lalapeer");
     }
     
  

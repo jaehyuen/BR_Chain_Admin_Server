@@ -1,21 +1,11 @@
 package com.brchain.core.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,28 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.brchain.common.dto.ResultDto;
 import com.brchain.common.exception.BrchainException;
-import com.brchain.core.chaincode.dto.CcInfoChannelDto;
-import com.brchain.core.chaincode.dto.CcInfoDto;
-import com.brchain.core.chaincode.dto.CcInfoPeerDto;
-import com.brchain.core.chaincode.entitiy.CcInfoChannelEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
-import com.brchain.core.channel.dto.ChannelHandleDto;
-import com.brchain.core.channel.dto.ChannelInfoDto;
-import com.brchain.core.channel.dto.ChannelInfoPeerDto;
-import com.brchain.core.channel.entitiy.ChannelHandleEntity;
-import com.brchain.core.channel.entitiy.ChannelInfoEntity;
-import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
-import com.brchain.core.container.dto.ConInfoDto;
-import com.brchain.core.container.entitiy.ConInfoEntity;
-import com.brchain.core.fabric.dto.BlockDto;
 import com.brchain.core.fabric.dto.FabricNodeDto;
 import com.brchain.core.fabric.dto.PolicyDto;
-import com.brchain.core.fabric.dto.TransactionDto;
-import com.brchain.core.fabric.entity.BlockEntity;
-import com.brchain.core.fabric.entity.TransactionEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableList;
@@ -222,6 +193,45 @@ public class JsonUtil {
 
 		return json;
 	}
+	
+	/**
+	 * 설정파일(조직) 삭제 함수 (테스트중)
+	 * 
+	 * @param json       수정할 Json
+	 * @param parentsKey 부모키??
+	 * 
+	 * @return 삭제된 Json
+	 */
+
+	public JSONObject modifyOrgConfig(JSONObject json, String parentsKey, String orgName) {
+
+		String     key        = "";
+		JSONObject resultJson = new JSONObject();
+
+		Iterator   iter       = json.keySet().iterator();
+		
+		//재귀함수로 json 순회
+		while (iter.hasNext()) {
+			key = (String) iter.next();
+
+			if (key.equals("groups") && parentsKey.equals("Application")) {
+				logger.debug("현재키 :" + key + " 부모 키 :" + parentsKey);
+
+				resultJson = (JSONObject) json.get(key);
+				resultJson.remove(orgName);
+				
+				return resultJson;
+
+			} else if (json.get(key) instanceof JSONObject) {
+
+				resultJson = modifyOrgConfig((JSONObject) json.get(key), key, orgName);
+			}
+
+		}
+
+		return json;
+	}
+	
 
 	/**
 	 * 조직 정보 json 생성 함수

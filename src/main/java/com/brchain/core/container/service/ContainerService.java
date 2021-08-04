@@ -163,12 +163,12 @@ public class ContainerService {
 	public ArrayList<FabricNodeDto> createFabricNodeDtoArr(String orgType, String orgName) {
 
 		ArrayList<FabricNodeDto> resultList    = new ArrayList<FabricNodeDto>();
-		List<ConInfoEntity>        conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName("ca", orgType, orgName);
+		ConInfoEntity        caInfo = conInfoRepository.findCaInfoByOrgName(orgName).orElseThrow(IllegalArgumentException::new);
 
-		String                     caUrl       = "http://" + ip + ":" + conInfoList.get(0).getConPort();
+		String                     caUrl       = "http://" + ip + ":" + caInfo.getConPort();
 
 //		conInfoList = conInfoRepository.findByConTypeAndOrgName(orgType, orgName);
-		conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName(orgType,null, orgName);
+		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgTypeAndOrgName(orgType,null, orgName);
 
 		for (ConInfoEntity conInfo : conInfoList) {
 			FabricNodeDto fabricNodeDto = new FabricNodeDto();

@@ -2,6 +2,7 @@ package com.brchain.core.container.repository.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,13 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 			.fetch();
 	}
 
+	@Override
+	public Optional<ConInfoEntity> findCaInfoByOrgName(String orgName) {
+
+		return Optional.ofNullable(from(conInfoEntity).where(eqConType("ca"), eqOrgName(orgName))
+			.fetchOne());
+	}
+	
 	@Override
 	public List<ConInfoEntity> findByConTypeAndOrgTypeAndOrgName(String conType, String orgType, String orgName) {
 

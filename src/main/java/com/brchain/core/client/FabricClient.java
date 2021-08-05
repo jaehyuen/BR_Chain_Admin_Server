@@ -1321,8 +1321,25 @@ public class FabricClient {
 
 	}
 	
-	public void removeOrg() {
-		
+	public void setRemoveOrgConfig(FabricNodeDto peerDto, FabricNodeDto ordererDto, String channelName, String orgName) throws InterruptedException {
+		logger.info("[조직 삭제 설정 시작] 채널 이름 : " + channelName + ", 설정할 피어 : " + peerDto.getConName() + ", 삭제할 조직 : " + orgName);
+
+		// 채널 설정 조회
+		JSONObject configJson = getChannelConfig(ordererDto, channelName);
+		logger.debug("[조직 삭제 설정] 기존 설정 : " + configJson);
+
+		// 조직 삭제 설정 추가
+		JSONObject modifiedJson = jsonUtil.modifyOrgConfig(configJson, "", orgName);
+		logger.debug("[조직 삭제 설정] 변경된 설정 : " + modifiedJson.toString());
+
+		// 파일 업데이트
+		File updateFile = createUpdateFile(peerDto, channelName, configJson, modifiedJson);
+
+		// 업데이트 반영
+		setUpdate(peerDto, ordererDto, channelName, updateFile);
+		logger.info("[조직 삭제 설정 완료]");
 	}
+	
+
 
 };

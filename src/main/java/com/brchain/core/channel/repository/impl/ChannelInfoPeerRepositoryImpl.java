@@ -13,7 +13,8 @@ import com.brchain.core.channel.repository.custom.ChannelInfoPeerCustomRepositor
 import com.querydsl.core.types.dsl.BooleanExpression;
 
 @Transactional(readOnly = true)
-public class ChannelInfoPeerRepositoryImpl extends QuerydslRepositorySupport implements ChannelInfoPeerCustomRepository {
+public class ChannelInfoPeerRepositoryImpl extends QuerydslRepositorySupport
+		implements ChannelInfoPeerCustomRepository {
 
 	final QChannelInfoPeerEntity channelInfoPeerEntity = QChannelInfoPeerEntity.channelInfoPeerEntity;
 
@@ -37,6 +38,17 @@ public class ChannelInfoPeerRepositoryImpl extends QuerydslRepositorySupport imp
 	public List<ChannelInfoPeerEntity> findByOrgName(String orgName) {
 
 		return from(channelInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.orgName.eq(orgName))
+			.fetch();
+
+	}
+
+	@Override
+	public List<String> findOrgExcludedOrgName(String channelName, String orgName) {
+
+		return from(channelInfoPeerEntity).select(channelInfoPeerEntity.conInfoEntity.orgName)
+			.where(eqChannelName(channelName)
+				.and(channelInfoPeerEntity.conInfoEntity.orgName.ne(orgName)))
+			.groupBy(channelInfoPeerEntity.conInfoEntity.orgName)
 			.fetch();
 
 	}

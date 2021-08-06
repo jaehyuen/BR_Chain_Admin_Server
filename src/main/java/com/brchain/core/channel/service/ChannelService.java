@@ -117,6 +117,11 @@ public class ChannelService {
 			.map(channelInfoPeer -> channelInfoPeer.getChannelInfoEntity())
 			.collect(Collectors.toList());
 	}
+	
+	public List<String> findOrgExcludedOrgName(String orgName, String channelName) {
+		return channelInfoPeerRepository.findOrgExcludedOrgName(orgName, channelName);
+		
+	}
 
 	/**
 	 * 채널 정보 (파이) 저장 서비스

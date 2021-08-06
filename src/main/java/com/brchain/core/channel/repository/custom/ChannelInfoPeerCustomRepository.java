@@ -9,6 +9,7 @@ public interface ChannelInfoPeerCustomRepository {
 
 	List<ChannelInfoPeerEntity> findByChannelNameOrConName(String channelName, String conName);
 	List<ChannelInfoPeerEntity> findByOrgName(String orgName);
+	List<String> findOrgExcludedOrgName(String channelName, String orgName);
 	
 
 }

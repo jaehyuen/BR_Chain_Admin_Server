@@ -103,16 +103,11 @@ public class ContainerService {
 	
 	public String findAllOrgs(String orgType) {
 
-////		List<ConInfoEntity> conInfoList = conInfoRepository.findByConTypeAndOrgType(conType, orgType);
-//		String result = "";
-//
-//		for (ConInfoEntity conInfo : conInfoList) {
-//			result = result + conInfo.getOrgName() + " ";
-//		}
 
 		return conInfoRepository.findAllOrgs();
 
 	}
+	
 
 	/**
 	 * 조직 리스트 조회 서비스

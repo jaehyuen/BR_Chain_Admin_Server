@@ -6,19 +6,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.hibernate.query.criteria.internal.path.SetAttributeJoin.TreatedSetAttributeJoin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import com.brchain.core.chaincode.entitiy.CcInfoChannelEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoEntity;
-import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
-import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
-import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
-import com.brchain.core.chaincode.repository.CcInfoRepository;
 import com.brchain.core.channel.dto.ChannelSummaryDto;
 import com.brchain.core.channel.entitiy.ChannelInfoEntity;
 import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
@@ -183,14 +176,31 @@ public class ChannalDatabaseTest {
 		// given
 
 		// when
-		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel",
-				"peer0.orgtest.com");
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByChannelNameOrConName("test-channel", "peer0.orgtest.com");
 
 		// then
 
 		System.out.println(result);
 		assertThat(result.size()).isEqualTo(1);
 		System.out.println("************************ 채널정보_피어_조회_테스트3 종료 ************************");
+	}
+	
+
+	@Test
+	public void 채널에서_해당조직을_제외한_조직_조회_테스트() throws Exception {
+
+		System.out.println("************************ 채널에서_해당조직을_제외한_조직_조회_테스트 시작 ************************");
+
+		// given
+
+		// when
+		List<String> result = channelInfoPeerRepository.findOrgExcludedOrgName("test-channel", "lalala");
+
+		// then
+
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(1);
+		System.out.println("************************ 채널에서_해당조직을_제외한_조직_조회_테스트 종료 ************************");
 	}
 
 	private ConInfoEntity createConInfoEntity(String orgName, String port, String orgType, int conNum) {

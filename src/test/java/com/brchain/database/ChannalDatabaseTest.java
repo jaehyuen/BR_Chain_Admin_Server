@@ -185,7 +185,23 @@ public class ChannalDatabaseTest {
 		System.out.println("************************ 채널정보_피어_조회_테스트3 종료 ************************");
 	}
 	
+	@Test
+	public void 조직이름으로_가입정보_조회_테스트() throws Exception {
 
+		System.out.println("************************ 조직이름으로_가입정보_조회_테스트 시작 ************************");
+
+		// given
+
+		// when
+		List<ChannelInfoPeerEntity> result = channelInfoPeerRepository.findByOrgName("lalala");
+
+		// then
+
+		System.out.println(result);
+		assertThat(result.size()).isEqualTo(4);
+		System.out.println("************************ 조직이름으로_가입정보_조회_테스트 종료 ************************");
+	}
+	
 	@Test
 	public void 채널에서_해당조직을_제외한_조직_조회_테스트() throws Exception {
 

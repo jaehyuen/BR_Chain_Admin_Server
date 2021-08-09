@@ -1053,30 +1053,32 @@ public class FabricService {
 	}
 	
 	public ResultDto<String> removeOrg(String orgName) {
-			
-//		try {
-//		
-//		List<ChannelInfoEntity> channelInfoList = channelService.findChannelInfoPeerByOrgName(orgName);
-//		
-//		for(ChannelInfoEntity channelInfo: channelInfoList) {
-//			List<FabricNodeDto> ordererDtoList = containerService.createFabricNodeDtoArr("orderer",channelInfo.getOrderingOrg());
-//			List<FabricNodeDto> peerDtoList = containerService.createFabricNodeDtoArr("orderer",channelInfo.getOrderingOrg());
-//			
-//			//조직 삭제 설정
-//			//fabricClient.setRemoveOrgConfig(peerDto, ordererDtoList.get(0), channelInfo.getChannelName(), orgName);
-//			
-//			
-//
-//			
-//		}
-//		
-//		
-//		
-//		}catch (InterruptedException e) {
-//			// TODO: handle exception
-//		}
+
+		try {
+
+			List<ChannelInfoEntity> channelInfoList = channelService.findChannelInfoPeerByOrgName(orgName);
+
+			for (ChannelInfoEntity channelInfo : channelInfoList) {
+				
+				// 해당 채널의 오더링 조직의 dto 생성
+				List<FabricNodeDto> ordererDtoList = containerService.createFabricNodeDtoArr("orderer",channelInfo.getOrderingOrg());
+				
+				// 해당 채널의 삭제할 조직을 제외한 조직 추출
+				List<String>        peerOrg        = channelService.findOrgExcludedOrgName(orgName,channelInfo.getChannelName());
+				
+				//추출한 조직의 dto 생성
+				List<FabricNodeDto> peerDtoList    = containerService.createFabricNodeDtoArr("peer", peerOrg.get(0));
+
+				// 조직 삭제 설정
+				fabricClient.setRemoveOrgConfig(peerDtoList.get(0), ordererDtoList.get(0), channelInfo.getChannelName(),orgName);
+
+			}
+
+		} catch (InterruptedException e) {
+			// TODO: handle exception
+		}
 		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove org");
-		
+
 	}
 
 }

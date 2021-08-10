@@ -1,13 +1,19 @@
 package com.brchain.core.container.entitiy;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.brchain.common.entity.BaseEntity;
+import com.brchain.core.channel.entitiy.ChannelInfoPeerEntity;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -56,6 +62,8 @@ public class ConInfoEntity extends BaseEntity {
 
 	@Column(name = "ORDERER_PORTS", nullable = true)
 	private String  ordererPorts;
+	
+
 
 	@Builder
 	public ConInfoEntity(String conName, String conId, String conType, int conNum, int conCnt, String conPort,

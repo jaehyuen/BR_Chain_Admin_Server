@@ -19,6 +19,8 @@ public interface ConInfoCustomRepository {
 	List<String> findOrgsByChannelName(String channelName);
 
 	List<OrgInfoDto> findOrgInfo(String orgType);
+	
+	void testDelete(String conId);
 
 //	String findAllOrgs();
 

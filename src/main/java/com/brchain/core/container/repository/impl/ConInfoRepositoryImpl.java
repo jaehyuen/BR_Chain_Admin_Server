@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.brchain.core.chaincode.entitiy.QCcInfoPeerEntity;
 import com.brchain.core.channel.entitiy.QChannelInfoPeerEntity;
 import com.brchain.core.container.dto.OrgInfoDto;
 import com.brchain.core.container.entitiy.ConInfoEntity;
@@ -16,7 +17,6 @@ import com.brchain.core.container.repository.custom.ConInfoCustomRepository;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 
 @Transactional(readOnly = true)
@@ -25,6 +25,7 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 	final QConInfoEntity         conInfoEntity         = QConInfoEntity.conInfoEntity;
 	final QConInfoEntity         c                     = new QConInfoEntity("c");
 	final QChannelInfoPeerEntity channelInfoPeerEntity = QChannelInfoPeerEntity.channelInfoPeerEntity;
+	final QCcInfoPeerEntity      ccInfoPeerEntity      = QCcInfoPeerEntity.ccInfoPeerEntity;
 
 	public ConInfoRepositoryImpl() {
 		super(ConInfoEntity.class);
@@ -86,6 +87,18 @@ public class ConInfoRepositoryImpl extends QuerydslRepositorySupport implements 
 			.fetch();
 	}
 
+	@Override
+	public void testDelete(String conId) {
+		
+
+		delete(ccInfoPeerEntity).where(ccInfoPeerEntity.conInfoEntity.conId.eq(conId))
+			.execute();
+		delete(channelInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.conId.eq(conId))
+			.execute();
+		delete(conInfoEntity).where(conInfoEntity.conId.eq(conId))
+			.execute();
+	}
+	
 //	@Override
 //	public String findAllOrgs() {
 //

@@ -112,10 +112,13 @@ public class DockerService {
 	public ResultDto<String> removeContainer(String conId) {
 
 		ConInfoEntity conInfoEntity = null;
-
+		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
+		dockerClient.removeContainer(conId);
 		try {
 
 			conInfoEntity = containerService.deleteConInfo(conId);
+			
+			sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
 
 		} catch (IllegalArgumentException e) {
 
@@ -123,9 +126,8 @@ public class DockerService {
 
 		}
 
-		logger.info("[컨테이너 삭제] 컨테이너 id : " + conId);
-		dockerClient.removeContainer(conId);
-		sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
+
+		
 
 		// Success remove container
 		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove container");

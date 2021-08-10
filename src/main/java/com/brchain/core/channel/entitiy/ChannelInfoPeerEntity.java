@@ -36,11 +36,19 @@ public class ChannelInfoPeerEntity extends BaseEntity {
 	@Column(name = "ANCHOR_YN", nullable = false)
 	private boolean           anchorYn;
 
-	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+//	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+//	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
+//	private ChannelInfoEntity channelInfoEntity;
+//
+//	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+//	@JoinColumn(name = "CONINFO_CON_NAME")
+//	private ConInfoEntity     conInfoEntity;
+	
+	@ManyToOne(targetEntity = ChannelInfoEntity.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "CHANNELINFO_CHANNEL_NAME")
 	private ChannelInfoEntity channelInfoEntity;
 
-	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@ManyToOne(targetEntity = ConInfoEntity.class, fetch = FetchType.EAGER)
 	@JoinColumn(name = "CONINFO_CON_NAME")
 	private ConInfoEntity     conInfoEntity;
 

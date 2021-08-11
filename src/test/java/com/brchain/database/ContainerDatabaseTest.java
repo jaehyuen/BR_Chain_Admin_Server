@@ -61,6 +61,9 @@ public class ContainerDatabaseTest {
 
 		ConInfoEntity conInfoEntity3 = createConInfoEntity("test", "11131", "peer", 2);
 		conInfoEntity3 = conInfoRepository.save(conInfoEntity3);
+		
+		ConInfoEntity conInfoEntityca = createConInfoEntity("test", "11139", "ca", 2);
+		conInfoEntityca = conInfoRepository.save(conInfoEntityca);
 
 		ConInfoEntity conInfoEntity4 = createConInfoEntity("lalala", "11141", "peer", 1);
 		conInfoEntity4 = conInfoRepository.save(conInfoEntity4);
@@ -187,6 +190,23 @@ public class ContainerDatabaseTest {
 //	}
 	
 	@Test
+	public void CA_컨테이너_조회_테스트() {
+		System.out.println("************************ CA_컨테이너_조회_테스트 시작 ************************");
+
+		// given
+
+
+		// when
+		ConInfoEntity result = conInfoRepository.findCaInfoByOrgName("test").get();
+		
+		// then
+		System.out.println(result);
+		assertThat(result.getConType()).isEqualTo("ca");
+
+		System.out.println("************************ CA_컨테이너_조회_테스트 종료 ************************");
+	}
+	
+	@Test
 	public void 컨테이너_삭제_테스트() {
 		System.out.println("************************ 컨테이너_삭제_테스트 시작 ************************");
 
@@ -202,7 +222,7 @@ public class ContainerDatabaseTest {
 		System.out.println(result);
 		assertThat(result).isEqualTo("test lalala");
 
-		System.out.println("************************ 컨테이너_삭제_테스트 ************************");
+		System.out.println("************************ 컨테이너_삭제_테스트 종료 ***********************");
 	}
 
 	private ConInfoEntity createConInfoEntity(String orgName, String port, String orgType, int conNum) {

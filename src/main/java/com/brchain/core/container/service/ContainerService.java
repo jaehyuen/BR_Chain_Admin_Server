@@ -76,6 +76,10 @@ public class ContainerService {
 		return conInfoRepository.findById(conName).orElseThrow(IllegalArgumentException::new);
 
 	}
+	
+	public ConInfoEntity findConInfoByConId(String conId) {
+		return conInfoRepository.findByConId(conId).orElseThrow(IllegalArgumentException::new);
+	}
 
 	/**
 	 * 컨테이너 타입으로 조직 조회 서비스

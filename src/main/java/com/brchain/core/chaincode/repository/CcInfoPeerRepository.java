@@ -9,5 +9,6 @@ import com.brchain.core.chaincode.repository.custom.CcInfoPeerCustomRepository;
 import com.brchain.core.container.entitiy.ConInfoEntity;
 
 public interface CcInfoPeerRepository extends JpaRepository<CcInfoPeerEntity, Long>, CcInfoPeerCustomRepository {
+	
 
 }

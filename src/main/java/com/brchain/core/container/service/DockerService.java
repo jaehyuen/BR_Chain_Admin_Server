@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.core.chaincode.service.ChaincodeService;
+import com.brchain.core.channel.service.ChannelService;
 import com.brchain.core.client.DockerClient;
 import com.brchain.core.client.SshClient;
 import com.brchain.core.container.dto.ConInfoDto;
@@ -36,6 +38,9 @@ public class DockerService {
 
 	// 서비스
 	private final ContainerService containerService;
+	private final ChannelService channelService;
+	private final ChaincodeService chaincodeService;
+	
 
 	private final Util             util;
 	private final JsonUtil         jsonUtil;
@@ -116,6 +121,11 @@ public class DockerService {
 		dockerClient.removeContainer(conId);
 		try {
 
+			//삭제할 컨테이너 정보 조회
+			conInfoEntity = containerService.findConInfoByConId(conId);
+			
+			//체인코드 정보(피어) 삭
+			chaincodeService.deleteCcInfoPeer(conInfoEntity.getConName());
 			conInfoEntity = containerService.deleteConInfo(conId);
 			
 			sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());

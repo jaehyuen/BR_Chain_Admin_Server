@@ -25,6 +25,7 @@ import com.brchain.core.chaincode.repository.CcInfoChannelRepository;
 import com.brchain.core.chaincode.repository.CcInfoPeerRepository;
 import com.brchain.core.chaincode.repository.CcInfoRepository;
 import com.brchain.core.channel.service.ChannelService;
+import com.brchain.core.container.entitiy.ConInfoEntity;
 import com.brchain.core.container.service.ContainerService;
 import com.brchain.core.util.BrchainStatusCode;
 import com.brchain.core.util.Util;
@@ -224,6 +225,14 @@ public class ChaincodeService {
 
 		//Success get cc summary list
 		return util.setResult(BrchainStatusCode.SUCCESS, CcSummaryList);
+	}
+	
+	public void deleteCcInfoPeer(String conName) {
+		List<CcInfoPeerEntity>  ccInfoPeerList = ccInfoPeerRepository.findByConName(conName);
+		for(CcInfoPeerEntity ccInfoPeer: ccInfoPeerList) {
+			ccInfoPeerRepository.deleteById(ccInfoPeer.getId());
+		}
+		
 	}
 
 }

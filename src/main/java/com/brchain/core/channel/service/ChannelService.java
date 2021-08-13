@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.brchain.common.dto.ResultDto;
+import com.brchain.core.chaincode.entitiy.CcInfoPeerEntity;
 import com.brchain.core.channel.dto.ChannelInfoDto;
 import com.brchain.core.channel.dto.ChannelInfoPeerDto;
 import com.brchain.core.channel.dto.ChannelSummaryDto;
@@ -302,6 +303,12 @@ public class ChannelService {
 
 		// Success get channel info by channel name
 		return util.setResult(BrchainStatusCode.SUCCESS, channelSummaryList);
+	}
+	public void deleteChannelInfoPeer(String conName) {
+		List<ChannelInfoPeerEntity>  channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(null, conName);
+		for(ChannelInfoPeerEntity channelInfoPeer: channelInfoPeerList) {
+			channelInfoPeerRepository.deleteById(channelInfoPeer.getId());
+		}
 	}
 
 }

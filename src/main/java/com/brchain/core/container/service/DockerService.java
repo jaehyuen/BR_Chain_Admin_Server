@@ -124,8 +124,10 @@ public class DockerService {
 			//삭제할 컨테이너 정보 조회
 			conInfoEntity = containerService.findConInfoByConId(conId);
 			
-			//체인코드 정보(피어) 삭
+			//체인코드 정보(피어) 삭제
 			chaincodeService.deleteCcInfoPeer(conInfoEntity.getConName());
+			
+			channelService.deleteChannelInfoPeer(conInfoEntity.getConName());
 			conInfoEntity = containerService.deleteConInfo(conId);
 			
 			sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());

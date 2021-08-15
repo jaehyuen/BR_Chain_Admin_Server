@@ -88,7 +88,24 @@ public class BlockAndTxDatabaseTest {
 
 	}
 
+	@Test
+	public void 블록_카운팅_테스트() throws Exception {
 
+		System.out.println("************************ 블록_카운팅_테스트 시작 ************************");
+
+		// given
+
+		// when
+		long result = blockRepository.countByChannelName("test-channel");
+
+		// then
+
+		System.out.println(result);
+		assertThat(result).isEqualTo(10);
+
+		System.out.println("************************ 블록_카운팅_테스트 종료 ************************");
+
+	}
 
 	private ChannelInfoEntity createChannelInfoEntity(String channelName) {
 

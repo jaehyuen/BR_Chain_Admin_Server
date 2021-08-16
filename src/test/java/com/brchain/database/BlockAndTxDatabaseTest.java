@@ -68,42 +68,61 @@ public class BlockAndTxDatabaseTest {
 
 	}
 
-
+//
+//	@Test
+//	public void 블록_조회_테스트() throws Exception {
+//
+//		System.out.println("************************ 블록_조회_테스트 시작 ************************");
+//
+//		// given
+//
+//		// when
+//		List<BlockAndTxDto> result = blockRepository.findByChannelName("test-channel");
+//
+//		// then
+//
+//		System.out.println(result);
+//		assertThat(result.size()).isEqualTo(10);
+//
+//		System.out.println("************************ 블록_조회_테스트 종료 ************************");
+//
+//	}
+//
+//	@Test
+//	public void 블록_카운팅_테스트() throws Exception {
+//
+//		System.out.println("************************ 블록_카운팅_테스트 시작 ************************");
+//
+//		// given
+//
+//		// when
+//		long result = blockRepository.countByChannelName("test-channel");
+//
+//		// then
+//
+//		System.out.println(result);
+//		assertThat(result).isEqualTo(10);
+//
+//		System.out.println("************************ 블록_카운팅_테스트 종료 ************************");
+//
+//	}
+	
 	@Test
-	public void 블록_조회_테스트() throws Exception {
+	public void 트랜잭션_조회_테스트() throws Exception {
 
-		System.out.println("************************ 블록_조회_테스트 시작 ************************");
+		System.out.println("************************ 트랜잭션_조회_테스트 시작 ************************");
 
 		// given
 
 		// when
-		List<BlockAndTxDto> result = blockRepository.findByChannelName("test-channel");
+		List<TransactionEntity> result = transactionRepository.findByChannelName("test-channel");
 
 		// then
 
 		System.out.println(result);
-		assertThat(result.size()).isEqualTo(10);
+//		assertThat(result).isEqualTo(10);
 
-		System.out.println("************************ 블록_조회_테스트 종료 ************************");
-
-	}
-
-	@Test
-	public void 블록_카운팅_테스트() throws Exception {
-
-		System.out.println("************************ 블록_카운팅_테스트 시작 ************************");
-
-		// given
-
-		// when
-		long result = blockRepository.countByChannelName("test-channel");
-
-		// then
-
-		System.out.println(result);
-		assertThat(result).isEqualTo(10);
-
-		System.out.println("************************ 블록_카운팅_테스트 종료 ************************");
+		System.out.println("************************ 트랜잭션_조회_테스트 종료 ************************");
 
 	}
 

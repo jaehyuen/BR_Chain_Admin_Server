@@ -56,19 +56,19 @@ public class ChaincodeDatabaseTest {
 		ccInfoEntity3 = ccInfoRepository.save(ccInfoEntity3);
 
 		// 피어 등록, 체인코드
-		ConInfoEntity conInfoEntity1 = createConInfoEntity("test", "1111", "peer", 0);
+		ConInfoEntity conInfoEntity1 = createConInfoEntity("test", "11111", "peer", 0);
 		conInfoEntity1 = conInfoRepository.save(conInfoEntity1);
 
-		ConInfoEntity conInfoEntity2 = createConInfoEntity("test", "1112", "peer", 1);
+		ConInfoEntity conInfoEntity2 = createConInfoEntity("test", "11121", "peer", 1);
 		conInfoEntity2 = conInfoRepository.save(conInfoEntity2);
 
-		ConInfoEntity conInfoEntity3 = createConInfoEntity("test", "1113", "peer", 2);
+		ConInfoEntity conInfoEntity3 = createConInfoEntity("test", "11131", "peer", 2);
 		conInfoEntity3 = conInfoRepository.save(conInfoEntity3);
 
-		ConInfoEntity conInfoEntity4 = createConInfoEntity("lalala", "1114", "peer", 1);
+		ConInfoEntity conInfoEntity4 = createConInfoEntity("lalala", "11141", "peer", 1);
 		conInfoEntity4 = conInfoRepository.save(conInfoEntity4);
 
-		ConInfoEntity conInfoEntity5 = createConInfoEntity("lalala", "1115", "peer", 2);
+		ConInfoEntity conInfoEntity5 = createConInfoEntity("lalala", "11151", "peer", 2);
 		conInfoEntity5 = conInfoRepository.save(conInfoEntity5);
 
 		// 체인코드 피어 등록
@@ -155,14 +155,14 @@ public class ChaincodeDatabaseTest {
 		System.out.println("************************ 체인코드_피어_정보_조회_테스트1 시작 ************************");
 
 		// given
-		ConInfoEntity conInfoEntity = conInfoRepository.findByConPort("1111").get();
+		ConInfoEntity conInfoEntity = conInfoRepository.findByConPort("11111").get();
 
 		// when
-		CcInfoPeerEntity result = ccInfoPeerRepository.findByConName(conInfoEntity.getConName()).get(0);
+		List<CcInfoPeerEntity> result = ccInfoPeerRepository.findByConName(conInfoEntity.getConName());
 
 		// then
 		System.out.println(result);
-		assertThat(conInfoEntity.getConPort()).isEqualTo("1111");
+		assertThat(result.get(0).getConInfoEntity().getConPort()).isEqualTo("11111");
 
 		System.out.println("************************ 체인코드_피어_정보_조회_테스트1 종료 ************************");
 
@@ -186,6 +186,24 @@ public class ChaincodeDatabaseTest {
 		System.out.println("************************ 체인코드_피어_정보_조회_테스트2 종료 ************************");
 
 	}
+	
+//	@Test
+//	public void 체인코드_피어_정보_조회_테스트3() throws Exception {
+//
+//		System.out.println("************************ 체인코드_피어_정보_조회_테스트3 시작 ************************");
+//
+//		// given
+//
+//		// when
+//		List<CcInfoPeerEntity> result = ccInfoPeerRepository.findByConName("");
+//
+//		// then
+//		System.out.println(result);
+////		assertThat(conInfoEntity.getConPort()).isEqualTo("1111");
+//
+//		System.out.println("************************ 체인코드_피어_정보_조회_테스트3 종료 ************************");
+//
+//	}
 
 	@Test
 	public void 활성화_가능한_체인코드_조회_테스트() throws Exception {

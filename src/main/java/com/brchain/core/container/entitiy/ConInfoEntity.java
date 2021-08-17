@@ -45,7 +45,7 @@ public class ConInfoEntity extends BaseEntity {
 	@Column(name = "CON_PORT", nullable = true)
 	private String  conPort;
 
-	@Column(name = "ORG_NAME", nullable = false, unique = true)
+	@Column(name = "ORG_NAME", nullable = false)
 	private String  orgName;
 
 	@Column(name = "ORG_TYPE", nullable = false)

@@ -1071,6 +1071,8 @@ public class FabricService {
 
 				// 조직 삭제 설정
 				fabricClient.setRemoveOrgConfig(peerDtoList.get(0), ordererDtoList.get(0), channelInfo.getChannelName(),orgName);
+				
+				dockerService.removeOrgContainers(orgName);
 
 			}
 

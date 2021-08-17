@@ -61,8 +61,8 @@ public class CcInfoPeerRepositoryImpl extends QuerydslRepositorySupport implemen
 	@Override
 	public List<CcInfoPeerEntity> findByConName(String conName) {
 
-		return from(ccInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.conName.eq(conName))
-			.groupBy(ccInfoPeerEntity.ccInfoEntity)
+		return from(ccInfoPeerEntity).where(ccInfoPeerEntity.conInfoEntity.conName.eq(conName))
+//			.groupBy(ccInfoPeerEntity.ccInfoEntity)
 			.fetch();
 	}
 

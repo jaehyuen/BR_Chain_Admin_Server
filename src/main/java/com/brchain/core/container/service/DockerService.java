@@ -127,7 +127,9 @@ public class DockerService {
 			//체인코드 정보(피어) 삭제
 			chaincodeService.deleteCcInfoPeer(conInfoEntity.getConName());
 			
+			//채널 정보(피어) 삭제 
 			channelService.deleteChannelInfoPeer(conInfoEntity.getConName());
+			
 			conInfoEntity = containerService.deleteConInfo(conId);
 			
 			sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
@@ -155,27 +157,32 @@ public class DockerService {
 
 	public ResultDto<String> removeOrgContainers(String orgName) {
 
-		List<Container> containers = dockerClient.loadAllContainers();
+//		List<Container> containers = dockerClient.loadAllContainers();
+//
+//		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
+//
+//			Container  container  = iter.next();
+//
+//			ConInfoEntity conInfoEntity = null;
+//
+//			if (container.names().get(0).contains(orgName)) {
+//				try {
+//					conInfoEntity = containerService.deleteConInfo(container.id());
+//				} catch (IllegalArgumentException e) {
+//					logger.info("디비에 없는 컨테이너");
+//				}
+//
+//				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
+//				dockerClient.removeContainer(container.id());
+////				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
+//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
+//
+//			}
+//		}
+		List<ConInfoEntity> conInfoList = containerService.findConInfoByOrgName(orgName);
 
-		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
-
-			Container  container  = iter.next();
-
-			ConInfoEntity conInfoEntity = null;
-
-			if (container.names().get(0).contains(orgName)) {
-				try {
-					conInfoEntity = containerService.deleteConInfo(container.id());
-				} catch (IllegalArgumentException e) {
-					logger.info("디비에 없는 컨테이너");
-				}
-
-				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
-				dockerClient.removeContainer(container.id());
-//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
-				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
-
-			}
+		for (ConInfoEntity conInfo : conInfoList) {
+			removeContainer(conInfo.getConId());
 		}
 
 

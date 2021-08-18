@@ -55,7 +55,7 @@ public class ContainerController {
 			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
 			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
 //	@GetMapping("/remove")
-	@DeleteMapping(value = {"/remove/{conId}","/remove"})
+	@DeleteMapping(value = {"/{conId}","/"})
 	public ResponseEntity<ResultDto> removeContainer(@PathVariable("conId")  String conId) {
 
 		if (conId == null ) {

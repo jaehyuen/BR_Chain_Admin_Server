@@ -1064,7 +1064,7 @@ public class FabricService {
 				List<FabricNodeDto> ordererDtoList = containerService.createFabricNodeDtoArr("orderer",channelInfo.getOrderingOrg());
 				
 				// 해당 채널의 삭제할 조직을 제외한 조직 추출
-				List<String>        peerOrg        = channelService.findOrgExcludedOrgName(orgName,channelInfo.getChannelName());
+				List<String>        peerOrg        = channelService.findOrgExcludedOrgName(channelInfo.getChannelName(),orgName);
 				
 				//추출한 조직의 dto 생성
 				List<FabricNodeDto> peerDtoList    = containerService.createFabricNodeDtoArr("peer", peerOrg.get(0));

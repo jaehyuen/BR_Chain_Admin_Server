@@ -150,35 +150,15 @@ public class DockerService {
 	}
 
 	/**
-	 * @deprecated 아직 미완성 서비스
+	 * 조직 컨테이너 삭제 서비스
+	 * 
+	 * @param orgName 조직 이름
 	 * 
 	 * @return 결과 DTO(삭제 결과)
 	 */
 
 	public ResultDto<String> removeOrgContainers(String orgName) {
 
-//		List<Container> containers = dockerClient.loadAllContainers();
-//
-//		for (Iterator<Container> iter = containers.iterator(); iter.hasNext();) {
-//
-//			Container  container  = iter.next();
-//
-//			ConInfoEntity conInfoEntity = null;
-//
-//			if (container.names().get(0).contains(orgName)) {
-//				try {
-//					conInfoEntity = containerService.deleteConInfo(container.id());
-//				} catch (IllegalArgumentException e) {
-//					logger.info("디비에 없는 컨테이너");
-//				}
-//
-//				logger.info("[컨테이너 삭제] 컨테이너 id : " + container.id());
-//				dockerClient.removeContainer(container.id());
-////				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName());
-//				sshClient.removeDir(conInfoEntity.getOrgName(), conInfoEntity.getConName(), conInfoEntity.getConType());
-//
-//			}
-//		}
 		List<ConInfoEntity> conInfoList = containerService.findConInfoByOrgName(orgName);
 
 		for (ConInfoEntity conInfo : conInfoList) {

@@ -37,7 +37,7 @@ public class ChannelInfoPeerRepositoryImpl extends QuerydslRepositorySupport
 	@Override
 	public List<ChannelInfoPeerEntity> findByOrgName(String orgName) {
 
-		return from(channelInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.orgName.eq(orgName))
+		return from(channelInfoPeerEntity).where(channelInfoPeerEntity.conInfoEntity.orgName.eq(orgName)).groupBy(channelInfoPeerEntity.channelInfoEntity.channelName)
 			.fetch();
 
 	}

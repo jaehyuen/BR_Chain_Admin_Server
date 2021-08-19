@@ -111,6 +111,14 @@ public class ChannelService {
 
 	}
 	
+	/**
+	 * 조직 이름으로 채널 정보 조회 서비스 
+	 * 
+	 * @param orgName 조직 이름
+	 * 
+	 * @return 채널 정보 리스트
+	 */
+	
 	public List<ChannelInfoEntity> findChannelInfoPeerByOrgName(String orgName) {
 		List<ChannelInfoPeerEntity> channelInfoPeerList = channelInfoPeerRepository.findByOrgName(orgName);
 
@@ -118,6 +126,16 @@ public class ChannelService {
 			.map(channelInfoPeer -> channelInfoPeer.getChannelInfoEntity())
 			.collect(Collectors.toList());
 	}
+	
+	/**
+	 * 해당 채널에서 해당 조직을 제외한 조직 조회 서비스 
+	 * 
+	 * @param orgName 제외할 조직 이름
+	 * 
+	 * @param channelName 조회할 채널 이름
+	 * 
+	 * @return 조회한 조직 리스트
+	 */
 	
 	public List<String> findOrgExcludedOrgName(String orgName, String channelName) {
 		return channelInfoPeerRepository.findOrgExcludedOrgName(orgName, channelName);
@@ -304,6 +322,13 @@ public class ChannelService {
 		// Success get channel info by channel name
 		return util.setResult(BrchainStatusCode.SUCCESS, channelSummaryList);
 	}
+	
+	/**
+	 * 피어 정보로 채널 정보(피어) 삭제 서비스
+	 * 
+	 * @param conName 피어 컨테이너 이름
+	 */
+	
 	public void deleteChannelInfoPeer(String conName) {
 		List<ChannelInfoPeerEntity>  channelInfoPeerList = channelInfoPeerRepository.findByChannelNameOrConName(null, conName);
 		for(ChannelInfoPeerEntity channelInfoPeer: channelInfoPeerList) {

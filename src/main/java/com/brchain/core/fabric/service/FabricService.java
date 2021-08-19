@@ -1052,6 +1052,13 @@ public class FabricService {
 		return util.setResult("0000", true, "Success chaincode file upload", null);
 	}
 	
+	/**
+	 * 조직 삭제 서비스 
+	 * 
+	 * @param orgName 삭제할 조직 이름
+	 * 
+	 * @return 삭제 결과 DTO
+	 */
 	public ResultDto<String> removeOrg(String orgName) {
 
 		try {

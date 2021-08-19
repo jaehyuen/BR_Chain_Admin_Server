@@ -65,7 +65,7 @@ public class ContainerService {
 
 
 	/**
-	 * 컨테이너 이름으로 조회 서비스
+	 * 컨테이너 이름으로 컨테이너 정보 조회 서비스
 	 * 
 	 * @param conName 컨테이너 이름
 	 * 
@@ -78,9 +78,22 @@ public class ContainerService {
 
 	}
 	
+	/**
+	 * 컨테이너 아이디로 컨테이너 정보 조회 서비스 
+	 * @param conId
+	 * @return
+	 */
 	public ConInfoEntity findConInfoByConId(String conId) {
 		return conInfoRepository.findByConId(conId).orElseThrow(IllegalArgumentException::new);
 	}
+	
+	/**
+	 * 조직 이름으로 컨테이너 정보 조회 서비스
+	 * 
+	 * @param orgName 조직 이름
+	 * 
+	 * @return 조회한 컨테이너 정보 Entity 리스트
+	 */
 	
 	public List<ConInfoEntity> findConInfoByOrgName(String orgName) {
 		return conInfoRepository.findByConTypeAndOrgTypeAndOrgName(null, null, orgName);

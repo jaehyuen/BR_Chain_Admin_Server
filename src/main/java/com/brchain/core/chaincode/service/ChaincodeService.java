@@ -218,6 +218,7 @@ public class ChaincodeService {
 	 * 
 	 * @return 결과 DTO(체인코드 요약정보 (피어))
 	 */
+	
 	@Transactional(readOnly = true)
 	public ResultDto<List<CcSummaryDto>> getCcSummaryList() {
 
@@ -226,6 +227,12 @@ public class ChaincodeService {
 		//Success get cc summary list
 		return util.setResult(BrchainStatusCode.SUCCESS, CcSummaryList);
 	}
+	
+	/**
+	 * 피어 정보로 체인코드 정보(피어) 삭제 서비스
+	 * 
+	 * @param conName 피어 컨테이너 이름
+	 */
 	
 	public void deleteCcInfoPeer(String conName) {
 		List<CcInfoPeerEntity>  ccInfoPeerList = ccInfoPeerRepository.findByConName(conName);

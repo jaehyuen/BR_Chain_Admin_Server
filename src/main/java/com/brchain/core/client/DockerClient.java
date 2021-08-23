@@ -282,6 +282,16 @@ public class DockerClient {
 
 	}
 
+	public void rebootContainer(String conId) {
+		try {
+			docker.stopContainer(conId, 0);
+			docker.startContainer(conId);
+		} catch (DockerException | InterruptedException e) {
+			throw new BrchainException(e, BrchainStatusCode.DOCKER_CONNECTION_ERROR);
+		}
+
+	}
+	
 	private Map<String, List<PortBinding>> createPortBinding(String[] ports) {
 
 		Map<String, List<PortBinding>> portBindings = new HashMap<>();

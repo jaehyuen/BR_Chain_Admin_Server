@@ -235,5 +235,9 @@ public class DockerService {
 		return jsonUtil.createConJson(info);
 
 	}
+	public ResultDto<String> rebootContainer(String conId){
+		dockerClient.rebootContainer(conId);
+		return util.setResult(BrchainStatusCode.SUCCESS, "Success remove org");
+	}
 
 }

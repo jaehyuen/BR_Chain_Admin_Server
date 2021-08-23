@@ -68,6 +68,18 @@ public class ContainerController {
 
 	}
 
+	@Operation(summary = "컨테이너 재기동", description = "실행중인 컨테이너를 재기동 하는 API", responses = {
+			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
+			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),
+			@ApiResponse(responseCode = "403", content = @Content(schema = @Schema(implementation = Error403ResultDto.class))),
+			@ApiResponse(responseCode = "500", content = @Content(schema = @Schema(implementation = Error500ResultDto.class))) })
+	@GetMapping("/reboot/{conId}")
+	public ResponseEntity<ResultDto> rebootContainer(@PathVariable("conId")  String conId) {
+
+		return ResponseEntity.status(HttpStatus.OK).body(dockerService.rebootContainer(conId));
+
+	}
+	
 	@Operation(summary = "포트 체크", description = "사용중인 포트인지 체크하는 API", responses = {
 			@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = ResultDto.class))),
 			@ApiResponse(responseCode = "401", content = @Content(schema = @Schema(implementation = Error401ResultDto.class))),

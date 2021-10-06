@@ -1,0 +1,57 @@
+brchain:
+    datadir: /svc/nhblock/data
+    ip: 192.168.56.127
+    logdir: /svc/nhblock/logs
+    networkmode: brchain-network
+    sourcedir: /svc/nhblock/prod_brchain
+    ssh:
+        pass: 1111
+        port: 22
+        user: root
+
+server:
+    port: 8080
+springdoc:
+  api-docs:
+    groups:
+      enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    displayRequestDuration: true
+    groups-order: DESC
+
+spring:
+    application:
+        name: brchain
+    datasource:
+        initialization-mode: always
+        password: 1234
+        url: jdbc:mariadb://mariadb:3306/brchain?serverTimezone=UTC
+        username: brchain
+        hikari:
+            auto-commit: false
+            connection-test-query: SELECT 1
+            minimum-idle: 10
+            maximum-pool-size: 50
+            transaction-isolation: TRANSACTION_READ_UNCOMMITTED
+            pool-name: pool-brchain
+
+    jpa:
+        hibernate:
+            ddl-auto: update
+            naming:
+                implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        properties:
+            hibernate:
+                format_sql: true
+        show-sql: false
+        database-platform: com.brchain.common.configuration.BrMariaDBDialect
+    main:
+        allow-bean-definition-overriding: true
+    profiles:
+        active: local
+    servlet:
+        multipart:
+            maxFileSize: 99MB
+            maxRequestSize: 99MB

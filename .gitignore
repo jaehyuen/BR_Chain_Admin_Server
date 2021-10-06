@@ -8,6 +8,7 @@ target/
 /crypto-config/
 /compose-files/
 /channel-artifacts/
+/db/data
 
 ### STS ###
 .apt_generated

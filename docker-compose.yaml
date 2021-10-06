@@ -1,0 +1,32 @@
+version: '2.1'
+
+networks:
+  brchain-network:
+    name: brchain-network
+
+services:
+  brchain_server:
+    container_name: brchain_server
+    image: brchain
+    volumes:
+      - ./application.yaml:/application.yaml
+    networks:
+      - brchain-network
+    depends_on:
+      - mariadb
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb:10
+    ports:
+      - 3316:3306
+    volumes:
+#      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/data:/var/lib/mysql
+    env_file: .env
+    environment:
+      TZ: Asia/Seoul
+    networks:
+      - brchain-network
+    restart: always
+
